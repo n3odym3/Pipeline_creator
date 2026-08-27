@@ -1,0 +1,499 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 1235" width="100%" height="100%" style="background-color: transparent; font-family: 'Inter', system-ui, -apple-system, sans-serif;">
+  <defs>
+    <!-- Drop Shadows -->
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.12"/>
+    </filter>
+    <filter id="glow-green" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+
+    <!-- Arrow Markers -->
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="9.5" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0284C7"/>
+    </marker>
+    <marker id="arrow-green" viewBox="0 0 10 10" refX="9.5" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+    <marker id="arrow-indigo" viewBox="0 0 10 10" refX="9.5" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#312E81"/>
+    </marker>
+    <marker id="arrow-io-green" viewBox="0 0 10 10" refX="9.5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#047857"/>
+    </marker>
+    <marker id="arrow-amber" viewBox="0 0 10 10" refX="9.5" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#D97706"/>
+    </marker>
+    <marker id="arrow-wire" viewBox="0 0 10 10" refX="9.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#0284C7"/>
+    </marker>
+    <marker id="arrow-gui" viewBox="0 0 12 12" refX="11.5" refY="6" markerWidth="8.5" markerHeight="8.5" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 12 6 L 0 10.5 z" fill="#4338CA"/>
+    </marker>
+  </defs>
+
+  <!-- ==================== LOWEST LAYER: PIPELINE CREATOR FRAMEWORK ==================== -->
+  <g transform="translate(15, 15)">
+    <!-- Root Outer Container -->
+    <rect x="0" y="0" width="1410" height="1205" rx="16" fill="#E2E8F0" stroke="#334155" stroke-width="2.5" filter="url(#shadow)"/>
+    
+    <!-- Root Framework Header Badge -->
+    <path d="M 0 16 Q 0 0 16 0 L 350 0 L 350 34 L 0 34 Z" fill="#1E293B"/>
+    <text x="20" y="23" fill="#FFFFFF" font-size="18" font-weight="800" letter-spacing="0.6">PIPELINE CREATOR FRAMEWORK</text>
+
+    <!-- Core Tools (Top-Right Pill Badges) -->
+    <g transform="translate(365, 4)">
+      <!-- 1. Built-in documentation -->
+      <rect x="0" y="0" width="142" height="26" rx="13" fill="#FFFFFF" stroke="#0284C7" stroke-width="1.4"/>
+      <text x="71" y="17.5" fill="#0369A1" font-size="11.5" font-weight="800" text-anchor="middle">Built-in documentation</text>
+      
+      <!-- 2. Tutorial manager -->
+      <rect x="146" y="0" width="120" height="26" rx="13" fill="#FFFFFF" stroke="#4338CA" stroke-width="1.4"/>
+      <text x="206" y="17.5" fill="#312E81" font-size="11.5" font-weight="800" text-anchor="middle">Tutorial manager</text>
+
+      <!-- 3. Theme manager -->
+      <rect x="270" y="0" width="112" height="26" rx="13" fill="#FFFFFF" stroke="#D97706" stroke-width="1.4"/>
+      <text x="326" y="17.5" fill="#92400E" font-size="11.5" font-weight="800" text-anchor="middle">Theme manager</text>
+
+      <!-- 4. Config editor -->
+      <rect x="386" y="0" width="106" height="26" rx="13" fill="#FFFFFF" stroke="#059669" stroke-width="1.4"/>
+      <text x="439" y="17.5" fill="#065F46" font-size="11.5" font-weight="800" text-anchor="middle">Config editor</text>
+
+      <!-- 5. Module health check -->
+      <rect x="496" y="0" width="138" height="26" rx="13" fill="#FFFFFF" stroke="#DC2626" stroke-width="1.4"/>
+      <text x="565" y="17.5" fill="#991B1B" font-size="11.5" font-weight="800" text-anchor="middle">Module health check</text>
+
+      <!-- 6. Global variables -->
+      <rect x="638" y="0" width="120" height="26" rx="13" fill="#FFFFFF" stroke="#0891B2" stroke-width="1.4"/>
+      <text x="698" y="17.5" fill="#155E75" font-size="11.5" font-weight="800" text-anchor="middle">Global variables</text>
+
+      <!-- 7. GUI rendering -->
+      <rect x="762" y="0" width="112" height="26" rx="13" fill="#FFFFFF" stroke="#DB2777" stroke-width="1.4"/>
+      <text x="818" y="17.5" fill="#9D174D" font-size="11.5" font-weight="800" text-anchor="middle">GUI rendering</text>
+
+      <!-- 8. Pipeline import/export -->
+      <rect x="878" y="0" width="154" height="26" rx="13" fill="#FFFFFF" stroke="#7C3AED" stroke-width="1.4"/>
+      <text x="955" y="17.5" fill="#5B21B6" font-size="11.5" font-weight="800" text-anchor="middle">Pipeline import/export</text>
+    </g>
+
+    <!-- ==================== TOP BLOCK: NODE EDITOR ==================== -->
+    <g transform="translate(65, 50)">
+      <rect x="0" y="0" width="1280" height="675" rx="14" fill="#E0F2FE" stroke="#4338CA" stroke-width="2.5" filter="url(#shadow)"/>
+      <path d="M 0 14 Q 0 0 14 0 L 360 0 L 360 30 L 0 30 Z" fill="#4338CA"/>
+      <text x="16" y="20" fill="#FFFFFF" font-size="17" font-weight="800">NODE EDITOR (Visual Graph Workspace)</text>
+
+      <!-- ==================== MODULE A: SENSOR NODE ==================== -->
+      <g transform="translate(25, 45)">
+        <rect x="0" y="0" width="360" height="415" rx="12" fill="#BAE6FD" stroke="#0284C7" stroke-width="2"/>
+        <path d="M 0 12 Q 0 0 12 0 L 220 0 L 235 24 L 0 24 Z" fill="#0284C7"/>
+        <text x="14" y="16" fill="#FFFFFF" font-size="15" font-weight="800">MODULE A (Sensor Node)</text>
+
+        <!-- Cadre 1: Input -->
+        <g transform="translate(18, 38)">
+          <rect x="0" y="0" width="324" height="60" rx="8" fill="#7DD3FC" stroke="#0284C7" stroke-width="1.5"/>
+          <rect x="0" y="0" width="324" height="24" rx="8" fill="#0284C7"/>
+          <text x="10" y="16" fill="#FFFFFF" font-size="14" font-weight="800">Input</text>
+          <text x="10" y="44" fill="#0F172A" font-size="13" font-weight="700">Producer node with no input / trigger</text>
+        </g>
+
+        <!-- Cadre 2: GUI Element -->
+        <g transform="translate(18, 110)">
+          <rect x="0" y="0" width="324" height="155" rx="8" fill="#A5B4FC" stroke="#312E81" stroke-width="1.5"/>
+          <rect x="0" y="0" width="324" height="24" rx="8" fill="#312E81"/>
+          <text x="10" y="16" fill="#FFFFFF" font-size="14" font-weight="800">GUI Element (DearPyGui Binding)</text>
+          
+          <text x="10" y="44" fill="#1E1B4B" font-size="13" font-weight="700">• Builds UI elements (sliders, buttons...)</text>
+
+          <!-- UI Interaction Logic Sub-Box -->
+          <rect x="8" y="56" width="308" height="88" rx="6" fill="#EEF2FF" stroke="#312E81" stroke-width="1.2"/>
+          <text x="14" y="74" fill="#312E81" font-size="13" font-weight="800">UI Interaction Logic:</text>
+          <text x="14" y="94" fill="#0F172A" font-size="13" font-weight="600">• Modifies hardware settings</text>
+          <text x="14" y="112" fill="#0F172A" font-size="13" font-weight="600">• Starts / stops acquisition thread</text>
+          <text x="14" y="130" fill="#0F172A" font-size="13" font-weight="600">• Displays debugging info</text>
+        </g>
+
+        <!-- Module A Internal Arrow (UI Interaction Logic -> Output) -->
+        <g>
+          <path d="M 180 265 L 180 304" fill="none" stroke="#312E81" stroke-width="2.2" marker-end="url(#arrow-indigo)"/>
+          <rect x="120" y="272" width="120" height="18" rx="3" fill="#FFFFFF" stroke="#312E81" stroke-width="0.8"/>
+          <text x="180" y="285" fill="#312E81" font-size="11.5" font-weight="800" text-anchor="middle">Updates output</text>
+        </g>
+
+        <!-- Cadre 3: Output -->
+        <g transform="translate(18, 310)">
+          <rect x="0" y="0" width="324" height="85" rx="8" fill="#6EE7B7" stroke="#047857" stroke-width="1.5"/>
+          <rect x="0" y="0" width="324" height="24" rx="8" fill="#047857"/>
+          <text x="10" y="16" fill="#FFFFFF" font-size="14" font-weight="800">Output (Data Emission)</text>
+          <text x="10" y="44" fill="#064E3B" font-size="13" font-weight="700">• Formats raw sensor data to `IOType`</text>
+          <text x="10" y="66" fill="#064E3B" font-size="13" font-weight="700">• Pushes data to downstream modules</text>
+        </g>
+      </g>
+
+      <!-- ==================== MODULE B: PROCESSOR NODE (X=425) ==================== -->
+      <g transform="translate(425, 45)">
+        <rect x="0" y="0" width="390" height="560" rx="12" fill="#FDE68A" stroke="#D97706" stroke-width="2"/>
+        <path d="M 0 12 Q 0 0 12 0 L 240 0 L 255 24 L 0 24 Z" fill="#D97706"/>
+        <text x="14" y="16" fill="#FFFFFF" font-size="14" font-weight="800">MODULE B (Processor Node)</text>
+
+        <!-- Cadre 1: Input -->
+        <g transform="translate(18, 40)">
+          <rect x="0" y="0" width="354" height="80" rx="8" fill="#7DD3FC" stroke="#0284C7" stroke-width="1.5"/>
+          <rect x="0" y="0" width="354" height="24" rx="8" fill="#0284C7"/>
+          <text x="10" y="16" fill="#FFFFFF" font-size="14" font-weight="800">Input</text>
+          <text x="10" y="44" fill="#0F172A" font-size="13" font-weight="700">• Triggers 'input_cb' method with user-defined logic</text>
+          <text x="10" y="66" fill="#0F172A" font-size="13" font-weight="700">• User defined IOTypes (FRAME, SAMPLE, DATALIST...)</text>
+        </g>
+
+        <!-- Cadre 2: Processing Core (Height 264px) -->
+        <g transform="translate(18, 175)">
+          <!-- 1. Background Fill -->
+          <rect x="0" y="0" width="354" height="264" rx="8" fill="#FBBF24" stroke="#B45309" stroke-width="1.8"/>
+
+          <!-- 2. Blue & Indigo Arrows & Badges from Input -->
+          <g>
+            <!-- Left Arrow (data) into _in_queue -->
+            <path d="M 90.5 -55 L 90.5 39" fill="none" stroke="#0284C7" stroke-width="2.5" marker-end="url(#arrow-blue)"/>
+            <g transform="translate(1, -46)">
+              <rect x="0" y="0" width="178" height="38" rx="5" fill="#E0F2FE" stroke="#0284C7" stroke-width="1.2" filter="url(#shadow)"/>
+              <text x="89" y="14" fill="#0369A1" font-size="11.5" font-weight="800" text-anchor="middle">submit(data)</text>
+              <text x="89" y="28" fill="#0284C7" font-size="10" font-weight="700" text-anchor="middle">block if full, drop_oldest, drop_new</text>
+            </g>
+
+            <!-- Right Arrow (control) into _ctrl_queue -->
+            <path d="M 263.5 -55 L 263.5 39" fill="none" stroke="#312E81" stroke-width="2.5" marker-end="url(#arrow-indigo)"/>
+            <g transform="translate(183, -46)">
+              <rect x="0" y="0" width="161" height="38" rx="5" fill="#EEF2FF" stroke="#312E81" stroke-width="1.2" filter="url(#shadow)"/>
+              <text x="80.5" y="14" fill="#312E81" font-size="11.5" font-weight="800" text-anchor="middle">update_params(**kw)</text>
+              <text x="80.5" y="28" fill="#4338CA" font-size="10" font-weight="700" text-anchor="middle">Control commands</text>
+            </g>
+          </g>
+
+          <!-- 3. Sub-Box 1A: _in_queue (Left) -->
+          <g transform="translate(10, 44)">
+            <rect x="0" y="0" width="161" height="42" rx="5" fill="#E0F2FE" stroke="#0284C7" stroke-width="1.2"/>
+            <text x="10" y="16" fill="#0284C7" font-size="12.5" font-weight="800">`_in_queue`</text>
+            <text x="10" y="31" fill="#0F172A" font-size="10.5" font-weight="600">Buffers input data stream</text>
+          </g>
+
+          <!-- Sub-Box 1B: _ctrl_queue (Right) -->
+          <g transform="translate(183, 44)">
+            <rect x="0" y="0" width="161" height="42" rx="5" fill="#EEF2FF" stroke="#312E81" stroke-width="1.2"/>
+            <text x="10" y="16" fill="#312E81" font-size="12.5" font-weight="800">`_ctrl_queue`</text>
+            <text x="10" y="31" fill="#0F172A" font-size="10.5" font-weight="600">Control &amp; param updates</text>
+          </g>
+
+          <!-- Internal Arrows from queues to _process_data with generous gap -->
+          <g>
+            <path d="M 90.5 86 L 90.5 127" fill="none" stroke="#0284C7" stroke-width="2.2" marker-end="url(#arrow-blue)"/>
+            <rect x="50" y="94" width="81" height="18" rx="3" fill="#FFFFFF" stroke="#0284C7" stroke-width="1"/>
+            <text x="90.5" y="107" fill="#0284C7" font-size="11" font-weight="800" text-anchor="middle">data payload</text>
+
+            <path d="M 263.5 86 L 263.5 127" fill="none" stroke="#312E81" stroke-width="2.2" marker-end="url(#arrow-indigo)"/>
+            <rect x="198" y="94" width="131" height="18" rx="3" fill="#FFFFFF" stroke="#312E81" stroke-width="1"/>
+            <text x="263.5" y="107" fill="#312E81" font-size="11" font-weight="800" text-anchor="middle">Updates params dict</text>
+          </g>
+
+          <!-- Sub-Box 2: process_data -->
+          <g transform="translate(10, 132)">
+            <rect x="0" y="0" width="334" height="56" rx="6" fill="#78350F" stroke="#B45309" stroke-width="1.5"/>
+            <text x="12" y="18" fill="#FDE68A" font-size="13" font-weight="800">`_process_data(data, params)`</text>
+            <text x="12" y="34" fill="#FEF3C7" font-size="12" font-weight="600">• Heavy analytics, CPU/GPU processing</text>
+            <text x="12" y="48" fill="#FEF3C7" font-size="11" font-weight="600">• Runs in isolated subprocess (no GIL lock on UI)</text>
+          </g>
+
+          <!-- Arrow process_data -> _out_queue -->
+          <path d="M 177 188 L 177 209" fill="none" stroke="#D97706" stroke-width="2.2" marker-end="url(#arrow-amber)"/>
+
+          <!-- Sub-Box 3: _out_queue -->
+          <g transform="translate(10, 214)">
+            <rect x="0" y="0" width="334" height="38" rx="5" fill="#FEF3C7" stroke="#D97706" stroke-width="1.2"/>
+            <text x="12" y="18" fill="#B45309" font-size="13" font-weight="800">`_out_queue`</text>
+            <text x="12" y="30" fill="#0F172A" font-size="11" font-weight="600">Buffers processed results ready for Output</text>
+          </g>
+
+          <!-- 4. Orange Header -->
+          <rect x="0" y="0" width="354" height="24" rx="8" fill="#D97706"/>
+          <text x="10" y="16" fill="#FFFFFF" font-size="14" font-weight="800">Processing (Subprocess Worker)</text>
+        </g>
+
+        <!-- Module B Internal Arrow 2 (Out Queue -> Cadre Output) -->
+        <path d="M 195 427 L 195 449" fill="none" stroke="#D97706" stroke-width="2.2" marker-end="url(#arrow-amber)"/>
+
+        <!-- Cadre 3: Output -->
+        <g transform="translate(18, 455)">
+          <rect x="0" y="0" width="354" height="85" rx="8" fill="#6EE7B7" stroke="#047857" stroke-width="1.5"/>
+          <rect x="0" y="0" width="354" height="24" rx="8" fill="#047857"/>
+          <text x="10" y="16" fill="#FFFFFF" font-size="14" font-weight="800">Output (Data Emission)</text>
+          <text x="10" y="44" fill="#064E3B" font-size="13" font-weight="700">• Formats processed result data to strict `IOType`</text>
+          <text x="10" y="68" fill="#064E3B" font-size="13" font-weight="700">• Pushes data to all downstream connected modules</text>
+        </g>
+      </g>
+
+      <!-- ORTHOGONAL GREEN WIRE A -> B WITH STANDARDIZED IO BADGE AND BACKPRESSURE SUB-CARD -->
+      <g>
+        <path d="M 205 440 L 205 490 L 405 490 L 405 125 L 427 125" fill="none" stroke="#047857" stroke-width="3.5" stroke-dasharray="8 4" stroke-linejoin="round"/>
+        <polygon points="427,114 443,125 427,136" fill="#047857"/>
+
+        <!-- Standardized IO Badge A -> B -->
+        <g transform="translate(127.5, 473)">
+          <rect x="0" y="0" width="155" height="34" rx="6" fill="#10B981" stroke="#047857" stroke-width="1.5" filter="url(#shadow)"/>
+          <text x="77.5" y="15" fill="#FFFFFF" font-size="12" font-weight="800" text-anchor="middle">Standardized IO</text>
+          <text x="77.5" y="27" fill="#FFFFFF" font-size="11.5" font-weight="700" text-anchor="middle">A ➔ B (`IOTypes` Match)</text>
+
+          <!-- Backpressure Sub-Card below connection badge -->
+          <rect x="-70" y="40" width="295" height="68" rx="6" fill="#FFFFFF" stroke="#059669" stroke-width="1.5" filter="url(#shadow)"/>
+          <text x="-60" y="55" fill="#047857" font-size="12" font-weight="800">Backpressure / Flow Control:</text>
+          <text x="-60" y="70" fill="#0F172A" font-size="11" font-weight="600">• Module A checks downstream 'is_ready()'</text>
+          <text x="-60" y="83" fill="#0F172A" font-size="11" font-weight="600">• Readiness depends on user-defined '_in_queue' size</text>
+          <text x="-60" y="96" fill="#0F172A" font-size="11" font-weight="600">• Waits for queue space before next emit</text>
+        </g>
+      </g>
+
+      <!-- ==================== MODULE C: VISUALIZATION NODE (X=855) ==================== -->
+      <g transform="translate(855, 45)">
+        <rect x="0" y="0" width="400" height="535" rx="12" fill="#C7D2FE" stroke="#4338CA" stroke-width="2"/>
+        <path d="M 0 12 Q 0 0 12 0 L 270 0 L 285 24 L 0 24 Z" fill="#4338CA"/>
+        <text x="14" y="16" fill="#FFFFFF" font-size="15" font-weight="800">MODULE C (Visualization Node)</text>
+
+        <!-- Cadre 1: Input -->
+        <g transform="translate(18, 40)">
+          <rect x="0" y="0" width="364" height="80" rx="8" fill="#7DD3FC" stroke="#0284C7" stroke-width="1.5"/>
+          <rect x="0" y="0" width="364" height="24" rx="8" fill="#0284C7"/>
+          <text x="10" y="16" fill="#FFFFFF" font-size="14" font-weight="800">Input</text>
+          <text x="10" y="44" fill="#0F172A" font-size="13" font-weight="700">• Triggers 'input_cb' method with user-defined logic</text>
+          <text x="10" y="66" fill="#0F172A" font-size="13" font-weight="700">• User defined IOTypes (e.g. SAMPLE)</text>
+        </g>
+
+        <!-- Cadre 2: GUI Element -->
+        <g transform="translate(18, 170)">
+          <rect x="0" y="0" width="364" height="180" rx="8" fill="#A5B4FC" stroke="#312E81" stroke-width="1.5"/>
+          <rect x="0" y="0" width="364" height="24" rx="8" fill="#312E81"/>
+          <text x="10" y="16" fill="#FFFFFF" font-size="14" font-weight="800">GUI Element (DearPyGui Binding)</text>
+          <text x="10" y="44" fill="#1E1B4B" font-size="13" font-weight="700">• Builds UI elements (lineplot)</text>
+          <text x="10" y="64" fill="#1E1B4B" font-size="13" font-weight="700">• Stores samples</text>
+
+          <!-- UI Interaction Logic Sub-Box -->
+          <rect x="8" y="80" width="348" height="88" rx="6" fill="#EEF2FF" stroke="#312E81" stroke-width="1.2"/>
+          <text x="14" y="96" fill="#312E81" font-size="13" font-weight="800">UI Interaction Logic:</text>
+          <text x="14" y="114" fill="#0F172A" font-size="12" font-weight="600">• Renders real-time measurement plot</text>
+          <text x="14" y="132" fill="#0F172A" font-size="12" font-weight="600">• Shows / hides series, toggles &amp; resizes axes interactively</text>
+          <text x="14" y="150" fill="#0F172A" font-size="12" font-weight="600">• Selects data range &amp; exports selection</text>
+        </g>
+
+        <!-- Cadre 3: Output -->
+        <g transform="translate(18, 395)">
+          <rect x="0" y="0" width="364" height="120" rx="8" fill="#6EE7B7" stroke="#047857" stroke-width="1.5"/>
+          <rect x="0" y="0" width="364" height="24" rx="8" fill="#047857"/>
+          <text x="10" y="16" fill="#FFFFFF" font-size="14" font-weight="800">Output (Data Emission)</text>
+          <text x="10" y="44" fill="#064E3B" font-size="13" font-weight="700">• Formats plot data to strict `IOType`</text>
+          <text x="10" y="66" fill="#064E3B" font-size="13" font-weight="700">• Pushes data to all downstream connected modules</text>
+          <text x="10" y="88" fill="#064E3B" font-size="13" font-weight="700">• Exports CSV file or sends data to clipboard</text>
+        </g>
+
+        <!-- Module C Internal Arrows -->
+        <path d="M 200 120 L 200 164" fill="none" stroke="#0284C7" stroke-width="2.2" marker-end="url(#arrow-blue)"/>
+        <rect x="130" y="129" width="140" height="18" rx="3" fill="#FFFFFF" stroke="#0284C7" stroke-width="0.8"/>
+        <text x="200" y="142" fill="#0369A1" font-size="11.5" font-weight="800" text-anchor="middle">Input updates UI</text>
+
+        <!-- Updates Output Arrow starting directly from bottom of UI Interaction Logic sub-box (Y=338) -->
+        <path d="M 200 338 L 200 389" fill="none" stroke="#312E81" stroke-width="2.2" marker-end="url(#arrow-indigo)"/>
+        <rect x="140" y="355" width="120" height="18" rx="3" fill="#FFFFFF" stroke="#312E81" stroke-width="0.8"/>
+        <text x="200" y="368" fill="#312E81" font-size="11.5" font-weight="800" text-anchor="middle">Updates output</text>
+      </g>
+
+      <!-- ORTHOGONAL GREEN WIRE B -> C -->
+      <g>
+        <path d="M 620 585 L 620 640 L 835 640 L 835 125 L 857 125" fill="none" stroke="#047857" stroke-width="3.5" stroke-dasharray="8 4" stroke-linejoin="round"/>
+        <polygon points="857,114 873,125 857,136" fill="#047857"/>
+
+        <!-- Standardized IO Badge B -> C -->
+        <g transform="translate(525, 621)">
+          <rect x="0" y="0" width="195" height="38" rx="6" fill="#10B981" stroke="#047857" stroke-width="1.5" filter="url(#shadow)"/>
+          <text x="97.5" y="16" fill="#FFFFFF" font-size="12" font-weight="800" text-anchor="middle">Standardized IO</text>
+          <text x="97.5" y="29" fill="#FFFFFF" font-size="11.5" font-weight="700" text-anchor="middle">B ➔ C (`IOType.SAMPLE` Match)</text>
+        </g>
+      </g>
+    </g>
+
+
+    <!-- ==================== BOTTOM BLOCK: MAIN GUI VIEWPORT (MODULE A & MODULE C WINDOWS) ==================== -->
+    <g transform="translate(65, 745)">
+      <!-- GUI Outer Box -->
+      <rect x="0" y="0" width="1280" height="440" rx="14" fill="#F472B6" fill-opacity="0.3" stroke="#DB2777" stroke-width="2.5" filter="url(#shadow)"/>
+      <path d="M 0 14 Q 0 0 14 0 L 390 0 L 390 30 L 0 30 Z" fill="#DB2777"/>
+      <text x="16" y="20" fill="#FFFFFF" font-size="17" font-weight="800">MAIN GUI (Rendered DearPyGui Viewport)</text>
+
+      <!-- RENDERED WINDOW A: SENSOR CONTROLS (MODULE A) -->
+      <g transform="translate(30, 40)">
+        <rect x="0" y="0" width="600" height="380" rx="10" fill="#E0F2FE" stroke="#0284C7" stroke-width="2" filter="url(#shadow)"/>
+        <path d="M 0 10 Q 0 0 10 0 L 590 0 Q 600 0 600 10 L 600 28 L 0 28 Z" fill="#0284C7"/>
+        <text x="14" y="19" fill="#FFFFFF" font-size="15" font-weight="800">Module A UI [Sensor]</text>
+        <circle cx="560" cy="14" r="5" fill="#EF4444"/>
+        <circle cx="577" cy="14" r="5" fill="#10B981"/>
+
+        <!-- Slider Setting A -->
+        <text x="20" y="55" fill="#0F172A" font-size="14" font-weight="700">Setting A :</text>
+        <rect x="130" y="44" width="380" height="14" rx="7" fill="#CBD5E1" stroke="#94A3B8" stroke-width="1"/>
+        <rect x="130" y="44" width="245" height="14" rx="7" fill="#0284C7"/>
+        <circle cx="375" cy="51" r="8.5" fill="#0284C7" stroke="#FFFFFF" stroke-width="1.8"/>
+        <text x="525" y="55" fill="#0284C7" font-size="14" font-weight="800">65 %</text>
+
+        <!-- Slider Setting B -->
+        <text x="20" y="90" fill="#0F172A" font-size="14" font-weight="700">Setting B :</text>
+        <rect x="130" y="79" width="380" height="14" rx="7" fill="#CBD5E1" stroke="#94A3B8" stroke-width="1"/>
+        <rect x="130" y="79" width="155" height="14" rx="7" fill="#4F46E5"/>
+        <circle cx="285" cy="86" r="8.5" fill="#4F46E5" stroke="#FFFFFF" stroke-width="1.8"/>
+        <text x="525" y="90" fill="#4338CA" font-size="14" font-weight="800">0.40</text>
+
+        <!-- Radio Buttons Group -->
+        <g transform="translate(20, 115)">
+          <text x="0" y="15" fill="#0F172A" font-size="14" font-weight="700">Mode :</text>
+          
+          <g transform="translate(75, 2)">
+            <circle cx="8" cy="10" r="7" fill="#FFFFFF" stroke="#64748B" stroke-width="1.5"/>
+            <text x="20" y="14" fill="#334155" font-size="13" font-weight="600">Option A</text>
+          </g>
+
+          <g transform="translate(180, 2)">
+            <circle cx="8" cy="10" r="7" fill="#0284C7" stroke="#0284C7" stroke-width="2"/>
+            <circle cx="8" cy="10" r="3" fill="#FFFFFF"/>
+            <text x="20" y="14" fill="#0284C7" font-size="13" font-weight="800">Option B</text>
+          </g>
+
+          <g transform="translate(290, 2)">
+            <circle cx="8" cy="10" r="7" fill="#FFFFFF" stroke="#64748B" stroke-width="1.5"/>
+            <text x="20" y="14" fill="#334155" font-size="13" font-weight="600">Option C</text>
+          </g>
+
+          <g transform="translate(400, 2)">
+            <circle cx="8" cy="10" r="7" fill="#FFFFFF" stroke="#64748B" stroke-width="1.5"/>
+            <text x="20" y="14" fill="#334155" font-size="13" font-weight="600">Option D</text>
+          </g>
+        </g>
+
+        <!-- Action Buttons Row -->
+        <g transform="translate(20, 150)">
+          <rect x="0" y="0" width="265" height="34" rx="6" fill="#059669"/>
+          <text x="132" y="21" fill="#FFFFFF" font-size="15" font-weight="800" text-anchor="middle">▶ Start</text>
+
+          <rect x="290" y="0" width="265" height="34" rx="6" fill="#DC2626"/>
+          <text x="422" y="21" fill="#FFFFFF" font-size="15" font-weight="800" text-anchor="middle">⏹ Stop</text>
+        </g>
+
+        <!-- Cadre Debug Information (Dark Slate IDE Console Box for ultra-clear logs) -->
+        <g transform="translate(20, 198)">
+          <rect x="0" y="0" width="555" height="165" rx="7" fill="#0F172A" stroke="#334155" stroke-width="1.2"/>
+          <path d="M 0 7 Q 0 0 7 0 L 548 0 Q 555 0 555 7 L 555 22 L 0 22 Z" fill="#1E293B"/>
+          <text x="10" y="15" fill="#E2E8F0" font-size="13" font-weight="800">Debug...</text>
+
+          <g transform="translate(12, 38)">
+            <text x="0" y="0" fill="#38BDF8" font-family="'Consolas', monospace" font-size="10.5" font-weight="600">[INFO] Sensor device initialized on COM3 (Baud: 115200)</text>
+            <text x="0" y="18" fill="#34D399" font-family="'Consolas', monospace" font-size="10.5" font-weight="600">[INFO] Mode set to Option B (Radio active)</text>
+            <text x="0" y="36" fill="#FBBF24" font-family="'Consolas', monospace" font-size="10.5" font-weight="600">[DEBUG] Setting A: 65% | Setting B: 0.40</text>
+            <text x="0" y="54" fill="#E2E8F0" font-family="'Consolas', monospace" font-size="10.5" font-weight="600">[DEBUG] Sampling stream active: 100 Hz</text>
+            <text x="0" y="72" fill="#E2E8F0" font-family="'Consolas', monospace" font-size="10.5" font-weight="600">[DEBUG] Packet CRC validation: 0 errors / 5400 frames</text>
+            <text x="0" y="90" fill="#94A3B8" font-family="'Consolas', monospace" font-size="10.5" font-weight="600">[TRACE] Pushing raw data to Module B Processor Input...</text>
+            <text x="0" y="108" fill="#A5B4FC" font-family="'Consolas', monospace" font-size="10.5" font-weight="600">[INFO] Stream running smoothly (Module A Sensor UI)</text>
+          </g>
+        </g>
+      </g>
+
+      <!-- RENDERED WINDOW C: VISUALIZATION LINEPLOT (MODULE C) -->
+      <g transform="translate(650, 40)">
+        <rect x="0" y="0" width="600" height="380" rx="10" fill="#EEF2FF" stroke="#4338CA" stroke-width="2" filter="url(#shadow)"/>
+        <path d="M 0 10 Q 0 0 10 0 L 590 0 Q 600 0 600 10 L 600 28 L 0 28 Z" fill="#4338CA"/>
+        <text x="14" y="19" fill="#FFFFFF" font-size="15" font-weight="800">Module C UI [Lineplot]</text>
+        <circle cx="560" cy="14" r="5" fill="#EF4444"/>
+        <circle cx="577" cy="14" r="5" fill="#10B981"/>
+
+        <!-- Plot Canvas Container -->
+        <g transform="translate(18, 38)">
+          <rect x="0" y="0" width="564" height="325" rx="8" fill="#E2E8F0" stroke="#475569" stroke-width="1.5"/>
+          
+          <!-- Plot Gridlines -->
+          <g stroke="#CBD5E1" stroke-width="0.9" stroke-dasharray="4 4">
+            <line x1="50" y1="45" x2="540" y2="45"/>
+            <line x1="50" y1="95" x2="540" y2="95"/>
+            <line x1="50" y1="145" x2="540" y2="145"/>
+            <line x1="50" y1="195" x2="540" y2="195"/>
+            <line x1="50" y1="245" x2="540" y2="245"/>
+
+            <line x1="120" y1="20" x2="120" y2="280"/>
+            <line x1="190" y1="20" x2="190" y2="280"/>
+            <line x1="260" y1="20" x2="260" y2="280"/>
+            <line x1="330" y1="20" x2="330" y2="280"/>
+            <line x1="400" y1="20" x2="400" y2="280"/>
+            <line x1="470" y1="20" x2="470" y2="280"/>
+          </g>
+
+          <!-- Axes Solid Lines -->
+          <line x1="50" y1="20" x2="50" y2="280" stroke="#1E293B" stroke-width="2"/>
+          <line x1="50" y1="280" x2="540" y2="280" stroke="#1E293B" stroke-width="2"/>
+
+          <!-- Axis Labels -->
+          <text x="42" y="48" fill="#0F172A" font-size="12.5" font-weight="700" text-anchor="end">100</text>
+          <text x="42" y="98" fill="#0F172A" font-size="12.5" font-weight="700" text-anchor="end">75</text>
+          <text x="42" y="148" fill="#0F172A" font-size="12.5" font-weight="700" text-anchor="end">50</text>
+          <text x="42" y="198" fill="#0F172A" font-size="12.5" font-weight="700" text-anchor="end">25</text>
+          <text x="42" y="283" fill="#0F172A" font-size="12.5" font-weight="700" text-anchor="end">0</text>
+
+          <text x="50" y="296" fill="#0F172A" font-size="12.5" font-weight="700" text-anchor="middle">#1</text>
+          <text x="120" y="296" fill="#0F172A" font-size="12.5" font-weight="700" text-anchor="middle">#2</text>
+          <text x="190" y="296" fill="#0F172A" font-size="12.5" font-weight="700" text-anchor="middle">#3</text>
+          <text x="260" y="296" fill="#0F172A" font-size="12.5" font-weight="700" text-anchor="middle">#4</text>
+          <text x="330" y="296" fill="#0F172A" font-size="12.5" font-weight="700" text-anchor="middle">#5</text>
+          <text x="400" y="296" fill="#0F172A" font-size="12.5" font-weight="700" text-anchor="middle">#6</text>
+          <text x="470" y="296" fill="#0F172A" font-size="12.5" font-weight="700" text-anchor="middle">#7</text>
+          <text x="540" y="296" fill="#0F172A" font-size="12.5" font-weight="700" text-anchor="middle">#8</text>
+
+          <!-- Sample A (Cyan line + Circular Markers — Ascending Trend) -->
+          <path d="M 50 241 L 120 207 L 190 171 L 260 137 L 330 103 L 400 72 L 470 51 L 540 30" fill="none" stroke="#0284C7" stroke-width="3" stroke-linejoin="round"/>
+          <circle cx="50" cy="241" r="4.5" fill="#0284C7" stroke="#FFFFFF" stroke-width="1.5"/>
+          <circle cx="120" cy="207" r="4.5" fill="#0284C7" stroke="#FFFFFF" stroke-width="1.5"/>
+          <circle cx="190" cy="171" r="4.5" fill="#0284C7" stroke="#FFFFFF" stroke-width="1.5"/>
+          <circle cx="260" cy="137" r="4.5" fill="#0284C7" stroke="#FFFFFF" stroke-width="1.5"/>
+          <circle cx="330" cy="103" r="4.5" fill="#0284C7" stroke="#FFFFFF" stroke-width="1.5"/>
+          <circle cx="400" cy="72" r="4.5" fill="#0284C7" stroke="#FFFFFF" stroke-width="1.5"/>
+          <circle cx="470" cy="51" r="4.5" fill="#0284C7" stroke="#FFFFFF" stroke-width="1.5"/>
+          <circle cx="540" cy="30" r="4.5" fill="#0284C7" stroke="#FFFFFF" stroke-width="1.5"/>
+
+          <!-- Sample B (Amber line + Square Markers — Flat baseline around ~30) -->
+          <path d="M 50 207 L 120 194 L 190 205 L 260 197 L 330 210 L 400 191 L 470 202 L 540 205" fill="none" stroke="#D97706" stroke-width="2.8" stroke-linejoin="round"/>
+          <rect x="46" y="203" width="8" height="8" rx="1" fill="#F59E0B" stroke="#FFFFFF" stroke-width="1.2"/>
+          <rect x="116" y="190" width="8" height="8" rx="1" fill="#F59E0B" stroke="#FFFFFF" stroke-width="1.2"/>
+          <rect x="186" y="201" width="8" height="8" rx="1" fill="#F59E0B" stroke="#FFFFFF" stroke-width="1.2"/>
+          <rect x="256" y="193" width="8" height="8" rx="1" fill="#F59E0B" stroke="#FFFFFF" stroke-width="1.2"/>
+          <rect x="326" y="206" width="8" height="8" rx="1" fill="#F59E0B" stroke="#FFFFFF" stroke-width="1.2"/>
+          <rect x="396" y="187" width="8" height="8" rx="1" fill="#F59E0B" stroke="#FFFFFF" stroke-width="1.2"/>
+          <rect x="466" y="198" width="8" height="8" rx="1" fill="#F59E0B" stroke="#FFFFFF" stroke-width="1.2"/>
+          <rect x="536" y="201" width="8" height="8" rx="1" fill="#F59E0B" stroke="#FFFFFF" stroke-width="1.2"/>
+
+          <!-- Legend Badges -->
+          <g transform="translate(335, 10)">
+            <rect x="0" y="0" width="88" height="22" rx="4" fill="#FFFFFF" stroke="#0284C7" stroke-width="1"/>
+            <circle cx="14" cy="11" r="3.5" fill="#0284C7"/>
+            <line x1="7" y1="11" x2="21" y2="11" stroke="#0284C7" stroke-width="2"/>
+            <text x="28" y="14" fill="#0F172A" font-size="12" font-weight="700">Sample A</text>
+
+            <rect x="98" y="0" width="88" height="22" rx="4" fill="#FFFFFF" stroke="#D97706" stroke-width="1"/>
+            <rect x="105" y="7" width="7" height="7" rx="1" fill="#F59E0B"/>
+            <line x1="102" y1="11" x2="115" y2="11" stroke="#D97706" stroke-width="2"/>
+            <text x="118" y="14" fill="#0F172A" font-size="12" font-weight="700">Sample B</text>
+          </g>
+        </g>
+      </g>
+    </g>
+
+    <!-- ==================== CLEAN 3-SEGMENT ORTHOGONAL DASHED ARROWS ==================== -->
+    <!-- Arrow A -->
+    <path d="M 108 272 L 30 272 L 30 975 L 75 975" fill="none" stroke="#4338CA" stroke-width="4.5" stroke-dasharray="12 6" stroke-linejoin="round"/>
+    <polygon points="75,961 95,975 75,989" fill="#4338CA"/>
+
+    <!-- Arrow C -->
+    <path d="M 1302 355 L 1380 355 L 1380 975 L 1335 975" fill="none" stroke="#4338CA" stroke-width="4.5" stroke-dasharray="12 6" stroke-linejoin="round"/>
+    <polygon points="1335,961 1315,975 1335,989" fill="#4338CA"/>
+
+  </g>
+</svg>
+

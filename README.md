@@ -7,7 +7,7 @@
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![GUI](https://img.shields.io/badge/GUI-DearPyGui-ff69b4.svg)](https://github.com/hoffstadt/DearPyGui)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Documentation](https://img.shields.io/badge/docs-MkDocs-blueviolet.svg)](https://gervaiseb.github.io/Pipeline_creator/)
+[![Documentation](https://img.shields.io/badge/docs-MkDocs-blueviolet.svg)](https://n3odym3.github.io/Pipeline_creator/)
 
 </div>
 
@@ -155,7 +155,7 @@ Pipeline Creator operates across four interconnected core layers:
 
 ```bash
 # Clone the repository
-git clone https://github.com/gervaiseb/Pipeline_creator.git
+git clone https://github.com/n3odym3/Pipeline_creator.git
 cd Pipeline_creator
 
 # Install dependencies
@@ -174,7 +174,7 @@ python main.py
 
 ## 📖 Documentation
 
-For full guides, module references, and developer tutorials, check out the comprehensive [Documentation Wiki](https://gervaiseb.github.io/Pipeline_creator/).
+For full guides, module references, and developer tutorials, check out the comprehensive [Documentation Wiki](https://n3odym3.github.io/Pipeline_creator/).
 
 ---
 
