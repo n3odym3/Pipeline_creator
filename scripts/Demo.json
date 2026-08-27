@@ -1,0 +1,15 @@
+{
+    "name": "Untitled Automation",
+    "steps": [
+        {
+            "action": "fullscreen",
+            "seconds": 1.0,
+            "enabled": true
+        },
+        {
+            "action": "load_pipeline",
+            "seconds": 1.0,
+            "path": "/pipelines/Demo.json"
+        }
+    ]
+}

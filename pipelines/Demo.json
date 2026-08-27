@@ -1,0 +1,134 @@
+{
+    "is_relative": true,
+    "windows": [
+        {
+            "module": "Basic.Hello_world_win",
+            "class_name": "HelloWorld_win",
+            "uuid": "462",
+            "pos": [
+                0.3125,
+                2.8127313101406366
+            ],
+            "size": [
+                6.1328125,
+                7.401924500370097
+            ],
+            "visible": true,
+            "params": {
+                "label": "Hello World"
+            },
+            "node_pos": [
+                46,
+                28
+            ]
+        },
+        {
+            "module": "Basic.text_viewer_win",
+            "class_name": "Text_viewer_win",
+            "uuid": "472",
+            "pos": [
+                6.5625,
+                2.7387120651369354
+            ],
+            "size": [
+                17.6171875,
+                27.239082161361956
+            ],
+            "visible": true,
+            "params": {
+                "label": "Text Viewer",
+                "content": "(No content)"
+            },
+            "node_pos": [
+                212,
+                30
+            ]
+        },
+        {
+            "module": "Basic.test_sample_win",
+            "class_name": "TestSample_win",
+            "uuid": "481",
+            "pos": [
+                0.2734375,
+                30.273871206513693
+            ],
+            "size": [
+                6.25,
+                7.401924500370097
+            ],
+            "visible": true,
+            "params": {
+                "label": "Test Sample"
+            },
+            "node_pos": [
+                47,
+                161
+            ]
+        },
+        {
+            "module": "Plot.sample_container_win",
+            "class_name": "Sample_container_win",
+            "uuid": "491",
+            "pos": [
+                6.640625,
+                30.199851961509992
+            ],
+            "size": [
+                17.5390625,
+                69.43005181347151
+            ],
+            "visible": true,
+            "params": {
+                "label": "Sample Container",
+                "export_path": "",
+                "duplicate": "append"
+            },
+            "node_pos": [
+                204,
+                159
+            ]
+        },
+        {
+            "module": "Plot.lineplot_win",
+            "class_name": "Lineplot_win",
+            "uuid": "521",
+            "pos": [
+                24.3359375,
+                30.199851961509992
+            ],
+            "size": [
+                75.625,
+                69.5780903034789
+            ],
+            "visible": true,
+            "params": {
+                "label": "Lineplot",
+                "autoscale": true,
+                "smooth": false,
+                "smooth_window": 5,
+                "log_x": false
+            },
+            "node_pos": [
+                420,
+                159
+            ]
+        }
+    ],
+    "connections": [
+        {
+            "from": "462",
+            "output": "Out",
+            "to": "472"
+        },
+        {
+            "from": "481",
+            "output": "Data",
+            "to": "491"
+        },
+        {
+            "from": "491",
+            "output": "Data",
+            "to": "521"
+        }
+    ]
+}

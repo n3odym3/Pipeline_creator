@@ -1,0 +1,95 @@
+site_name: Pipeline Creator Wiki
+site_description: Complete documentation for Pipeline Creator — a modular node-based GUI toolkit for machine control and data analysis pipelines.
+site_author: Pipeline Creator Team
+
+theme:
+  name: material
+  logo: assets/Icon.png
+  favicon: assets/favicon.ico
+  palette:
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+  features:
+    - navigation.tabs
+    - navigation.top
+    - content.code.copy
+    - toc.integrate
+
+extra_css:
+  - stylesheets/extra.css
+
+markdown_extensions:
+  - attr_list
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - toc:
+      permalink: true
+  - tables
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [.]
+
+nav:
+  - Home: index.md
+
+  - User Guide:
+      - Main Window: main_window.md
+      - Node Editor: node_editor_guide.md
+      - Fusion Manager: fusion_manager.md
+      - Tutorial Manager: tutorial_manager.md
+      - Module Manager: module_manager.md
+      - Automation & Login: automation_login.md
+      - Configuration Reference: config_reference.md
+
+  # [DYNAMIC_MODULES_START]
+  - Modules Documentation:
+      - Basic:
+          - HelloWorld_win: modules/Basic/HelloWorld_win.md
+          - cmd_sender_win: modules/Basic/cmd_sender_win.md
+          - csv_reader_win: modules/Basic/csv_reader_win.md
+          - test_sample_win: modules/Basic/test_sample_win.md
+          - text_viewer_win: modules/Basic/text_viewer_win.md
+      - Plot:
+          - lineplot_win: modules/Plot/lineplot_win.md
+          - sample_container_win: modules/Plot/sample_container_win.md
+  # [DYNAMIC_MODULES_END]
+
+  - Architecture:
+      - Overview & Boot Sequence: architecture.md
+      - Core vs Dynamic Modules: core_vs_dynamic.md
+
+  - Developer Guide:
+      - Overview & Standards: developer_guide.md
+      - Creating a UI Node: dev_ui_node.md
+      - Creating a Processor Node: dev_processor_node.md
+      - Creating a Theme: dev_theme.md
+      - Managing Tutorials: dev_tutorial.md
+      - Programmatic Layout: dev_programmatic.md
+      - Compile Program: dev_compile.md
+
+  - API Reference: reference.md

@@ -1,0 +1,136 @@
+{
+    "General": {
+        "app_name": {
+            "description": "The name of the application displayed in the window title.",
+            "values": null
+        },
+        "ui_scale_multiplier": {
+            "description": "Global scale multiplier for the UI font and window dimensions.",
+            "values": null
+        },
+        "preload_modules": {
+            "description": "If enabled, preloads all available modules at startup.",
+            "values": [true, false]
+        },
+        "skip_import_validation": {
+            "description": "If enabled, skips import validation during module loading.",
+            "values": [true, false]
+        }
+    },
+    "Splash": {
+        "enabled": {
+            "description": "Show or hide the splash screen on startup.",
+            "values": [true, false]
+        },
+        "image": {
+            "description": "Path to the image displayed on the splash screen.",
+            "values": "file_browser"
+        },
+        "size": {
+            "description": "Size in pixels of the splash screen window.",
+            "values": null
+        },
+        "thickness": {
+            "description": "Thickness of the splash screen border.",
+            "values": null
+        }
+    },
+    "Icon": {
+        "path": {
+            "description": "Path to the application window icon.",
+            "values": "file_browser"
+        }
+    },
+    "Login": {
+        "enabled": {
+            "description": "Request authentication/profile selection at application startup.",
+            "values": [true, false]
+        },
+        "default_mode": {
+            "description": "Default profile mode proposed during login.",
+            "values": ["user", "advanced", "dev"]
+        }
+    },
+    "UI": {
+        "theme_name": {
+            "description": "Visual theme loaded at application startup.",
+            "values": ["DEFAULT", "CARBON", "CLASSIC", "GREY", "NAVY", "EMERALD", "AMBER"]
+        },
+        "colorblind_type": {
+            "description": "Colorblind palette correction type.",
+            "values": ["none", "universal", "protanopia", "deuteranopia", "tritanopia"]
+        },
+        "mascot": {
+            "description": "Show the assistant mascot on the UI.",
+            "values": [true, false]
+        }
+    },
+    "Debug": {
+        "enabled": {
+            "description": "Enable global debugging mode and debug logs.",
+            "values": [true, false]
+        },
+        "log_level": {
+            "description": "Verbosity level of the logs.",
+            "values": ["TRACE", "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
+        },
+        "log_mkdocs": {
+            "description": "Show logs related to the MkDocs documentation server.",
+            "values": [true, false]
+        }
+    },
+    "Window": {
+        "vsync": {
+            "description": "Enable vertical synchronization to prevent screen tearing.",
+            "values": [true, false]
+        },
+        "minimize_to_tray": {
+            "description": "Minimize the application to the system tray instead of the taskbar.",
+            "values": [true, false]
+        },
+        "show_console": {
+            "description": "Show the system console in the background (Windows only).",
+            "values": [true, false]
+        }
+    },
+    "Paths": {
+        "working_directory": {
+            "description": "Default root folder used to load and save pipelines and scripts.",
+            "values": "folder_browser"
+        },
+        "default_pipeline": {
+            "description": "Path to the pipeline loaded by default on startup.",
+            "values": "file_browser"
+        },
+        "default_automation_script": {
+            "description": "Path to the default automation script loaded.",
+            "values": "file_browser"
+        },
+        "show_loader_on_startup": {
+            "description": "Show startup dialog to select a pipeline or script if none is specified.",
+            "values": [true, false]
+        },
+        "default_pipeline_folder": {
+            "description": "Default directory where pipeline/layout JSON files are located.",
+            "values": "folder_browser"
+        },
+        "default_scripts_folder": {
+            "description": "Default directory where automation script JSON files are located.",
+            "values": "folder_browser"
+        }
+    },
+    "Cameras": {
+        "IDS": {
+            "rotation": {
+                "description": "Rotation angle (in degrees) applied to the video feed of IDS cameras.",
+                "values": [0, 90, 180, 270]
+            }
+        },
+        "Alvium": {
+            "rotation": {
+                "description": "Rotation angle (in degrees) applied to the video feed of Alvium cameras.",
+                "values": [0, 90, 180, 270]
+            }
+        }
+    }
+}

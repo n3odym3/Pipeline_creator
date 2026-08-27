@@ -1,0 +1,45 @@
+{
+    "General": {
+        "app_name": "Pipeline creator",
+        "ui_scale_multiplier": 0.75,
+        "preload_modules": true,
+        "skip_import_validation": false
+    },
+    "Splash": {
+        "enabled": true,
+        "image": "ressources/tutorial_assets/tutorial/Tutorial3.png",
+        "size": 400,
+        "thickness": 2
+    },
+    "Icon": {
+        "path": "ressources/icon.ico"
+    },
+    "Login": {
+        "enabled": false,
+        "default_mode": "dev"
+    },
+    "UI": {
+        "theme_name": "DEFAULT",
+        "colorblind_type": "none",
+        "mascot": true
+    },
+    "Debug": {
+        "enabled": true,
+        "log_level": "TRACE",
+        "log_mkdocs": false
+    },
+    "Window": {
+        "vsync": true,
+        "minimize_to_tray": false,
+        "tray_offscreen": false,
+        "show_console": true
+    },
+    "Paths": {
+        "working_directory": null,
+        "default_pipeline": null,
+        "default_automation_script": null,
+        "show_loader_on_startup": true,
+        "default_pipeline_folder": "pipelines",
+        "default_scripts_folder": "scripts"
+    }
+}
