@@ -42,12 +42,7 @@ Pipeline Creator is designed to support three distinct user profiles:
 > **Core Framework Only**  
 > This repository contains only the core Pipeline Creator framework, a few basic modules, and a demo pipeline that acts as a "Hello World" example. Running the application out of the box provides limited functionality.
 >
-> To build real-world setups, you need to add functional modules to the `modules/` directory.
->
-> **Available Module Repositories (WIP):**
-> - [Community Hardware & Device Modules](https://github.com/) *(coming soon)*
-> - [Data Processing & Analysis Modules](https://github.com/) *(coming soon)*
-> - [Custom Instrument Drivers](https://github.com/) *(coming soon)*
+> To build real-world setups, you need to add functional modules to the `modules/` directory. See the [Modules Repositories](#modules-repositories) section below for available modules and full project implementations.
 
 ---
 
@@ -169,6 +164,27 @@ pip install dearpygui loguru numpy pillow numpy
 ```bash
 python main.py
 ```
+
+---
+
+<a id="modules-repositories"></a>
+## 📦 Modules Repositories
+
+Pipeline Creator is built on an extensible architecture. Depending on your needs, you can plug in generic standalone modules or explore complete turnkey project implementations built on top of the framework:
+
+### Standalone Module Repositories
+*Generic, plug-and-play modules designed to be copied directly into the `modules/` directory*
+
+| Name | Repository | Description |
+| :--- | :--- | :--- |
+| **PC Camera Modules** | [n3odym3/PC_Camera_modules](https://github.com/n3odym3/PC_Camera_modules) | A collection of generic camera acquisition and streaming modules supporting multiple camera types (webcams, USB video, IP cameras, industrial cameras) and virtual camera creation. |
+
+### Complete Project Repositories
+*Full implementations integrating Pipeline Creator with tailored modules, automated execution scripts, and specialized dashboard layouts.*
+
+| Name | Repository | Description |
+| :--- | :--- | :--- |
+| **Pipeline Creator TARA** | [n3odym3/Pipeline_creator_TARA](https://github.com/n3odym3/Pipeline_creator_TARA) | Complete software implementation for the **Polymager** instrument, deployed during the [Tara Coral Expedition](https://fondationtaraocean.org/en/expedition/tara-coral/) for photosynthetic efficiency analysis ($F_v/F_m$) and coral bleaching assessment. |
 
 ---
 
