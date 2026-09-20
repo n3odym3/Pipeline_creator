@@ -19,7 +19,7 @@
 
 A module is just a Python file with an input, outputs, and a window. You write the logic, Pipeline Creator handles the rest: the layout, the connections between modules, and running heavy tasks in the background so the interface never freezes.
 
-You can save your whole setup (nodes, wires, window positions, settings) as a JSON file and reload it later or share it. The **Tutorial Manager** lets you record step-by-step guides for en user. The **Fusion Manager** groups windows into tabs to keep things tidy. And a privilege system (`User`, `Advanced`, `Dev`) controls who sees what.
+You can save your whole setup (nodes, wires, window positions, settings) as a JSON file and reload it later or share it. The **Tutorial Manager** lets you record step-by-step guides for end users. The **Fusion Manager** groups windows into tabs to keep things tidy. And a privilege system (`User`, `Advanced`, `Dev`) controls who sees what.
 
 The project started in a research lab, inspired by [**Node-RED**](https://github.com/node-red/node-red) but designed for hardware control and complete local interfaces running on a PC. That said, Pipeline Creator is not limited to academic or scientific use. If something can be done in Python, it can be turned into a module. The point is to save time, standardize how things are built, and let people reuse and share modules developed by others.
 
