@@ -50,3 +50,16 @@ Both installation and uninstallation actions automatically:
 3. Refresh the **Node Editor** search lists in real time.
 
 You can instantly search and place your newly installed modules in the Node Editor, or verify that uninstalled modules are removed, without needing to restart the application.
+
+---
+
+## <u>Module Repositories</u>
+
+Explore the standalone module collections ready to be installed into Pipeline Creator:
+
+| Name | Repository | Description |
+| :--- | :--- | :--- |
+| **PC Camera Modules** | [n3odym3/PC_Camera_modules](https://github.com/n3odym3/PC_Camera_modules) | Camera acquisition and streaming modules supporting webcams, USB video, IP cameras, industrial cameras, and virtual cameras. |
+| **PC Computer Vision Modules** | [n3odym3/PC_Computer_Vision_modules](https://github.com/n3odym3/PC_Computer_Vision_modules) | Computer vision, AI segmentation (SAM), barcode/QR decoding, color classification, and vignetting correction. |
+| **PC Images and Video Tools** | [n3odym3/PC_Images_and_video_tools](https://github.com/n3odym3/PC_Images_and_video_tools) | Image and video processing, playback, and recording (image sequence containers, high-performance viewers, and video writers). |
+| **PC Plot Modules** | [n3odym3/PC_Plot_modules](https://github.com/n3odym3/PC_Plot_modules) | Real-time graphing and statistical distribution visualization (multi-channel line plots, boxplots, histograms, color pies, polar plots, and Matplotlib). |

@@ -177,7 +177,10 @@ Pipeline Creator is built on an extensible architecture. Depending on your needs
 
 | Name | Repository | Description |
 | :--- | :--- | :--- |
-| **PC Camera Modules** | [n3odym3/PC_Camera_modules](https://github.com/n3odym3/PC_Camera_modules) | A collection of generic camera acquisition and streaming modules supporting multiple camera types (webcams, USB video, IP cameras, industrial cameras) and virtual camera creation. |
+| **Camera Modules** | [n3odym3/PC_Camera_modules](https://github.com/n3odym3/PC_Camera_modules) | A collection of generic camera acquisition and streaming modules supporting multiple camera types (webcams, USB video, IP cameras, industrial cameras) and virtual camera creation. |
+| **Computer Vision Modules** | [n3odym3/PC_Computer_Vision_modules](https://github.com/n3odym3/PC_Computer_Vision_modules) | A collection of computer vision, image processing, segmentation, and algorithmic analysis modules (barcode and QR decoding, AI-assisted interactive segmentation with SAM, color classification, transparent image extraction, and flat-field optical vignetting correction). |
+| **Images and Video Tools** | [n3odym3/PC_Images_and_video_tools](https://github.com/n3odym3/PC_Images_and_video_tools) | A collection of image and video visualization, processing, playback, and recording modules (in-memory image sequence containers, high-performance image and low-latency video viewers, video file readers, and synchronized multi-backend video writers). |
+| **Plot Modules** | [n3odym3/PC_Plot_modules](https://github.com/n3odym3/PC_Plot_modules) | A collection of real-time graphing, data plotting, statistical distribution, and signal visualization modules (multi-channel line plots, boxplots, histograms, color pie charts, polar optical flow plots, and Matplotlib integration). |
 
 ### Complete Project Repositories
 *Full implementations integrating Pipeline Creator with tailored modules, automated execution scripts, and specialized dashboard layouts.*

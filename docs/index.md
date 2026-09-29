@@ -31,3 +31,17 @@ Pipeline Creator simplifies the development of complex graphical interfaces by t
 | ⚙️ [Configuration Reference](config_reference.md) | All `config.json` keys explained |
 | 🤖 [Automation & Login](automation_login.md) | Startup scripts, login modes, CLI flags |
 | 🛠️ [Developer Guide](developer_guide.md) | How to create UI nodes, processors, and themes |
+
+---
+
+## 📦 Modules Repositories
+
+Explore official standalone module collections designed for plug-and-play use:
+
+| Name | Repository | Description |
+| :--- | :--- | :--- |
+| **PC Camera Modules** | [n3odym3/PC_Camera_modules](https://github.com/n3odym3/PC_Camera_modules) | Camera acquisition and streaming (webcams, USB, IP cameras, industrial cameras, virtual cameras). |
+| **PC Computer Vision Modules** | [n3odym3/PC_Computer_Vision_modules](https://github.com/n3odym3/PC_Computer_Vision_modules) | Computer vision, AI segmentation (SAM), barcode/QR decoding, and optical correction. |
+| **PC Images and Video Tools** | [n3odym3/PC_Images_and_video_tools](https://github.com/n3odym3/PC_Images_and_video_tools) | Image and video processing, playback, sequence containers, and high-performance viewers. |
+| **PC Plot Modules** | [n3odym3/PC_Plot_modules](https://github.com/n3odym3/PC_Plot_modules) | Real-time plotting, histograms, lineplots, boxplots, polar plots, and Matplotlib visualizations. |
+
