@@ -8,6 +8,12 @@ looks consistent on displays ranging from 720p to 4K.
 
 Supports multi-monitor setups: adapt_to_display() detects which
 monitor the DPG viewport is currently on.
+
+Usage:
+    from config.display_scaling import display_scaling
+    display_scaling.detect_display()
+    scaled_value = display_scaling.scale(15)  # scale a reference pixel value
+    display_scaling.adapt_to_display()        # re-detect and re-apply at runtime
 """
 
 import ctypes
@@ -19,7 +25,7 @@ from loguru import logger
 
 from core.config_manager import config
 
-# Reference resolution
+# Reference resolution — all hardcoded pixel values in the theme are designed for this
 REFERENCE_WIDTH = 1920
 REFERENCE_HEIGHT = 1080
 
@@ -62,7 +68,7 @@ if sys.platform == "win32":
 
 class DisplayScaling:
     """
-    Ddisplay scaling manager.
+    Singleton display scaling manager.
 
     Detects display resolution and provides helper functions to scale
     pixel values proportionally. Supports multi-monitor setups by
@@ -77,6 +83,7 @@ class DisplayScaling:
         self._detected: bool = False
         self._user_multiplier: float = 1.0
 
+        # Load user multiplier from config
         try:
             self._user_multiplier = float(config.get("General", {}).get("ui_scale_multiplier", 1.0))
         except Exception:
@@ -182,8 +189,7 @@ class DisplayScaling:
         return None
 
     def _compute_scale_factor(self) -> None:
-        """
-        Compute scale factor based on screen height relative to reference.
+        """Compute scale factor based on screen height relative to reference.
 
         Using absolute height handles ultra-wide monitors and provides a
         density ratio that matches the window constraints natively.
@@ -195,12 +201,24 @@ class DisplayScaling:
     def scale(self, value: float) -> int:
         """
         Scale a reference pixel value by the current scale factor.
+
+        Args:
+            value: A pixel size designed for the reference resolution (1080p).
+
+        Returns:
+            int: The scaled value, minimum 1.
         """
         return max(1, int(round(value * self._scale_factor)))
 
     def scale_float(self, value: float) -> float:
         """
-        Scale a reference value and return as float (for alpha, weights, etc.)
+        Scale a reference value and return as float (for alpha, weights, etc.).
+
+        Args:
+            value: A float value to scale.
+
+        Returns:
+            float: The scaled value.
         """
         return value * self._scale_factor
 
@@ -223,6 +241,9 @@ class DisplayScaling:
         """
         Re-detect the display based on the viewport's current monitor
         and re-apply font scaling + theme.
+
+        Returns:
+            float: The new scale factor.
         """
         old_factor = self._scale_factor
         monitor_res = self._detect_viewport_monitor()
@@ -284,5 +305,7 @@ class DisplayScaling:
 
         return self._scale_factor
 
+
+# Module-level singleton
 display_scaling: DisplayScaling = DisplayScaling()
 

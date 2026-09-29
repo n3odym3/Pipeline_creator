@@ -274,8 +274,15 @@ def build_global_theme(colors: Dict[str, Any]) -> Union[int, str]:
             )
 
             # Plot specific in general context
-            dpg.add_theme_style(dpg.mvPlotStyleVar_LineWeight, 2, category=dpg.mvThemeCat_Plots)
-            dpg.add_theme_style(dpg.mvPlotStyleVar_FillAlpha, 0.50)
+            plot_line_weight = colors.get("plot_line_weight", 4)
+            plot_marker_size = colors.get("plot_marker_size", 4.0)
+            plot_marker_weight = colors.get("plot_marker_weight", 1.0)
+            plot_fill_alpha = colors.get("plot_fill_alpha", 1.0)
+
+            dpg.add_theme_style(dpg.mvPlotStyleVar_LineWeight, plot_line_weight, category=dpg.mvThemeCat_Plots)
+            dpg.add_theme_style(dpg.mvPlotStyleVar_MarkerSize, plot_marker_size, category=dpg.mvThemeCat_Plots)
+            dpg.add_theme_style(dpg.mvPlotStyleVar_MarkerWeight, plot_marker_weight, category=dpg.mvThemeCat_Plots)
+            dpg.add_theme_style(dpg.mvPlotStyleVar_FillAlpha, plot_fill_alpha, category=dpg.mvThemeCat_Plots)
             dpg.add_theme_color(dpg.mvPlotCol_Crosshairs, colors.get("plot_crosshairs", (255, 0, 0, 255)), category=dpg.mvThemeCat_Plots)
             dpg.add_theme_color(dpg.mvPlotCol_Fill, colors.get("plot_fill", (100, 100, 100, 50)), category=dpg.mvThemeCat_Plots)
 
@@ -307,8 +314,10 @@ def build_global_theme(colors: Dict[str, Any]) -> Union[int, str]:
             dpg.add_theme_color(dpg.mvNodeCol_LinkHovered, colors.get("link_hovered", (180, 180, 180, 255)), category=dpg.mvThemeCat_Nodes)
             dpg.add_theme_color(dpg.mvNodeCol_LinkSelected, colors.get("link_selected", (220, 220, 220, 255)), category=dpg.mvThemeCat_Nodes)
 
-            dpg.add_theme_style(dpg.mvPlotStyleVar_LineWeight, 2, category=dpg.mvThemeCat_Plots)
-            dpg.add_theme_style(dpg.mvPlotStyleVar_FillAlpha, 0.50)
+            dpg.add_theme_style(dpg.mvPlotStyleVar_LineWeight, plot_line_weight, category=dpg.mvThemeCat_Plots)
+            dpg.add_theme_style(dpg.mvPlotStyleVar_MarkerSize, plot_marker_size, category=dpg.mvThemeCat_Plots)
+            dpg.add_theme_style(dpg.mvPlotStyleVar_MarkerWeight, plot_marker_weight, category=dpg.mvThemeCat_Plots)
+            dpg.add_theme_style(dpg.mvPlotStyleVar_FillAlpha, plot_fill_alpha, category=dpg.mvThemeCat_Plots)
             dpg.add_theme_color(dpg.mvPlotCol_Crosshairs, colors.get("plot_crosshairs", (255, 0, 0, 255)), category=dpg.mvThemeCat_Plots)
             dpg.add_theme_color(dpg.mvPlotCol_Fill, colors.get("plot_fill", (100, 100, 100, 50)), category=dpg.mvThemeCat_Plots)
 
@@ -437,4 +446,64 @@ def build_standard_subthemes(colors: Dict[str, Any]) -> Dict[str, Union[int, str
         ),
         "dimmed_link": build_link_theme((50, 50, 50) if not is_light else (190, 190, 195), alpha=140, thickness=1.0),
     }
+
+
+def build_widget_highlight_theme(colors: Dict[str, Any]) -> Union[int, str]:
+    """
+    Build a scoped DearPyGui theme for highlighting specific widgets, groups, or containers.
+    Reads customized highlight settings from colors['highlight'] if present,
+    or calculates harmonious highlight colors based on the theme palette.
+    """
+    is_light = colors.get("is_light", False)
+    hl = colors.get("highlight", {})
+
+    # Sensible defaults tailored for dark vs light
+    hl_border = hl.get("border", (255, 160, 0, 255) if not is_light else (220, 110, 0, 255))
+    hl_child_bg = hl.get("child_bg", (38, 44, 58, 220) if not is_light else (230, 236, 248, 220))
+    hl_frame_bg = hl.get("frame_bg", (35, 45, 65, 255) if not is_light else (205, 218, 238, 255))
+    hl_frame_hovered = hl.get("frame_bg_hovered", (45, 60, 85, 255) if not is_light else (185, 202, 228, 255))
+    hl_frame_active = hl.get("frame_bg_active", (60, 80, 115, 255) if not is_light else (165, 188, 218, 255))
+    hl_button = hl.get("button", (180, 95, 15, 255) if not is_light else (225, 140, 60, 255))
+    hl_btn_hovered = hl.get("button_hovered", (210, 115, 20, 255) if not is_light else (240, 160, 80, 255))
+    hl_btn_active = hl.get("button_active", (240, 135, 25, 255) if not is_light else (255, 180, 100, 255))
+    hl_header = hl.get("header", (180, 95, 15, 255) if not is_light else (225, 140, 60, 255))
+    hl_hdr_hovered = hl.get("header_hovered", (210, 115, 20, 255) if not is_light else (240, 160, 80, 255))
+    hl_hdr_active = hl.get("header_active", (240, 135, 25, 255) if not is_light else (255, 180, 100, 255))
+    hl_text = hl.get("text", (255, 255, 255, 255) if not is_light else (20, 20, 25, 255))
+    hl_checkmark = hl.get("checkmark", (255, 160, 0, 255) if not is_light else (220, 110, 0, 255))
+    hl_slider = hl.get("slider_grab", (255, 160, 0, 255) if not is_light else (220, 110, 0, 255))
+    hl_slider_active = hl.get("slider_grab_active", (255, 190, 50, 255) if not is_light else (245, 140, 30, 255))
+    hl_border_size = hl.get("border_size", 2.0)
+
+    theme = dpg.add_theme()
+
+    with dpg.theme_component(dpg.mvAll, parent=theme):
+        dpg.add_theme_color(dpg.mvThemeCol_Border, hl_border)
+        dpg.add_theme_color(dpg.mvThemeCol_FrameBg, hl_frame_bg)
+        dpg.add_theme_color(dpg.mvThemeCol_FrameBgHovered, hl_frame_hovered)
+        dpg.add_theme_color(dpg.mvThemeCol_FrameBgActive, hl_frame_active)
+        dpg.add_theme_color(dpg.mvThemeCol_Button, hl_button)
+        dpg.add_theme_color(dpg.mvThemeCol_ButtonHovered, hl_btn_hovered)
+        dpg.add_theme_color(dpg.mvThemeCol_ButtonActive, hl_btn_active)
+        dpg.add_theme_color(dpg.mvThemeCol_Header, hl_header)
+        dpg.add_theme_color(dpg.mvThemeCol_HeaderHovered, hl_hdr_hovered)
+        dpg.add_theme_color(dpg.mvThemeCol_HeaderActive, hl_hdr_active)
+        dpg.add_theme_color(dpg.mvThemeCol_CheckMark, hl_checkmark)
+        dpg.add_theme_color(dpg.mvThemeCol_SliderGrab, hl_slider)
+        dpg.add_theme_color(dpg.mvThemeCol_SliderGrabActive, hl_slider_active)
+        dpg.add_theme_color(dpg.mvThemeCol_Text, hl_text)
+        dpg.add_theme_style(dpg.mvStyleVar_FrameBorderSize, hl_border_size)
+
+    with dpg.theme_component(dpg.mvChildWindow, parent=theme):
+        dpg.add_theme_color(dpg.mvThemeCol_ChildBg, hl_child_bg)
+        dpg.add_theme_color(dpg.mvThemeCol_Border, hl_border)
+        dpg.add_theme_style(dpg.mvStyleVar_ChildBorderSize, hl_border_size)
+        dpg.add_theme_style(dpg.mvStyleVar_ChildRounding, 6.0)
+        dpg.add_theme_style(dpg.mvStyleVar_WindowPadding, 8.0, 8.0)
+
+    with dpg.theme_component(dpg.mvInputText, parent=theme):
+        dpg.add_theme_color(dpg.mvThemeCol_Text, hl_text)
+
+    return theme
+
 

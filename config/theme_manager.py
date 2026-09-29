@@ -43,6 +43,8 @@ class ThemeManager:
         self.current_palette: Dict[str, Any] = self.active_palette
         self.global_theme: Optional[Union[int, str]] = None
         self.sub_themes: Dict[str, Union[int, str]] = {}
+        self.widget_highlight_theme: Optional[Union[int, str]] = None
+        self._highlighted_items: set[Union[int, str]] = set()
         self.main_font: Optional[Union[int, str]] = None
 
         self._load_base_font()
@@ -114,9 +116,14 @@ class ThemeManager:
         self.current_palette = merged_palette
         self.global_theme = build_global_theme(merged_palette)
         self.sub_themes = build_standard_subthemes(merged_palette)
+        from config.theme_factory import build_widget_highlight_theme
+        self.widget_highlight_theme = build_widget_highlight_theme(merged_palette)
 
         dpg.bind_theme(self.global_theme)
         self.refresh_fonts()
+
+        # Re-apply highlight to all registered active items
+        self.refresh_highlights()
 
         # Sync tutorial manager overlay theme if initialized
         try:
@@ -205,7 +212,90 @@ class ThemeManager:
         app_name = config.get("General", {}).get("app_name", "Node Assistant")
         apply_titlebar_color(app_name, r, g, b)
 
+    @property
+    def plot_line_weight(self) -> float:
+        """Get the current theme's line weight for plots."""
+        return float(self.active_palette.get("plot_line_weight", 4))
+
+    @property
+    def plot_marker_size(self) -> float:
+        """Get the current theme's marker/point size for plots."""
+        return float(self.active_palette.get("plot_marker_size", 4.0))
+
+    @property
+    def plot_marker_weight(self) -> float:
+        """Get the current theme's marker outline weight for plots."""
+        return float(self.active_palette.get("plot_marker_weight", 1.0))
+
+    @property
+    def plot_fill_alpha(self) -> float:
+        """Get the current theme's fill alpha for plot markers and areas."""
+        return float(self.active_palette.get("plot_fill_alpha", 1.0))
+
+    @property
+    def highlight_enabled(self) -> bool:
+        """Check if widget highlighting is enabled in global config."""
+        from core.config_manager import config
+        return bool(config.get("UI", {}).get("enable_highlight", True))
+
+    @highlight_enabled.setter
+    def highlight_enabled(self, value: bool) -> None:
+        """Enable or disable widget highlighting, persist to config, and update all active items."""
+        from core.config_manager import config
+        config.setdefault("UI", {})["enable_highlight"] = bool(value)
+        config.save()
+        self.refresh_highlights()
+
+    def refresh_highlights(self) -> None:
+        """Apply or remove highlight styling for all tracked items based on current config."""
+        if not self.widget_highlight_theme:
+            from config.theme_factory import build_widget_highlight_theme
+            self.widget_highlight_theme = build_widget_highlight_theme(getattr(self, "current_palette", self.active_palette))
+
+        enabled = self.highlight_enabled
+        target_theme = self.widget_highlight_theme if enabled else 0
+
+        to_remove = set()
+        for item_tag in list(self._highlighted_items):
+            if dpg.does_item_exist(item_tag):
+                dpg.bind_item_theme(item_tag, target_theme)
+            else:
+                to_remove.add(item_tag)
+        self._highlighted_items -= to_remove
+
+    def highlight(self, item_tag: Union[int, str]) -> None:
+        """
+        Apply the theme's highlight style specifically to a widget, group, or child window if enabled in config.
+        Tracks the item tag so that switching themes or toggling the highlight setting automatically updates it.
+        """
+        if not self.widget_highlight_theme:
+            from config.theme_factory import build_widget_highlight_theme
+            self.widget_highlight_theme = build_widget_highlight_theme(getattr(self, "current_palette", self.active_palette))
+
+        self._highlighted_items.add(item_tag)
+        if dpg.does_item_exist(item_tag):
+            if self.highlight_enabled:
+                dpg.bind_item_theme(item_tag, self.widget_highlight_theme)
+            else:
+                dpg.bind_item_theme(item_tag, 0)
+
+    def unhighlight(self, item_tag: Union[int, str]) -> None:
+        """Remove highlight styling from an item."""
+        self._highlighted_items.discard(item_tag)
+        if dpg.does_item_exist(item_tag):
+            dpg.bind_item_theme(item_tag, 0)
+
 
 # Singular global instance
 theme_manager: ThemeManager = ThemeManager()
+
+
+def highlight(tag: Union[int, str]) -> None:
+    """Convenience helper to highlight any DPG item or container with the current theme's highlight style."""
+    theme_manager.highlight(tag)
+
+
+def unhighlight(tag: Union[int, str]) -> None:
+    """Convenience helper to remove highlight styling from any DPG item or container."""
+    theme_manager.unhighlight(tag)
 

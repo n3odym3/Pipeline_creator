@@ -38,7 +38,28 @@ DEFAULT: dict[str, Any] = {
     "link": (140, 140, 140, 160),
     "base_hue": 130.0,
     "sat": 1.0,
-    "plot_crosshairs": (255, 0, 0, 255)
+    "plot_crosshairs": (255, 0, 0, 255),
+    "plot_line_weight": 4,
+    "plot_marker_size": 4.0,
+    "plot_marker_weight": 1.0,
+    "plot_fill_alpha": 1.0,
+    "highlight": {
+        "border": (255, 160, 0, 255),
+        "child_bg": (38, 44, 58, 220),
+        "frame_bg": (45, 55, 75, 255),
+        "frame_bg_hovered": (55, 70, 95, 255),
+        "frame_bg_active": (70, 90, 120, 255),
+        "button": (200, 110, 0, 255),
+        "button_hovered": (230, 130, 0, 255),
+        "button_active": (255, 150, 20, 255),
+        "header": (200, 110, 0, 255),
+        "header_hovered": (230, 130, 0, 255),
+        "header_active": (255, 150, 20, 255),
+        "checkmark": (255, 160, 0, 255),
+        "slider_grab": (255, 160, 0, 255),
+        "slider_grab_active": (255, 190, 50, 255),
+        "text": (255, 255, 255, 255),
+    }
 }
 
 CARBON: dict[str, Any] = {
@@ -76,7 +97,28 @@ CARBON: dict[str, Any] = {
     "link": (140, 140, 140, 255),
     "base_hue": 150.0,
     "sat": 1.0,
-    "plot_crosshairs": (255, 255, 255, 255)
+    "plot_crosshairs": (255, 255, 255, 255),
+    "plot_line_weight": 4,
+    "plot_marker_size": 4.0,
+    "plot_marker_weight": 1.0,
+    "plot_fill_alpha": 1.0,
+    "highlight": {
+        "border": (0, 200, 255, 255),
+        "child_bg": (25, 32, 42, 220),
+        "frame_bg": (25, 45, 60, 255),
+        "frame_bg_hovered": (35, 60, 80, 255),
+        "frame_bg_active": (45, 80, 110, 255),
+        "button": (0, 140, 190, 255),
+        "button_hovered": (0, 170, 225, 255),
+        "button_active": (20, 200, 255, 255),
+        "header": (0, 140, 190, 255),
+        "header_hovered": (0, 170, 225, 255),
+        "header_active": (20, 200, 255, 255),
+        "checkmark": (0, 200, 255, 255),
+        "slider_grab": (0, 200, 255, 255),
+        "slider_grab_active": (50, 220, 255, 255),
+        "text": (240, 245, 255, 255),
+    }
 }
 
 LIGHT: dict[str, Any] = {
@@ -119,7 +161,28 @@ LIGHT: dict[str, Any] = {
     "plot_fill": (80, 130, 200, 50),
     "base_hue": 150.0,
     "sat": 1.0,
-    "plot_crosshairs": (40, 40, 40, 255)
+    "plot_crosshairs": (40, 40, 40, 255),
+    "plot_line_weight": 4,
+    "plot_marker_size": 4.0,
+    "plot_marker_weight": 1.0,
+    "plot_fill_alpha": 1.0,
+    "highlight": {
+        "border": (40, 110, 220, 255),
+        "child_bg": (218, 226, 245, 220),
+        "frame_bg": (195, 208, 235, 255),
+        "frame_bg_hovered": (180, 195, 225, 255),
+        "frame_bg_active": (160, 180, 215, 255),
+        "button": (50, 120, 230, 255),
+        "button_hovered": (70, 140, 250, 255),
+        "button_active": (30, 100, 210, 255),
+        "header": (50, 120, 230, 255),
+        "header_hovered": (70, 140, 250, 255),
+        "header_active": (30, 100, 210, 255),
+        "checkmark": (40, 110, 220, 255),
+        "slider_grab": (40, 110, 220, 255),
+        "slider_grab_active": (60, 130, 240, 255),
+        "text": (20, 25, 35, 255),
+    }
 }
 
 OCEAN_LIGHT: dict[str, Any] = {
@@ -157,7 +220,28 @@ OCEAN_LIGHT: dict[str, Any] = {
     "plot_fill": (60, 130, 200, 50),
     "base_hue": 150.0,
     "sat": 1.0,
-    "plot_crosshairs": (10, 20, 50, 255)
+    "plot_crosshairs": (10, 20, 50, 255),
+    "plot_line_weight": 4,
+    "plot_marker_size": 4.0,
+    "plot_marker_weight": 1.0,
+    "plot_fill_alpha": 1.0,
+    "highlight": {
+        "border": (0, 150, 200, 255),
+        "child_bg": (195, 222, 242, 220),
+        "frame_bg": (165, 200, 225, 255),
+        "frame_bg_hovered": (150, 188, 215, 255),
+        "frame_bg_active": (130, 172, 202, 255),
+        "button": (0, 140, 190, 255),
+        "button_hovered": (20, 165, 220, 255),
+        "button_active": (0, 120, 170, 255),
+        "header": (0, 140, 190, 255),
+        "header_hovered": (20, 165, 220, 255),
+        "header_active": (0, 120, 170, 255),
+        "checkmark": (0, 150, 200, 255),
+        "slider_grab": (0, 150, 200, 255),
+        "slider_grab_active": (30, 180, 230, 255),
+        "text": (15, 30, 45, 255),
+    }
 }
 
 OCEAN_DARK: dict[str, Any] = {
@@ -190,7 +274,28 @@ OCEAN_DARK: dict[str, Any] = {
     "plot_fill": (50, 120, 200, 50),
     "base_hue": 150.0,
     "sat": 1.0,
-    "plot_crosshairs": (135, 206, 250, 255)
+    "plot_crosshairs": (135, 206, 250, 255),
+    "plot_line_weight": 4,
+    "plot_marker_size": 4.0,
+    "plot_marker_weight": 1.0,
+    "plot_fill_alpha": 1.0,
+    "highlight": {
+        "border": (50, 180, 255, 255),
+        "child_bg": (15, 35, 58, 220),
+        "frame_bg": (20, 48, 78, 255),
+        "frame_bg_hovered": (28, 62, 98, 255),
+        "frame_bg_active": (38, 80, 125, 255),
+        "button": (30, 120, 180, 255),
+        "button_hovered": (45, 150, 220, 255),
+        "button_active": (60, 180, 255, 255),
+        "header": (30, 120, 180, 255),
+        "header_hovered": (45, 150, 220, 255),
+        "header_active": (60, 180, 255, 255),
+        "checkmark": (50, 180, 255, 255),
+        "slider_grab": (50, 180, 255, 255),
+        "slider_grab_active": (80, 205, 255, 255),
+        "text": (230, 245, 255, 255),
+    }
 }
 
 TARA_LIGHT: dict[str, Any] = {
@@ -228,7 +333,28 @@ TARA_LIGHT: dict[str, Any] = {
     "plot_fill": (230, 110, 50, 40),
     "base_hue": 150.0,
     "sat": 1.0,
-    "plot_crosshairs": (255, 140, 0, 255)
+    "plot_crosshairs": (255, 140, 0, 255),
+    "plot_line_weight": 4,
+    "plot_marker_size": 4.0,
+    "plot_marker_weight": 1.0,
+    "plot_fill_alpha": 1.0,
+    "highlight": {
+        "border": (240, 100, 40, 255),
+        "child_bg": (255, 235, 225, 220),
+        "frame_bg": (248, 218, 205, 255),
+        "frame_bg_hovered": (242, 202, 188, 255),
+        "frame_bg_active": (235, 182, 165, 255),
+        "button": (235, 110, 50, 255),
+        "button_hovered": (255, 135, 75, 255),
+        "button_active": (215, 90, 30, 255),
+        "header": (235, 110, 50, 255),
+        "header_hovered": (255, 135, 75, 255),
+        "header_active": (215, 90, 30, 255),
+        "checkmark": (240, 100, 40, 255),
+        "slider_grab": (240, 100, 40, 255),
+        "slider_grab_active": (255, 130, 65, 255),
+        "text": (25, 20, 20, 255),
+    }
 }
 
 TARA_DARK: dict[str, Any] = {
@@ -259,7 +385,28 @@ TARA_DARK: dict[str, Any] = {
     "plot_fill": (210, 95, 40, 40),
     "base_hue": 150.0,
     "sat": 1.0,
-    "plot_crosshairs": (255, 140, 0, 255)
+    "plot_crosshairs": (255, 140, 0, 255),
+    "plot_line_weight": 4,
+    "plot_marker_size": 4.0,
+    "plot_marker_weight": 1.0,
+    "plot_fill_alpha": 1.0,
+    "highlight": {
+        "border": (255, 120, 40, 255),
+        "child_bg": (38, 26, 22, 220),
+        "frame_bg": (48, 32, 26, 255),
+        "frame_bg_hovered": (62, 40, 32, 255),
+        "frame_bg_active": (80, 50, 40, 255),
+        "button": (210, 95, 35, 255),
+        "button_hovered": (240, 115, 45, 255),
+        "button_active": (255, 140, 60, 255),
+        "header": (210, 95, 35, 255),
+        "header_hovered": (240, 115, 45, 255),
+        "header_active": (255, 140, 60, 255),
+        "checkmark": (255, 120, 40, 255),
+        "slider_grab": (255, 120, 40, 255),
+        "slider_grab_active": (255, 150, 70, 255),
+        "text": (250, 240, 235, 255),
+    }
 }
 
 CHLAMYDOMONAS: dict[str, Any] = {
@@ -299,7 +446,28 @@ CHLAMYDOMONAS: dict[str, Any] = {
     "plot_fill": (100, 200, 100, 40),
     "base_hue": 150.0,
     "sat": 1.0,
-    "plot_crosshairs": (255, 0, 0, 255)
+    "plot_crosshairs": (255, 0, 0, 255),
+    "plot_line_weight": 4,
+    "plot_marker_size": 4.0,
+    "plot_marker_weight": 1.0,
+    "plot_fill_alpha": 1.0,
+    "highlight": {
+        "border": (60, 180, 240, 255),
+        "child_bg": (210, 240, 225, 220),
+        "frame_bg": (185, 225, 210, 255),
+        "frame_bg_hovered": (168, 212, 198, 255),
+        "frame_bg_active": (148, 198, 182, 255),
+        "button": (70, 170, 230, 255),
+        "button_hovered": (90, 190, 245, 255),
+        "button_active": (50, 150, 210, 255),
+        "header": (70, 170, 230, 255),
+        "header_hovered": (90, 190, 245, 255),
+        "header_active": (50, 150, 210, 255),
+        "checkmark": (60, 180, 240, 255),
+        "slider_grab": (60, 180, 240, 255),
+        "slider_grab_active": (85, 200, 250, 255),
+        "text": (20, 40, 30, 255),
+    }
 }
 
 HIGH_CONTRAST: dict[str, Any] = {
@@ -338,7 +506,28 @@ HIGH_CONTRAST: dict[str, Any] = {
     "plot_fill": (150, 150, 150, 60),
     "base_hue": 0.0,
     "sat": 0.0,
-    "plot_crosshairs": (255, 255, 255, 255)
+    "plot_crosshairs": (255, 255, 255, 255),
+    "plot_line_weight": 4,
+    "plot_marker_size": 4.0,
+    "plot_marker_weight": 1.0,
+    "plot_fill_alpha": 1.0,
+    "highlight": {
+        "border": (255, 220, 0, 255),
+        "child_bg": (35, 35, 0, 220),
+        "frame_bg": (45, 45, 0, 255),
+        "frame_bg_hovered": (65, 65, 0, 255),
+        "frame_bg_active": (90, 90, 0, 255),
+        "button": (190, 160, 0, 255),
+        "button_hovered": (220, 190, 0, 255),
+        "button_active": (255, 220, 0, 255),
+        "header": (190, 160, 0, 255),
+        "header_hovered": (220, 190, 0, 255),
+        "header_active": (255, 220, 0, 255),
+        "checkmark": (255, 220, 0, 255),
+        "slider_grab": (255, 220, 0, 255),
+        "slider_grab_active": (255, 240, 100, 255),
+        "text": (255, 255, 255, 255),
+    }
 }
 
 LIGHT_HIGH_CONTRAST: dict[str, Any] = {
@@ -384,5 +573,26 @@ LIGHT_HIGH_CONTRAST: dict[str, Any] = {
     "plot_fill": (120, 120, 120, 50),
     "base_hue": 0.0,
     "sat": 0.0,
-    "plot_crosshairs": (0, 0, 0, 255)
+    "plot_crosshairs": (0, 0, 0, 255),
+    "plot_line_weight": 4,
+    "plot_marker_size": 4.0,
+    "plot_marker_weight": 1.0,
+    "plot_fill_alpha": 1.0,
+    "highlight": {
+        "border": (0, 0, 220, 255),
+        "child_bg": (230, 230, 255, 220),
+        "frame_bg": (210, 210, 250, 255),
+        "frame_bg_hovered": (190, 190, 245, 255),
+        "frame_bg_active": (170, 170, 235, 255),
+        "button": (0, 0, 200, 255),
+        "button_hovered": (30, 30, 230, 255),
+        "button_active": (0, 0, 160, 255),
+        "header": (0, 0, 200, 255),
+        "header_hovered": (30, 30, 230, 255),
+        "header_active": (0, 0, 160, 255),
+        "checkmark": (0, 0, 220, 255),
+        "slider_grab": (0, 0, 220, 255),
+        "slider_grab_active": (50, 50, 250, 255),
+        "text": (0, 0, 0, 255),
+    }
 }

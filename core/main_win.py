@@ -342,6 +342,14 @@ class MainWin:
         """Populate the Theme sub-menu with all auto-discovered palettes."""
         from config.theme_manager import PALETTES, theme_manager
         with dpg.menu(label="Theme"):
+            dpg.add_menu_item(label="\uf1fc  Theme Manager", callback=self._on_open_theme_manager)
+            dpg.add_menu_item(
+                label="\uf0eb  Enable Highlights",
+                check=True,
+                default_value=theme_manager.highlight_enabled,
+                callback=self._on_toggle_highlight,
+            )
+            dpg.add_separator()
             for theme_name in PALETTES.keys():
                 label = theme_name.title()
                 dpg.add_menu_item(
@@ -358,6 +366,19 @@ class MainWin:
                         callback=self._on_switch_colorblind,
                         user_data=mode,
                     )
+
+    def _on_toggle_highlight(self, sender=None, app_data=None, user_data=None, *args, **kwargs) -> None:
+        """Toggle widget highlighting globally and update config."""
+        from config.theme_manager import theme_manager
+
+        theme_manager.highlight_enabled = bool(app_data)
+        logger.info(f"Widget highlight {'enabled' if app_data else 'disabled'}")
+
+    def _on_open_theme_manager(self, sender=None, app_data=None, user_data=None, *args, **kwargs) -> None:
+        """Open the interactive Theme Manager window."""
+        from config.theme_manager_win import theme_manager_win
+
+        theme_manager_win.show()
 
     def _on_switch_theme(self, sender=None, app_data=None, user_data=None, *args, **kwargs) -> None:
         """Switch the active theme and persist the choice to config.json."""
