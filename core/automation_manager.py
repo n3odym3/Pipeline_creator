@@ -152,8 +152,10 @@ class AutomationManager:
             return
 
         def _do_step() -> None:
-            if action == "set_workspace":
+            if action in ("set_workspace", "set_working_dir", "set_working_directory", "set_directory"):
                 self.set_workspace(step)
+            elif action in ("browse_workspace", "browse_working_dir", "select_workspace", "select_working_dir", "browse_directory"):
+                self.browse_workspace(step)
             elif action == "load_pipeline":
                 self.load_pipeline(step)
             elif action == "fullscreen":
@@ -172,7 +174,14 @@ class AutomationManager:
         else:
             done_event = threading.Event()
             self._pending_tasks.put((_do_step, done_event))
-            done_event.wait(timeout=30.0)
+            # If the step opens an interactive user dialog (e.g. folder browser), don't timeout
+            is_interactive = (
+                action in ("browse_workspace", "browse_working_dir", "select_workspace", "select_working_dir", "browse_directory")
+                or step.get("browse", False)
+                or (action in ("set_workspace", "set_working_dir", "set_working_directory", "set_directory") and not (step.get("path") or step.get("folder") or step.get("directory")))
+            )
+            timeout = None if is_interactive else 60.0
+            done_event.wait(timeout=timeout)
 
     def send_command(self, step: Dict[str, Any]) -> None:
         """Send a CMD_DICT to a specific module."""
@@ -201,14 +210,26 @@ class AutomationManager:
 
     def set_workspace(self, step: Dict[str, Any]) -> None:
         """
-        Set the working directory (CWD) of the application.
+        Set the working directory (CWD) of the application, or trigger folder browser if requested / no path provided.
 
         Args:
-            step: Dict containing the 'path' parameter.
+            step: Dict containing the 'path' parameter, or 'browse': True.
         """
-        path = step.get("path")
+        if step.get("browse", False):
+            self.browse_workspace(step)
+            return
+
+        path = step.get("path") or step.get("folder") or step.get("directory") or step.get("folder_path")
         if path:
             working_directory_manager.set_directory(path)
+        else:
+            self.browse_workspace(step)
+
+    def browse_workspace(self, step: Optional[Dict[str, Any]] = None) -> None:
+        """
+        Open the folder picker dialog to select the working directory.
+        """
+        working_directory_manager.select_directory()
 
     def load_pipeline(self, step: Dict[str, Any]) -> None:
         """

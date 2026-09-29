@@ -25,7 +25,8 @@ from core.automation_manager import automation_manager
 
 AVAILABLE_ACTIONS: List[Tuple[str, str, str]] = [
     ("fullscreen", "Fullscreen", "Toggle application fullscreen mode"),
-    ("set_workspace", "Set Workspace", "Set the working directory (CWD)"),
+    ("set_workspace", "Set Workspace", "Set specific working directory path"),
+    ("browse_workspace", "Browse Workspace", "Prompt user with native folder browser to choose working directory"),
     ("load_pipeline", "Load Pipeline", "Load and reconstruct a pipeline layout (.json)"),
     ("apply_view", "Apply View", "Apply a named view layout preset"),
     ("send_command", "Send Command", "Send a CMD_DICT message to a specific module"),
@@ -387,7 +388,11 @@ class AutomationEditor:
         if action == "fullscreen":
             state = "Enabled" if step.get("enabled", True) else "Disabled"
             return f"[{idx+1}] Fullscreen ({state})"
+        elif action in ("browse_workspace", "browse_working_dir", "select_workspace"):
+            return f"[{idx+1}] Browse Workspace (Interactive)"
         elif action == "set_workspace":
+            if step.get("browse", False) or not step.get("path"):
+                return f"[{idx+1}] Browse Workspace (Interactive)"
             p = Path(step.get("path", "")).name or step.get("path", "N/A")
             return f"[{idx+1}] Set Workspace: {p}"
         elif action == "load_pipeline":
@@ -497,18 +502,32 @@ class AutomationEditor:
                 )
 
             elif action == "set_workspace":
-                with dpg.group(horizontal=True):
-                    dpg.add_text("Directory Path:")
-                    dpg.add_input_text(
-                        default_value=str(step.get("path", "")),
-                        width=s(320),
-                        callback=lambda s, a, u, *args: (step.__setitem__("path", a.strip()), self._populate_steps_list()),
-                    )
-                    dpg.add_button(
-                        label="Browse...",
-                        callback=lambda: self._on_browse_workspace_path(step),
-                        width=s(90),
-                    )
+                dpg.add_checkbox(
+                    label="Prompt User (Open Folder Browser Dialog at Execution)",
+                    default_value=bool(step.get("browse", False)),
+                    callback=lambda s, a, u, *args: (
+                        step.__setitem__("browse", bool(a)),
+                        self._populate_steps_list(),
+                        self._populate_step_details(),
+                    ),
+                )
+                if not step.get("browse", False):
+                    with dpg.group(horizontal=True):
+                        dpg.add_text("Directory Path:")
+                        dpg.add_input_text(
+                            default_value=str(step.get("path", "")),
+                            width=s(320),
+                            callback=lambda s, a, u, *args: (step.__setitem__("path", a.strip()), self._populate_steps_list()),
+                        )
+                        dpg.add_button(
+                            label="Browse...",
+                            callback=lambda: self._on_browse_workspace_path(step),
+                            width=s(90),
+                        )
+
+            elif action in ("browse_workspace", "browse_working_dir", "select_workspace"):
+                dpg.add_text("This step opens the native OS folder picker when executed,", color=(180, 220, 255))
+                dpg.add_text("allowing the user to choose the working directory interactively.")
 
             elif action == "load_pipeline":
                 layout_files = (
@@ -778,7 +797,7 @@ class AutomationEditor:
             self._populate_step_details()
 
     def _on_browse_workspace_path(self, step: Dict[str, Any]) -> None:
-        chosen = file_explorer.select_directory(default_path=str(PROJECT_ROOT))
+        chosen = file_explorer.select_folder(default_path=str(PROJECT_ROOT))
         if chosen:
             step["path"] = str(chosen)
             self._populate_steps_list()

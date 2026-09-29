@@ -213,12 +213,21 @@ LAST_LOADED_SUBFLOW: Optional[str] = None
 AVAILABLE_VIEWS: Dict[str, Any] = {}
 
 
+_IN_FRAME_PUMP: bool = False
+
+
 def pump_dpg_frames(count: int = 2) -> None:
     """
     Pump a given number of DPG frames on the main thread so ImGui computes geometry,
     viewport dimensions, and widget bounding rects during initial layout loading.
     """
+    global _IN_FRAME_PUMP
+    if _IN_FRAME_PUMP:
+        logger.debug("pump_dpg_frames skipped: recursive frame render avoided")
+        return
+
     if dpg.is_dearpygui_running():
+        _IN_FRAME_PUMP = True
         try:
             from core.automation_manager import automation_manager
 
@@ -227,6 +236,8 @@ def pump_dpg_frames(count: int = 2) -> None:
                 dpg.render_dearpygui_frame()
         except Exception as e:
             logger.debug(f"pump_dpg_frames skipped: {e}")
+        finally:
+            _IN_FRAME_PUMP = False
 
 
 def register_module(module: Any) -> None:
@@ -799,6 +810,21 @@ def load_positions_from_dict(data: Dict[str, Any]) -> Dict[str, Any]:
                 # Re-show the window if it was hidden
                 dpg.show_item(target_win.winID)
                 target_win.visible = True
+
+                # Apply element-level visibility overrides from view
+                if "hidden_items" in wdata and wdata["hidden_items"]:
+                    try:
+                        from core.module_item_inspector import ModuleItemInspector
+                        ModuleItemInspector.apply_hidden_items(target_win, wdata["hidden_items"])
+                    except Exception as e:
+                        logger.debug(f"Failed to restore hidden items for {target_win.label}: {e}")
+
+                # Notify module that view positioning/visibility was updated
+                if hasattr(target_win, "on_view_applied"):
+                    try:
+                        target_win.on_view_applied()
+                    except Exception as e:
+                        logger.debug(f"Failed in on_view_applied for {target_win.label}: {e}")
             except Exception as e:
                 logger.warning(f"Failed to reposition window {target_win.label}: {e}")
 
@@ -976,10 +1002,18 @@ def load_from_dict(
         if hasattr(win, "update_permission"):
             win.update_permission()
 
+        if "hidden_items" in wdata and wdata["hidden_items"]:
+            try:
+                from core.module_item_inspector import ModuleItemInspector
+                ModuleItemInspector.apply_hidden_items(win, wdata["hidden_items"])
+            except Exception as e:
+                logger.debug(f"Failed to apply hidden items to {win.label}: {e}")
+
     WindowBase._batch_loading = False
 
-    # Pump frames so ImGui evaluates real rect sizes of created windows before merging
-    pump_dpg_frames(2)
+    # Pump frames so ImGui evaluates real rect sizes of created windows before merging (only if merges exist)
+    if merge_requests:
+        pump_dpg_frames(2)
 
     # Reapply merges
     for src_uuid, tgt_uuid in merge_requests:
@@ -1001,8 +1035,9 @@ def load_from_dict(
         if src and (tgt := instances.get(tgt_entry)) and output_key is not None:
             src.connect_to(tgt, output=output_key)
 
-    # Final frame pump to settle layout geometry after merging
-    pump_dpg_frames(1)
+    # Final frame pump to settle layout geometry after merging (only if merges exist)
+    if merge_requests:
+        pump_dpg_frames(1)
 
     # Load and register views if they exist in layout data
     views = dict(data.get("views", {}))
@@ -1163,6 +1198,14 @@ def export_view(is_relative: bool = True) -> dict:
             "pos":   list(pos),
             "size":  [w, h],
         }
+
+        try:
+            from core.module_item_inspector import ModuleItemInspector
+            hidden = ModuleItemInspector.get_hidden_items(win)
+            if hidden:
+                entry["hidden_items"] = hidden
+        except Exception as e:
+            logger.debug(f"export_view: could not retrieve hidden items for {win.label}: {e}")
 
         if is_relative and viewport_width and viewport_height:
             entry["pos"]  = [(pos[0] / viewport_width) * 100.0,

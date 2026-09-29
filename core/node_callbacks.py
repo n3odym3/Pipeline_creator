@@ -85,6 +85,20 @@ class NodeCallbacksMixin:
                 )
                 dpg.add_separator(parent=self.node_popup_tag)
             elif kind not in ("link_out", "link_in"):
+                def _edit_module_cb(s: Any, a: Any, u: Any, *args: Any, **kwargs: Any) -> None:
+                    dpg.configure_item(self.node_popup_tag, show=False)
+                    from core.module_item_inspector import ModuleItemInspector
+                    target_inst = self.node_map.get(u)
+                    if target_inst:
+                        ModuleItemInspector.open_inspector(target_inst)
+
+                dpg.add_button(
+                    label="Edit Module",
+                    callback=_edit_module_cb,
+                    user_data=hovered_node,
+                    parent=self.node_popup_tag,
+                )
+                dpg.add_separator(parent=self.node_popup_tag)
                 dpg.add_button(
                     label="Rename Node",
                     callback=_rename_cb,
@@ -355,6 +369,15 @@ class NodeCallbacksMixin:
                         src.set_io_type(concrete[0])
                 elif hasattr(self, "_refresh_gate_io_type"):
                     self._refresh_gate_io_type(src)
+
+            # Immediate configuration for Working Directory output links
+            if getattr(src, "KIND", "") == "working_dir" and src_key == "Folder":
+                try:
+                    from core.working_directory_manager import working_directory_manager
+                    current_dir = str(working_directory_manager.get_directory())
+                    tgt.input_cb(data=current_dir, data_type=IOTypes.FOLDER_PATH)
+                except Exception as e:
+                    logger.error(f"Error configuring newly connected module with working directory: {e}")
 
     def delink_callback(self, sender: int, app_data: int, user_data: Any = None, *args: Any) -> None:
         """

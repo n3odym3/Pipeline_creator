@@ -270,12 +270,12 @@ class WindowBase:
             self.win_width, self.win_height = dpg.get_item_rect_size(self.winID)
             self.visible = dpg.is_item_visible(self.winID)
 
-        params = {field: getattr(self, field) for field in self._persistent_fields}
+        params = {field: getattr(self, field, None) for field in self._persistent_fields if hasattr(self, field)}
 
         if self.merged_into:
             params["merged_into"] = self.merged_into.UUID
 
-        return {
+        res = {
             "module": self.__class__.__module__.replace("modules.", ""),
             "class_name": self.__class__.__name__,
             "uuid": self.UUID,
@@ -284,6 +284,16 @@ class WindowBase:
             "visible": self.visible,
             "params": params,
         }
+
+        try:
+            from core.module_item_inspector import ModuleItemInspector
+            hidden = ModuleItemInspector.get_hidden_items(self)
+            if hidden:
+                res["hidden_items"] = hidden
+        except Exception:
+            pass
+
+        return res
 
     def close(self) -> None:
         """Clean up and unregister the window from the registry."""

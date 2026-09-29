@@ -101,6 +101,7 @@ class NodePopupMixin:
         btn_lo = f"{self.popup_tag}_btn_link_out"
         btn_li = f"{self.popup_tag}_btn_link_in"
         btn_gate = f"{self.popup_tag}_btn_gate"
+        btn_wd = f"{self.popup_tag}_btn_working_dir"
 
         if filter_lower:
             lo_score = fuzzy_score(filter_lower, "link out")
@@ -110,6 +111,13 @@ class NodePopupMixin:
                 fuzzy_score(filter_lower, "pass"),
                 fuzzy_score(filter_lower, "switch"),
                 fuzzy_score(filter_lower, "router"),
+            )
+            wd_score = max(
+                fuzzy_score(filter_lower, "working directory"),
+                fuzzy_score(filter_lower, "workspace"),
+                fuzzy_score(filter_lower, "folder"),
+                fuzzy_score(filter_lower, "directory"),
+                fuzzy_score(filter_lower, "cwd"),
             )
             bi_score = fuzzy_score(filter_lower, "built-in")
 
@@ -129,7 +137,13 @@ class NodePopupMixin:
                 else:
                     dpg.hide_item(btn_gate)
 
-            if lo_score > 0 or li_score > 0 or gate_score > 0 or bi_score > 50:
+            if dpg.does_item_exist(btn_wd):
+                if wd_score > 0 or bi_score > 50:
+                    dpg.show_item(btn_wd)
+                else:
+                    dpg.hide_item(btn_wd)
+
+            if lo_score > 0 or li_score > 0 or gate_score > 0 or wd_score > 0 or bi_score > 50:
                 dpg.show_item(builtin_header)
                 dpg.set_value(builtin_header, True)
             else:
@@ -140,6 +154,8 @@ class NodePopupMixin:
             dpg.show_item(btn_li)
             if dpg.does_item_exist(btn_gate):
                 dpg.show_item(btn_gate)
+            if dpg.does_item_exist(btn_wd):
+                dpg.show_item(btn_wd)
             dpg.set_value(builtin_header, False)
 
         for h in self._popup_headers:

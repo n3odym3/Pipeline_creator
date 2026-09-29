@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any, Callable, List, Optional, Union
 
 from loguru import logger
 
@@ -18,13 +18,34 @@ class WorkingDirectoryManager:
 
     _instance: Optional[WorkingDirectoryManager] = None
     current_directory: Path
+    _listeners: List[Callable[[Path], None]]
 
     def __new__(cls) -> WorkingDirectoryManager:
         if cls._instance is None:
             cls._instance = super(WorkingDirectoryManager, cls).__new__(cls)
             cls._instance.current_directory = Path.cwd()
+            cls._instance._listeners = []
 
         return cls._instance
+
+    def add_listener(self, callback: Callable[[Path], None]) -> None:
+        """Register a callback to be called whenever the working directory changes."""
+        if callback not in self._listeners:
+            self._listeners.append(callback)
+
+    def remove_listener(self, callback: Callable[[Path], None]) -> None:
+        """Unregister a working directory change callback."""
+        if callback in self._listeners:
+            self._listeners.remove(callback)
+
+    def notify_listeners(self, path: Optional[Path] = None) -> None:
+        """Notify all listeners of the current or given working directory."""
+        target_path = path or self.current_directory
+        for listener in list(self._listeners):
+            try:
+                listener(target_path)
+            except Exception as e:
+                logger.error(f"Error in working directory listener: {e}")
 
     def apply_default_config(self) -> None:
         """
@@ -58,20 +79,27 @@ class WorkingDirectoryManager:
 
     def set_directory(self, path: Union[str, Path]) -> None:
         """
-        Set the global working directory.
+        Set the global working directory and notify all listeners.
 
         Args:
             path: The new directory path.
         """
         try:
             new_path = Path(path).resolve()
+            if not new_path.exists():
+                try:
+                    new_path.mkdir(parents=True, exist_ok=True)
+                except Exception as e:
+                    logger.warning(f"Could not create directory {new_path}: {e}")
+
             if not new_path.is_dir():
                 logger.error(f"Invalid directory: {new_path}")
                 return
 
             os.chdir(new_path)
             self.current_directory = new_path
-            logger.debug(f"Working directory changed to: {self.current_directory}")
+            logger.info(f"Working directory changed to: {self.current_directory}")
+            self.notify_listeners(new_path)
         except Exception as e:
             logger.error(f"Failed to set working directory: {e}")
 

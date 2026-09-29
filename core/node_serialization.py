@@ -27,14 +27,14 @@ class NodeSerializationMixin:
 
     def serialize_link_nodes(self) -> List[Dict[str, Any]]:
         """
-        Serialize all native built-in nodes (Link Out, Link In, Gate) to a list of dicts.
+        Serialize all native built-in nodes (Link Out, Link In, Gate, Working Directory) to a list of dicts.
         Called by the workspace export so they survive save/reload.
         """
-        from core.node_link_proxies import _GateNode, _LinkInNode, _LinkOutNode
+        from core.node_link_proxies import _GateNode, _LinkInNode, _LinkOutNode, _WorkingDirNode
 
         result = []
         for node_id, instance in self.node_map.items():
-            if isinstance(instance, (_LinkOutNode, _LinkInNode, _GateNode)):
+            if isinstance(instance, (_LinkOutNode, _LinkInNode, _GateNode, _WorkingDirNode)):
                 data = instance.serialize()
                 pos = dpg.get_item_pos(node_id)
                 data["node_pos"] = list(pos) if pos else [100, 100]
@@ -71,13 +71,13 @@ class NodeSerializationMixin:
         uuid_to_instance: Dict[str, Any],
     ) -> None:
         """
-        Recreate built-in nodes (Link Out, Link In, Gate) from serialized data and rewire connections.
+        Recreate built-in nodes (Link Out, Link In, Gate, Working Directory) from serialized data and rewire connections.
 
         Args:
             link_nodes_data:  List of dicts from serialize_link_nodes().
             uuid_to_instance: Map of UUID -> module instance.
         """
-        from core.node_link_proxies import _GateNode, _LinkInNode, _LinkOutNode
+        from core.node_link_proxies import _GateNode, _LinkInNode, _LinkOutNode, _WorkingDirNode
 
         uuid_to_node_id: Dict[str, int] = {}
         proxy_by_uuid: Dict[str, Any] = {}
@@ -102,6 +102,11 @@ class NodeSerializationMixin:
                 io_type = data.get("io_type", "ANY")
                 proxy = _GateNode(label=label, uuid=uuid, is_open=is_open, io_type=io_type)
                 node_id = self._create_gate_node(pos, proxy)
+            elif kind == _WorkingDirNode.KIND:
+                label = data.get("label", "Working Directory")
+                auto_emit = data.get("auto_emit", True)
+                proxy = _WorkingDirNode(label=label, uuid=uuid, auto_emit=auto_emit)
+                node_id = self._create_working_dir_node(pos, proxy)
             else:
                 logger.warning(f"Unknown built-in node kind '{kind}' - skipping")
                 continue
@@ -174,6 +179,13 @@ class NodeSerializationMixin:
         for proxy in proxy_by_uuid.values():
             if getattr(proxy, "KIND", "") == _GateNode.KIND and hasattr(self, "_refresh_gate_io_type"):
                 self._refresh_gate_io_type(proxy)
+
+        # 5. Broadcast working directory for WorkingDir nodes
+        for proxy in proxy_by_uuid.values():
+            if getattr(proxy, "KIND", "") == _WorkingDirNode.KIND:
+                proxy._update_ui_text()
+                if getattr(proxy, "auto_emit", True):
+                    proxy.emit_directory()
 
         self.recolor_all_nodes()
 

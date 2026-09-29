@@ -98,8 +98,9 @@ class _LinkInNode:
         self._unsubscribe()
 
 
-# Re-export built-in Gate proxy
+# Re-export built-in proxies
 from core.node_gate import _GateNode
+from core.node_working_dir import _WorkingDirNode
 
-__all__ = ["_LinkOutNode", "_LinkInNode", "_GateNode"]
+__all__ = ["_LinkOutNode", "_LinkInNode", "_GateNode", "_WorkingDirNode"]
 

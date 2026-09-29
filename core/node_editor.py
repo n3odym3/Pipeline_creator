@@ -11,9 +11,10 @@ from core.input_output_types import IOTypes
 from core.module_registry import MODULES_REGISTRY, get_available_modules
 from core.node_callbacks import NodeCallbacksMixin
 from core.node_highlight import NodeHighlightMixin
-from core.node_link_proxies import _GateNode, _LinkInNode, _LinkOutNode
+from core.node_link_proxies import _GateNode, _LinkInNode, _LinkOutNode, _WorkingDirNode
 from core.node_popup import NodePopupMixin
 from core.node_serialization import NodeSerializationMixin
+from core.working_directory_manager import working_directory_manager
 
 
 class NodeEditor(NodeHighlightMixin, NodePopupMixin, NodeCallbacksMixin, NodeSerializationMixin):
@@ -80,7 +81,15 @@ class NodeEditor(NodeHighlightMixin, NodePopupMixin, NodeCallbacksMixin, NodeSer
         win_h = 600
         init_pos = (max(0, (vp_w - win_w) // 2), max(0, (vp_h - win_h) // 2))
 
-        with dpg.window(label=label, width=win_w, height=win_h, pos=init_pos, tag=self.winID, show=False):
+        with dpg.window(
+            label=label,
+            width=win_w,
+            height=win_h,
+            pos=init_pos,
+            tag=self.winID,
+            show=False,
+            on_close=self._on_window_close,
+        ):
             # Menu bar
             with dpg.menu_bar():
                 # Load
@@ -250,6 +259,18 @@ class NodeEditor(NodeHighlightMixin, NodePopupMixin, NodeCallbacksMixin, NodeSer
                             "Controls whether data is routed downstream, configurable per View.",
                             wrap=300,
                         )
+                    dpg.add_button(
+                        label="Working Directory",
+                        tag=f"{self.popup_tag}_btn_working_dir",
+                        callback=self._add_working_dir_node,
+                        width=-1,
+                    )
+                    with dpg.tooltip(parent=f"{self.popup_tag}_btn_working_dir"):
+                        dpg.add_text(
+                            "Global Workspace Working Directory node.\n"
+                            "Emits the folder path to connected modules whenever set or changed.",
+                            wrap=300,
+                        )
 
                 dpg.add_separator()
 
@@ -286,8 +307,21 @@ class NodeEditor(NodeHighlightMixin, NodePopupMixin, NodeCallbacksMixin, NodeSer
         dpg.focus_item(self.winID)
         dpg.focus_item(self.editor_tag)
 
+    def _on_window_close(
+        self, sender: Any = None, app_data: Any = None, user_data: Any = None, *args: Any, **kwargs: Any
+    ) -> None:
+        """Handler called when NodeEditor window is closed. Cleans up highlights and all module inspectors."""
+        from core.module_item_inspector import ModuleItemInspector
+
+        ModuleItemInspector.close_all()
+        self._clear_highlights()
+
     def hide(self) -> None:
-        """Hide the node editor window."""
+        """Hide the node editor window and close open inspectors."""
+        from core.module_item_inspector import ModuleItemInspector
+
+        ModuleItemInspector.close_all()
+        self._clear_highlights()
         dpg.hide_item(self.winID)
 
     def get_mouse_pos(self) -> Tuple[Tuple[float, float], Tuple[float, float]]:
@@ -616,6 +650,60 @@ class NodeEditor(NodeHighlightMixin, NodePopupMixin, NodeCallbacksMixin, NodeSer
         self._create_gate_node(self.mouse_pos)
         dpg.configure_item(self.popup_tag, show=False)
 
+    def _create_working_dir_node(self, pos: Tuple[float, float], proxy: Optional[_WorkingDirNode] = None) -> int:
+        """
+        Create the DPG node widget for a Working Directory built-in node.
+
+        Structure:
+            node ("Working Directory")
+            ├── node_attribute (Input)  ← "In" (accepts FOLDER_PATH / TRIGGER to update or resend)
+            ├── node_attribute (Static) → Browse button, Resend button, path label
+            ├── node_attribute (Output) → "Folder" (IOTypes.FOLDER_PATH)
+            └── node_attribute (Output) → "Trigger" (IOTypes.TRIGGER)
+        """
+        if proxy is None:
+            proxy = _WorkingDirNode()
+
+        with dpg.node(label=proxy.label, parent=self.editor_tag, pos=pos) as node_id:
+            with dpg.node_attribute(attribute_type=dpg.mvNode_Attr_Input, tag=f"{node_id}_In"):
+                dpg.add_text("In")
+                with dpg.tooltip(dpg.last_item()):
+                    dpg.add_text("IOType: Folder Path / Trigger / Cmd\nSets workspace folder or triggers re-send.", color=(150, 255, 150))
+
+            with dpg.node_attribute(attribute_type=dpg.mvNode_Attr_Static):
+                with dpg.group(horizontal=True):
+                    dpg.add_button(label="Browse", callback=lambda *a: proxy.on_browse_clicked())
+                    dpg.add_button(label="\uf064", callback=lambda *a: proxy.emit_directory())
+                    with dpg.tooltip(dpg.last_item()):
+                        dpg.add_text("Broadcast current working directory to downstream connections")
+                display_init = proxy._format_display_path(working_directory_manager.get_directory())
+                dpg.add_text(display_init, tag=proxy._dir_text_tag, color=(180, 220, 255))
+                with dpg.tooltip(dpg.last_item()):
+                    dpg.add_text("Current global workspace directory")
+
+            with dpg.node_attribute(attribute_type=dpg.mvNode_Attr_Output, tag=f"{node_id}_Folder"):
+                dpg.add_text("Folder")
+                with dpg.tooltip(dpg.last_item()):
+                    dpg.add_text("IOType: Folder Path", color=(150, 255, 150))
+
+            with dpg.node_attribute(attribute_type=dpg.mvNode_Attr_Output, tag=f"{node_id}_Trigger"):
+                dpg.add_text("Trigger")
+                with dpg.tooltip(dpg.last_item()):
+                    dpg.add_text("IOType: Trigger", color=(150, 255, 150))
+
+        proxy.node_id = node_id
+        proxy.editor = self
+        self.node_map[node_id] = proxy
+        return node_id
+
+    def _add_working_dir_node(
+        self, sender: int = 0, app_data: Any = None, user_data: Any = None, *args: Any, **kwargs: Any
+    ) -> None:
+        """Popup button callback — add a Working Directory node at the last right-click position."""
+        self._popup_click_handled = True
+        self._create_working_dir_node(self.mouse_pos)
+        dpg.configure_item(self.popup_tag, show=False)
+
     def _refresh_gate_io_type(self, gate_proxy: _GateNode) -> None:
         """
         Re-evaluate the inferred IOType of a Gate node based on its current links.
@@ -744,6 +832,14 @@ class NodeEditor(NodeHighlightMixin, NodePopupMixin, NodeCallbacksMixin, NodeSer
             except ImportError:
                 pass
 
+        if node_id in self.node_map:
+            try:
+                from core.module_item_inspector import ModuleItemInspector
+
+                ModuleItemInspector.close_inspector(self.node_map[node_id])
+            except Exception:
+                pass
+
         if hasattr(self.node_map[node_id], "close"):
             self.node_map[node_id].close()
         if dpg.does_item_exist(node_id):
@@ -755,7 +851,9 @@ class NodeEditor(NodeHighlightMixin, NodePopupMixin, NodeCallbacksMixin, NodeSer
     ) -> None:
         """Delete all nodes and links from the editor and reset mappings."""
         from core.module_registry import clear_registry
+        from core.module_item_inspector import ModuleItemInspector
 
+        ModuleItemInspector.close_all()
         self._clear_highlights()
 
         for link_id in list(self.link_map.keys()):

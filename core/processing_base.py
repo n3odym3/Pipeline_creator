@@ -129,6 +129,23 @@ class ProcessingBase:
         except NotImplementedError:
             return -1
 
+    def clear(self) -> None:
+        """Clear all pending items in in_queue and out_queue."""
+        while not self._in_queue.empty():
+            try:
+                self._in_queue.get_nowait()
+            except (queue.Empty, Exception):
+                break
+        while not self._out_queue.empty():
+            try:
+                self._out_queue.get_nowait()
+            except (queue.Empty, Exception):
+                break
+        try:
+            self._ctrl_queue.put_nowait(("clear", None))
+        except Exception:
+            pass
+
     def update_params(self, **kwargs: Any) -> None:
         """
         Send a parameter update command to the worker process.
@@ -151,7 +168,13 @@ class ProcessingBase:
                         return
                     elif cmd == "update" and payload:
                         self.params.update(payload)
-            except queue.Empty:
+                    elif cmd == "clear":
+                        while not self._in_queue.empty():
+                            try:
+                                self._in_queue.get_nowait()
+                            except (queue.Empty, Exception):
+                                break
+            except (queue.Empty, Exception):
                 pass
 
             try:
@@ -161,7 +184,17 @@ class ProcessingBase:
 
             try:
                 result = self._process_data(data, self.params)
-                self._out_queue.put(result)
+                try:
+                    self._out_queue.put_nowait(result)
+                except queue.Full:
+                    try:
+                        self._out_queue.get_nowait()
+                    except (queue.Empty, Exception):
+                        pass
+                    try:
+                        self._out_queue.put_nowait(result)
+                    except (queue.Full, Exception):
+                        pass
             except Exception as e:
                 logger.warning(f"Error in worker: {e}")
 

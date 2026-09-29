@@ -281,7 +281,11 @@ class FileExplorer:
         init_dir = str(Path(default_path)) if default_path else str(Path.cwd())
         return self._run_dialog(filedialog.askdirectory, callback=callback, initialdir=init_dir)
 
+    # Alias for compatibility
+    select_directory = select_folder
+
 
 # Global singleton instance
 file_explorer: FileExplorer = FileExplorer()
+
 

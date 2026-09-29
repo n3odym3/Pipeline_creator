@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 
 import dearpygui.dearpygui as dpg
 from loguru import logger
@@ -47,6 +47,8 @@ class StartupDialog:
             self.MODE_SCRIPT: {},
             self.MODE_PIPELINE: {},
         }
+        self.confirmed_action: Optional[Tuple[str, Path]] = None
+        self._pump_frames_active: bool = False
 
     def show(self, pump_frames: bool = False) -> None:
         """
@@ -63,6 +65,8 @@ class StartupDialog:
         except Exception as exc:
             logger.warning(f"StartupDialog: display_scaling failed: {exc}")
 
+        self._pump_frames_active = pump_frames
+        self.confirmed_action = None
         self._build_dialog()
 
         if pump_frames:
@@ -83,6 +87,9 @@ class StartupDialog:
             for _ in range(2):
                 if dpg.is_dearpygui_running():
                     dpg.render_dearpygui_frame()
+
+            self._pump_frames_active = False
+            self._execute_confirmed_action()
 
     def _resolve_folder_path(self, folder_key: str, default_name: str) -> Path:
         """Resolve configured folder path relative to PROJECT_ROOT if needed."""
@@ -176,6 +183,23 @@ class StartupDialog:
             custom_path = Path(path_str)
             self.selected_file = custom_path
 
+    def _execute_confirmed_action(self) -> None:
+        """Execute confirmed pipeline or automation script load outside of modal frame loop."""
+        if not self.confirmed_action:
+            return
+        selected_mode, selected_path = self.confirmed_action
+        self.confirmed_action = None
+
+        if selected_mode == self.MODE_PIPELINE:
+            logger.info(f"Startup loader: loading pipeline '{selected_path}'")
+            self.main_win.load_workspace_from_path(str(selected_path))
+        else:
+            logger.info(f"Startup loader: running automation script '{selected_path}'")
+            from core.automation_manager import automation_manager
+
+            automation_manager.set_script_path(str(selected_path))
+            automation_manager.run()
+
     def _on_confirm(
         self,
         sender: Any = None,
@@ -191,18 +215,13 @@ class StartupDialog:
             return
 
         selected_mode = dpg.get_value(self._radio_tag)
+        self.confirmed_action = (selected_mode, selected_path)
         if dpg.does_item_exist(self.winID):
             dpg.delete_item(self.winID)
 
-        if selected_mode == self.MODE_PIPELINE:
-            logger.info(f"Startup loader: loading pipeline '{selected_path}'")
-            self.main_win.load_workspace_from_path(str(selected_path))
-        else:
-            logger.info(f"Startup loader: running automation script '{selected_path}'")
-            from core.automation_manager import automation_manager
-
-            automation_manager.set_script_path(str(selected_path))
-            automation_manager.run()
+        # If we are not running a blocking frame pump loop, execute action now
+        if not self._pump_frames_active:
+            self._execute_confirmed_action()
 
     def _on_skip(
         self,
