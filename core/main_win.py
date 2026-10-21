@@ -91,13 +91,13 @@ class MainWin:
         -----------------
         user     : theme, tutorial, pinned, tools, adapt_display, 
                      minimize_tray, fullscreen
-        advanced : + workspace, node_editor, fusion_manager, logs, edit_config, install_module, uninstall_module
+        advanced : + workspace, node_editor, fusion_manager, logs, edit_config, app_state, install_module, uninstall_module
         dev      : + check_deps, debug, font_manager, item_registry,
                      metrics, about
         """
         _user     = {"theme", "tutorial", "pinned", "tools", "adapt_display", "minimize_tray", "fullscreen"}
         _advanced = _user | {
-            "workspace", "node_editor", "fusion_manager", "logs", "edit_config", "install_module", "uninstall_module",
+            "workspace", "node_editor", "fusion_manager", "logs", "edit_config", "app_state", "install_module", "uninstall_module",
         }
         _dev      = _advanced | {
             "check_deps", "debug", "font_manager",
@@ -254,6 +254,11 @@ class MainWin:
             _ec_tag = dpg.generate_uuid()
             self._mode_tags["edit_config"] = _ec_tag
             dpg.add_menu_item(tag=_ec_tag, label="Edit Config", callback=self._on_edit_config)
+
+            # App State  (advanced+)
+            _as_tag = dpg.generate_uuid()
+            self._mode_tags["app_state"] = _as_tag
+            dpg.add_menu_item(tag=_as_tag, label="App State", callback=self._on_show_app_state)
 
             # Install Module  (advanced+)
             _im_tag = dpg.generate_uuid()
@@ -1082,6 +1087,11 @@ class MainWin:
         """Open the Visual Config Editor window."""
         from core.config_editor import config_editor
         config_editor.show()
+
+    def _on_show_app_state(self, sender=None, app_data=None, user_data=None, *args):
+        """Open the App State Inspector & Editor window."""
+        from core.app_state_editor import app_state_editor
+        app_state_editor.show()
 
     def _on_install_module(self, sender=None, app_data=None, user_data=None, *args):
         """Open the Module Installer window."""
