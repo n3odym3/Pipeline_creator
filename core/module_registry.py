@@ -330,6 +330,8 @@ def get_available_modules(base_path: str = "modules", force_reload: bool = False
     # Resolve base_path relative to project root if it's not absolute
     if not Path(base_path).is_absolute():
         search_path = PROJECT_ROOT / base_path
+    else:
+        search_path = Path(base_path)
     if not search_path.exists():
         logger.warning(f"Modules path '{search_path}' does not exist")
         return {}
@@ -449,8 +451,9 @@ def get_available_modules(base_path: str = "modules", force_reload: bool = False
 
             if validator:
                 report = validator.validate_module(str(full_path))
-                if not report.is_valid:
+                if report.has_issues:
                     module_validation_manager.validation_issues[str(full_path)] = report
+                if not report.is_valid:
                     logger.warning(f"Module '{module_name}' failed validation and will not be loaded")
                     continue
 
@@ -505,6 +508,12 @@ def get_available_modules(base_path: str = "modules", force_reload: bool = False
                 logger.warning(f"Module '{module_name}' failed to load: missing package '{missing_package}'")
             else:
                 logger.error(f"Failed to load module {module_name}: {e}")
+                from core.module_validation_manager import ValidationReport, module_validation_manager
+                rep = module_validation_manager.validation_issues.get(str(full_path))
+                if rep is None:
+                    rep = ValidationReport(module_path=str(full_path), is_valid=False)
+                    module_validation_manager.validation_issues[str(full_path)] = rep
+                rep.add_error(f"ImportError during load: {e}", category="runtime")
             if not skip_validation:
                 continue
             # When skip_validation is on, fall through to still try registering if EXPORTED_CLASS exists
@@ -530,6 +539,12 @@ def get_available_modules(base_path: str = "modules", force_reload: bool = False
                 continue
         except Exception as e:
             logger.error(f"Failed to load module {module_name}: {e}")
+            from core.module_validation_manager import ValidationReport, module_validation_manager
+            rep = module_validation_manager.validation_issues.get(str(full_path))
+            if rep is None:
+                rep = ValidationReport(module_path=str(full_path), is_valid=False)
+                module_validation_manager.validation_issues[str(full_path)] = rep
+            rep.add_error(f"Runtime loading exception: {e}", category="runtime")
             continue
 
         # Only validate and register if module has EXPORTED_CLASS
@@ -537,9 +552,10 @@ def get_available_modules(base_path: str = "modules", force_reload: bool = False
             # Validate module AFTER confirming it's an actual module entry point
             if validator:
                 report = validator.validate_module(str(full_path))
-                if not report.is_valid:
-                    # Store validation issues and skip registration
+                if report.has_issues:
+                    # Store validation issues (errors and/or warnings)
                     module_validation_manager.validation_issues[str(full_path)] = report
+                if not report.is_valid:
                     logger.warning(f"Module '{module_name}' failed validation and will not be loaded")
                     continue
             

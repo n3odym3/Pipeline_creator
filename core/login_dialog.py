@@ -72,18 +72,24 @@ def show_login_dialog(
 
     if pump_frames:
         while dpg.is_dearpygui_running() and dpg.does_item_exist(_WIN_TAG):
-            vp_w = dpg.get_viewport_client_width()
-            vp_h = dpg.get_viewport_client_height()
-            win_size = dpg.get_item_rect_size(_WIN_TAG)
-            if win_size[0] > 0 and win_size[1] > 0:
-                pos_x = max(0, (vp_w - win_size[0]) // 2)
-                pos_y = max(0, (vp_h - win_size[1]) // 2)
-                dpg.set_item_pos(_WIN_TAG, [pos_x, pos_y])
-
             from core.automation_manager import automation_manager
 
             automation_manager.process_pending_steps()
             dpg.render_dearpygui_frame()
+
+            if not dpg.does_item_exist(_WIN_TAG):
+                break
+
+            try:
+                vp_w = dpg.get_viewport_client_width()
+                vp_h = dpg.get_viewport_client_height()
+                win_size = dpg.get_item_rect_size(_WIN_TAG)
+                if win_size[0] > 0 and win_size[1] > 0:
+                    pos_x = max(0, (vp_w - win_size[0]) // 2)
+                    pos_y = max(0, (vp_h - win_size[1]) // 2)
+                    dpg.set_item_pos(_WIN_TAG, [pos_x, pos_y])
+            except Exception:
+                pass
 
         for _ in range(2):
             if dpg.is_dearpygui_running():

@@ -297,6 +297,10 @@ class WindowBase:
 
     def close(self) -> None:
         """Clean up and unregister the window from the registry."""
+        if getattr(self, "_is_closing", False):
+            return
+        self._is_closing = True
+
         logger.trace(f"Closing {self.label} ({self.UUID})")
         if hasattr(self, "on_close") and callable(self.on_close):
             try:
@@ -335,15 +339,25 @@ class WindowBase:
             logger.warning(f"Failed to scan DPG items for UUID {self.UUID}: {e}")
 
         if dpg.does_item_exist(self.winID):
-            dpg.delete_item(self.winID)
+            try:
+                dpg.delete_item(self.winID)
+            except Exception as e:
+                logger.warning(f"Failed to delete winID {self.winID}: {e}")
 
         sub_windows = getattr(self, "sub_windows", [])
         for sub_win in sub_windows:
-            if dpg.does_item_exist(sub_win):
-                dpg.delete_item(sub_win)
+            try:
+                if dpg.does_item_exist(sub_win):
+                    dpg.delete_item(sub_win)
+            except Exception as e:
+                logger.warning(f"Failed to delete sub_win {sub_win}: {e}")
 
-        if dpg.does_item_exist(self.handler_tag):
-            dpg.delete_item(self.handler_tag)
+        if hasattr(self, "handler_tag") and self.handler_tag:
+            try:
+                if dpg.does_item_exist(self.handler_tag):
+                    dpg.delete_item(self.handler_tag)
+            except Exception as e:
+                logger.warning(f"Failed to delete handler_tag {self.handler_tag}: {e}")
 
         for tag in tags_to_delete:
             try:

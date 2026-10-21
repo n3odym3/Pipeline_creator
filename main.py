@@ -143,7 +143,7 @@ if __name__ == "__main__":
     from core.paths import LOGS_DIR, PROJECT_ROOT
     from core.splash import close_splash, show_splash, update_splash_status
 
-    # Display splash screen
+    # Display splash screen as early as possible
     splash_cfg = config.get("Splash", {})
     if splash_cfg.get("enabled", True):
         splash_image = splash_cfg.get("image", "ressources/Polypy.png")
@@ -367,4 +367,3 @@ if __name__ == "__main__":
 
     clear_registry()
     dpg.destroy_context()
-
