@@ -156,7 +156,7 @@ cd Pipeline_creator
 # Install dependencies
 pip install -r requirements.txt
 # Or :
-pip install dearpygui loguru numpy pillow numpy
+pip install dearpygui loguru numpy pillow
 ```
 
 ### Launching the Application
