@@ -18,6 +18,7 @@ class HelloWorld_win(WindowBase):
         pos: Tuple[int, int] = (10, 10),
         uuid: Optional[str] = None,
         visible: bool = True,
+        outputs: Optional[Dict[str, Any]] = None
     ) -> None:
         super().__init__(
             label=label,
@@ -26,6 +27,7 @@ class HelloWorld_win(WindowBase):
             win_height=win_height,
             uuid=uuid,
             visible=visible,
+            outputs=outputs,
         )
 
         self._persistent_fields = ["label"]
