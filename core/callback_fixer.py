@@ -1,10 +1,15 @@
 """
-Callback signature normalization for Pipeline Creator.
+Automatic callback signature fixer for Pipeline Creator.
 
-Ensures DearPyGui callbacks accept variable arguments (*args, **kwargs)
-to prevent signature mismatch issues when compiled with Nuitka.
-Modifies function signatures in-place while preserving code formatting,
-comments, and docstrings, with AST validation before saving.
+Surgically fixes DearPyGui callbacks that lack '*args' / '**kwargs' to ensure
+robustness when compiled with Nuitka.
+
+Uses a lightweight, dependency-free Search & Replace technique:
+1. Locates the method header via AST line coordinates.
+2. Identifies the closing parenthesis of the parameter list using a simple scanner.
+3. Surgically inserts '*args, **kwargs' preserving all existing comments, docstrings,
+   and formatting.
+4. Validates the resulting code with 'ast.parse()' before saving to disk.
 """
 
 from __future__ import annotations
@@ -25,9 +30,8 @@ from core.static_checks import (
 
 def _find_matching_paren(text: str, start_paren_idx: int) -> int:
     """
-    Find the index of the matching closing parenthesis for '(' at start_paren_idx.
-
-    Ignores parentheses nested inside string literals and comments.
+    Find the index of the matching closing parenthesis ')' for the '(' at start_paren_idx.
+    Correctly ignores parentheses inside strings, quotes, and comments.
     """
     depth = 0
     in_quote: Optional[str] = None
@@ -66,9 +70,9 @@ def _find_matching_paren(text: str, start_paren_idx: int) -> int:
 
 def _fix_signature_header(header: str, method_node: FunctionNode) -> Optional[str]:
     """
-    Insert missing *args / **kwargs into a function definition header.
+    Surgically insert *args / **kwargs into the parameter list of a function header.
 
-    Preserves existing formatting, trailing commas, line breaks, and annotations.
+    Preserves formatting, trailing commas, line breaks, and return type annotations.
     """
     name_pos = header.find(method_node.name)
     if name_pos == -1:
@@ -87,9 +91,9 @@ def _fix_signature_header(header: str, method_node: FunctionNode) -> Optional[st
     has_kwarg = method_node.args.kwarg is not None
 
     if has_vararg and has_kwarg:
-        return None  # Signature already complete
+        return None  # Already fully robust
 
-    # Case 1: **kwargs present, insert *args
+    # Case 1: **kwargs is already present, only *args is missing
     if has_kwarg and not has_vararg:
         kw_pos = param_text.rfind("**")
         if kw_pos != -1:
@@ -99,7 +103,7 @@ def _fix_signature_header(header: str, method_node: FunctionNode) -> Optional[st
 
     # Case 2: Missing *args (and potentially missing **kwargs)
     elif not has_vararg:
-        # Convert bare keyword-only separator '*' to '*args' if present
+        # If bare '*' exists (keyword-only separator), convert it to '*args'
         if method_node.args.kwonlyargs:
             new_param_text = re.sub(r"(?<=[,(])\s*\*\s*(?=,)", " *args", param_text)
             if not has_kwarg and "**" not in new_param_text:
@@ -109,7 +113,7 @@ def _fix_signature_header(header: str, method_node: FunctionNode) -> Optional[st
                 new_param_text = stripped + insert + ws
         else:
             stripped = param_text.rstrip()
-            ws = param_text[len(stripped):]  # Preserve trailing whitespace/indentation before ')'
+            ws = param_text[len(stripped):]  # Preserves multi-line indentation before ')'
             if stripped == "":
                 insert = "*args, **kwargs"
             elif stripped.endswith(","):
@@ -128,14 +132,14 @@ def fix_callback_signatures_in_file(
     create_backup: bool = True,
 ) -> Tuple[int, List[str]]:
     """
-    Normalize DearPyGui callback signatures in the specified file.
+    Surgically fix fragile DearPyGui callback signatures in the specified file.
 
     Args:
-        filepath: Path to the target Python file.
-        create_backup: If True, creates a .bak backup file before modifying.
+        filepath: Path to the Python file to fix.
+        create_backup: If True, writes a .bak copy before modifying.
 
     Returns:
-        Tuple containing the count of updated callbacks and their method names.
+        (count_of_fixes, list_of_fixed_method_names)
     """
     path = Path(filepath)
     if not path.is_file():
@@ -163,21 +167,21 @@ def fix_callback_signatures_in_file(
         return 0, []
 
     lines = source.splitlines(keepends=True)
-    # Process bottom-to-top to avoid invalidating line offsets
+    # Process from bottom to top so line modifications do not alter earlier lines
     fragile_sorted = sorted(fragile_methods, key=lambda item: item[0].lineno, reverse=True)
 
     modified_methods: List[str] = []
 
     for method, _ in fragile_sorted:
         start_idx = method.lineno - 1
-        # Advance past decorators to reach the function definition
+        # Advance to 'def ' line if lineno pointed to a decorator
         while start_idx < len(lines) and not lines[start_idx].lstrip().startswith(("def ", "async def ")):
             start_idx += 1
 
         if start_idx >= len(lines):
             continue
 
-        # Accumulate header lines until the parameter list closes and ':' is reached
+        # Accumulate header lines until closing ')' and ':' are found
         accumulated = ""
         end_idx = start_idx
         while end_idx < len(lines):
@@ -204,7 +208,7 @@ def fix_callback_signatures_in_file(
 
     new_source = "".join(lines)
 
-    # Validate syntax integrity before saving
+    # Safety validation: parse AST to guarantee zero syntax errors
     try:
         ast.parse(new_source)
     except SyntaxError as e:
@@ -232,14 +236,10 @@ def fix_all_callbacks(
     create_backup: bool = True,
 ) -> Dict[str, List[str]]:
     """
-    Scan and normalize callback signatures across Python files in a directory.
-
-    Args:
-        target_dir: Target directory or file path. Defaults to the modules directory.
-        create_backup: If True, creates .bak backup files before modifying.
+    Scan and fix fragile DearPyGui callbacks across all modules in target_dir.
 
     Returns:
-        Dictionary mapping file paths to lists of updated method names.
+        Dictionary mapping file path string to list of fixed method names.
     """
     from core.paths import MODULES_DIR, PROJECT_ROOT
 

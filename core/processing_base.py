@@ -155,32 +155,43 @@ class ProcessingBase:
         """
         self._ctrl_queue.put(("update", kwargs))
 
+    def _drain_ctrl_queue(self) -> bool:
+        """Apply all pending control commands (worker side). Returns True if a stop was requested."""
+        try:
+            while True:
+                cmd, payload = self._ctrl_queue.get_nowait()
+                if cmd == "stop":
+                    return True
+                elif cmd == "update" and payload:
+                    self.params.update(payload)
+                elif cmd == "clear":
+                    while not self._in_queue.empty():
+                        try:
+                            self._in_queue.get_nowait()
+                        except (queue.Empty, Exception):
+                            break
+        except (queue.Empty, Exception):
+            pass
+        return False
+
     def _worker_entrypoint(self) -> None:
         """
         Internal method run by the worker process.
         Listens for control commands and data to process.
         """
         while True:
-            try:
-                while True:
-                    cmd, payload = self._ctrl_queue.get_nowait()
-                    if cmd == "stop":
-                        return
-                    elif cmd == "update" and payload:
-                        self.params.update(payload)
-                    elif cmd == "clear":
-                        while not self._in_queue.empty():
-                            try:
-                                self._in_queue.get_nowait()
-                            except (queue.Empty, Exception):
-                                break
-            except (queue.Empty, Exception):
-                pass
+            if self._drain_ctrl_queue():
+                return
 
             try:
                 data = self._in_queue.get(timeout=0.01)
             except queue.Empty:
                 continue
+
+            # Params updates sent right before this item was submitted may not have been read yet
+            # (the worker was blocked on the input queue): apply them before processing.
+            if self._drain_ctrl_queue():
+                return
 
             try:
                 result = self._process_data(data, self.params)

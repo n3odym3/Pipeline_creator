@@ -86,6 +86,7 @@ class IOTypes(str, Enum):
     CMD_LIST = ("cmd_list", "list", "Sequential list of processing commands")
     STATUS_DICT = ("status_dict", "dict", "Module health and operational status metadata")
     DATALIST = ("datalist", "list", "Structured X/Y data pairs for plotting or analysis")
+    DATAFRAME = ("dataframe", "pd.DataFrame", "Tabular data (pandas). Optional metadata (title, labels, limits...) in df.attrs")
     SAMPLE = ("sample", "dict", "Data sample with name, uuid, x, y, and optional action (select/unselect/rename)")
     POINT_LIST = ("point_list", "list", "List of 2D coordinates [[x, y], ...]")
     ROI_SAMPLE = ("roi_sample", "dict", "ROI data: {uuid, name, rect: [x,y,w,h], action, ...}")

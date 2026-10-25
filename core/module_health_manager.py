@@ -67,15 +67,17 @@ class ModuleHealthManager:
 
             from core.dependency_manager import dependency_manager
             from core.module_validation_manager import module_validation_manager
+            from core.paths import is_compiled
 
-            has_dep_issues = bool(dependency_manager.missing_deps)
+            compiled = is_compiled()
+            has_dep_issues = bool(dependency_manager.missing_deps) if not compiled else False
             has_validation_issues = any(
                 report.has_issues for report in module_validation_manager.validation_issues.values()
             )
 
             issues_count = sum(1 for r in module_validation_manager.validation_issues.values() if r.has_issues)
             logger.debug(
-                f"Health check: dependencies={has_dep_issues} ({len(dependency_manager.missing_deps)} modules), "
+                f"Health check: dependencies={has_dep_issues} ({len(dependency_manager.missing_deps)} modules, compiled={compiled}), "
                 f"validation={has_validation_issues} ({issues_count} modules)"
             )
 
@@ -374,7 +376,8 @@ class ModuleHealthManager:
         logger.success(msg)
 
         # Refresh dialog to reflect new clean state
-        has_dep = bool(dependency_manager.missing_deps)
+        from core.paths import is_compiled
+        has_dep = bool(dependency_manager.missing_deps) if not is_compiled() else False
         has_val = any(rep.has_issues for rep in module_validation_manager.validation_issues.values())
         if dpg.does_item_exist(self.winID):
             dpg.delete_item(self.winID)
@@ -411,7 +414,8 @@ class ModuleHealthManager:
         logger.success(f"Fixed {count} callback(s) in {Path(module_path).name}: {', '.join(fixed)}")
 
         # Refresh dialog
-        has_dep = bool(dependency_manager.missing_deps)
+        from core.paths import is_compiled
+        has_dep = bool(dependency_manager.missing_deps) if not is_compiled() else False
         has_val = any(rep.has_issues for rep in module_validation_manager.validation_issues.values())
         if dpg.does_item_exist(self.winID):
             dpg.delete_item(self.winID)

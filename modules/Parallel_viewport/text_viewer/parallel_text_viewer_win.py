@@ -38,6 +38,7 @@ class Parallel_viewer_win(WindowBase):
         self.outputs = {
             "Out": IOTypes.TEXT
         }
+        self._persistent_fields=[]
         self.connections = {k: [] for k in self.outputs}
         
         # Monitoring thread (like binarize pattern)

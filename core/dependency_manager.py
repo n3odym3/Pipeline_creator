@@ -56,6 +56,11 @@ class DependencyManager:
         if clear_existing:
             self.missing_deps.clear()
 
+        from core.paths import is_compiled
+        if is_compiled():
+            logger.debug("Compiled executable mode: skipping requirements.txt scanning (incompatible modules are ignored)")
+            return
+
         full_modules_path = Path(modules_path)
         if not full_modules_path.is_absolute():
             full_modules_path = PROJECT_ROOT / modules_path
@@ -157,6 +162,11 @@ class DependencyManager:
         Returns:
             True if installation was successful, False otherwise.
         """
+        from core.paths import is_compiled
+        if is_compiled():
+            logger.error(f"Cannot install package '{package}': pip is not supported in compiled executable mode")
+            return False
+
         if self.install_in_progress:
             logger.warning("Installation already in progress")
             return False
@@ -199,6 +209,11 @@ class DependencyManager:
         Returns:
             Dictionary mapping package names to success status.
         """
+        from core.paths import is_compiled
+        if is_compiled():
+            logger.error("Cannot install packages: pip is not supported in compiled executable mode")
+            return {pkg: False for pkg in packages}
+
         if self.install_in_progress:
             logger.warning("Installation already in progress")
             return {pkg: False for pkg in packages}

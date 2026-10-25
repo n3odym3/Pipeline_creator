@@ -339,7 +339,9 @@ def get_available_modules(base_path: str = "modules", force_reload: bool = False
     # Scan requirements.txt files for missing package dependencies
     try:
         from core.dependency_manager import dependency_manager
-        dependency_manager.check_all_modules(str(search_path), clear_existing=force_reload)
+        from core.paths import is_compiled
+        if not is_compiled():
+            dependency_manager.check_all_modules(str(search_path), clear_existing=force_reload)
     except Exception as e:
         logger.warning(f"Could not check requirements.txt files: {e}")
     # Pre-add all module directories to sys.path so their local libraries are immediately importable.
@@ -435,11 +437,18 @@ def get_available_modules(base_path: str = "modules", force_reload: bool = False
 
                 missing_imports_retry = _check_imports_statically(str(full_path))
                 if missing_imports_retry:
-                    if module_folder not in missing_deps_detected:
-                        missing_deps_detected[module_folder] = []
-                    missing_deps_detected[module_folder].extend(missing_imports_retry)
-                    logger.warning(f"Module '{module_name}' has missing packages: {', '.join(missing_imports_retry)}")
-                    logger.debug(f"Skipping module '{module_name}' due to missing dependencies (after retry with local paths)")
+                    from core.paths import is_compiled
+                    if is_compiled():
+                        logger.info(
+                            f"Module '{module_name}' ignored (incompatible: missing dependencies in compiled mode: "
+                            f"{', '.join(missing_imports_retry)})"
+                        )
+                    else:
+                        if module_folder not in missing_deps_detected:
+                            missing_deps_detected[module_folder] = []
+                        missing_deps_detected[module_folder].extend(missing_imports_retry)
+                        logger.warning(f"Module '{module_name}' has missing packages: {', '.join(missing_imports_retry)}")
+                        logger.debug(f"Skipping module '{module_name}' due to missing dependencies (after retry with local paths)")
                     continue
                 else:
                     logger.info(f"Module '{module_name}' resolved missing packages after adding local paths to sys.path")
@@ -502,10 +511,16 @@ def get_available_modules(base_path: str = "modules", force_reload: bool = False
             # Fallback: extract missing package from runtime error
             missing_package = _extract_missing_package(str(e))
             if missing_package:
-                if module_folder not in missing_deps_detected:
-                    missing_deps_detected[module_folder] = []
-                missing_deps_detected[module_folder].append(missing_package)
-                logger.warning(f"Module '{module_name}' failed to load: missing package '{missing_package}'")
+                from core.paths import is_compiled
+                if is_compiled():
+                    logger.info(
+                        f"Module '{module_name}' ignored (incompatible: missing package '{missing_package}' in compiled mode)"
+                    )
+                else:
+                    if module_folder not in missing_deps_detected:
+                        missing_deps_detected[module_folder] = []
+                    missing_deps_detected[module_folder].append(missing_package)
+                    logger.warning(f"Module '{module_name}' failed to load: missing package '{missing_package}'")
             else:
                 logger.error(f"Failed to load module {module_name}: {e}")
                 from core.module_validation_manager import ValidationReport, module_validation_manager
@@ -565,7 +580,8 @@ def get_available_modules(base_path: str = "modules", force_reload: bool = False
             module_registry[module_name] = cls
     
     # Report detected missing dependencies
-    if missing_deps_detected:
+    from core.paths import is_compiled
+    if missing_deps_detected and not is_compiled():
         logger.info(f"Detected {len(missing_deps_detected)} module(s) with missing dependencies")
         _report_missing_dependencies(missing_deps_detected)
     
@@ -644,6 +660,10 @@ def _report_missing_dependencies(missing_deps: Dict[str, List[str]]) -> None:
     Report missing dependencies to the dependency manager.
     This allows the UI dialog to show them for installation.
     """
+    from core.paths import is_compiled
+    if is_compiled():
+        return
+
     try:
         from core.dependency_manager import dependency_manager
 
@@ -979,15 +999,22 @@ def load_from_dict(
             module_name = wdata.get('module', 'unknown').split('.')[-1]
             missing_package = _extract_missing_package(str(e))
             
+            from core.paths import is_compiled
             if missing_package:
-                try:
-                    from core.dependency_manager import dependency_manager
-                    if module_name not in dependency_manager.missing_deps:
-                        dependency_manager.missing_deps[module_name] = []
-                    if missing_package not in dependency_manager.missing_deps[module_name]:
-                        dependency_manager.missing_deps[module_name].append(missing_package)
-                except ImportError:
-                    pass
+                if is_compiled():
+                    logger.info(
+                        f"Module '{module_name}' ignored during workspace load "
+                        f"(incompatible: missing package '{missing_package}' in compiled mode)"
+                    )
+                else:
+                    try:
+                        from core.dependency_manager import dependency_manager
+                        if module_name not in dependency_manager.missing_deps:
+                            dependency_manager.missing_deps[module_name] = []
+                        if missing_package not in dependency_manager.missing_deps[module_name]:
+                            dependency_manager.missing_deps[module_name].append(missing_package)
+                    except ImportError:
+                        pass
             
             continue
         except Exception as e:

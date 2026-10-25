@@ -996,14 +996,21 @@ class MainWin:
             return
 
         from core.module_health_manager import module_health_manager
+        from core.paths import is_compiled
         
-        if dependency_manager.missing_deps or module_validation_manager.validation_issues:
+        compiled = is_compiled()
+        has_dep_issues = bool(dependency_manager.missing_deps) if not compiled else False
+        has_val_issues = bool(module_validation_manager.validation_issues)
+
+        if has_dep_issues or has_val_issues:
             # Check if any missing deps / validation issues actually relate to modules in the active workspace
             loaded_module_names = {
                 inst.__class__.__module__.split('.')[-1] for inst in MODULES_REGISTRY.values()
             }
-            has_workspace_dep_issue = any(
-                mod_name in loaded_module_names for mod_name in dependency_manager.missing_deps
+            has_workspace_dep_issue = (
+                any(mod_name in loaded_module_names for mod_name in dependency_manager.missing_deps)
+                if not compiled
+                else False
             )
             has_workspace_val_issue = any(
                 Path(file_path).stem in loaded_module_names
