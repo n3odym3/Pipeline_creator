@@ -81,7 +81,7 @@
             "params": {
                 "label": "Sample Container",
                 "export_path": "",
-                "duplicate": "append"
+                "duplicate_mode": "append"
             },
             "node_pos": [
                 204,

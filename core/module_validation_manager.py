@@ -151,8 +151,8 @@ class ModuleValidator:
     """Validates Pipeline Creator modules against project requirements."""
 
     # Requirements specific to WindowBase GUI modules
-    WINDOW_REQUIRED_PARAMS = ["label", "win_width", "win_height", "pos", "uuid", "outputs", "visible"]
-    WINDOW_REQUIRED_ATTRIBUTES = ["accepted_input_types", "outputs", "connections", "_persistent_fields"]
+    WINDOW_REQUIRED_PARAMS = ["label", "win_width", "win_height", "pos", "uuid", "visible"]
+    WINDOW_REQUIRED_ATTRIBUTES = ["accepted_input_types", "outputs"]
     WINDOW_REQUIRED_METHODS = ["input_cb"]
 
     # Requirements specific to ProcessingBase background modules
@@ -398,15 +398,18 @@ class ModuleValidator:
             return
 
         param_names = [arg.arg for arg in init_method.args.args if arg.arg != "self"]
+        has_kwarg = init_method.args.kwarg is not None
 
-        for required_param in self.WINDOW_REQUIRED_PARAMS:
-            if required_param not in param_names:
-                report.add_warning(
-                    f"Constructor missing recommended parameter: {required_param}",
-                    line=init_method.lineno,
-                    suggestion=f"Add {required_param} parameter to __init__",
-                    category="structure",
-                )
+        # If constructor accepts **kwargs, arbitrary WindowBase parameters are safely forwarded
+        if not has_kwarg:
+            for required_param in self.WINDOW_REQUIRED_PARAMS:
+                if required_param not in param_names:
+                    report.add_warning(
+                        f"Constructor missing recommended parameter: {required_param}",
+                        line=init_method.lineno,
+                        suggestion=f"Add {required_param} or **kwargs to __init__",
+                        category="structure",
+                    )
 
         has_super_call = self._has_super_init_call(init_method)
         if not has_super_call:
@@ -419,28 +422,37 @@ class ModuleValidator:
 
     def _validate_window_attributes(self, class_node: ast.ClassDef, report: ValidationReport) -> None:
         """Check for recommended WindowBase attributes."""
+        assigned_attrs = set()
+
+        # 1. Check class-level attributes
+        for node in class_node.body:
+            if isinstance(node, ast.Assign):
+                for target in node.targets:
+                    if isinstance(target, ast.Name):
+                        assigned_attrs.add(target.id)
+            elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
+                assigned_attrs.add(node.target.id)
+
+        # 2. Check instance-level attributes in __init__
         init_method = None
         for node in class_node.body:
             if isinstance(node, ast.FunctionDef) and node.name == "__init__":
                 init_method = node
                 break
 
-        if init_method is None:
-            return
-
-        assigned_attrs = set()
-        for node in ast.walk(init_method):
-            if isinstance(node, ast.Assign):
-                for target in node.targets:
-                    if isinstance(target, ast.Attribute):
-                        if isinstance(target.value, ast.Name) and target.value.id == "self":
-                            assigned_attrs.add(target.attr)
+        if init_method is not None:
+            for node in ast.walk(init_method):
+                if isinstance(node, ast.Assign):
+                    for target in node.targets:
+                        if isinstance(target, ast.Attribute):
+                            if isinstance(target.value, ast.Name) and target.value.id == "self":
+                                assigned_attrs.add(target.attr)
 
         for required_attr in self.WINDOW_REQUIRED_ATTRIBUTES:
             if required_attr not in assigned_attrs:
                 report.add_warning(
                     f"Missing recommended attribute: self.{required_attr}",
-                    suggestion=f"Add self.{required_attr} in __init__",
+                    suggestion=f"Add self.{required_attr} in __init__ or at class level",
                     category="structure",
                 )
 

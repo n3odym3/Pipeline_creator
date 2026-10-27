@@ -19,7 +19,7 @@ Convention: suffix the filename with `_win` to indicate it is a visual node.
 
 ```python
 from __future__ import annotations
-from typing import Any, Dict, Tuple, Optional
+from typing import Any, Dict, List, Optional
 import dearpygui.dearpygui as dpg
 from core.window_base import WindowBase
 from core.input_output_types import IOTypes
@@ -29,48 +29,34 @@ class MyNode(WindowBase):
     Short description of what this node does.
     """
 
-    def __init__(
-        self,
-        label: str = "My Node",
-        win_width: int = 300,
-        win_height: int = 200,
-        pos: Tuple[int, int] = (50, 50),
-        uuid: Optional[str] = None,
-        outputs: Optional[Dict[str, Any]] = None,
-        visible: bool = True,
-        # ↓ Add your own persistent parameters here
-        threshold: float = 0.5,
-    ) -> None:
+    # 1. Declarative geometry & default settings (WindowBase uses these automatically)
+    label: str = "My Node"
+    win_width: int = 300
+    win_height: int = 200
 
-        super().__init__(
-            label=label, pos=pos,
-            win_width=win_width, win_height=win_height,
-            uuid=uuid, outputs=outputs, visible=visible
-        )
+    # 2. Accepted input types & output terminals
+    accepted_input_types: List[Any] = [IOTypes.NUMBER]
+    outputs: Dict[str, Any] = {"RESULT": IOTypes.NUMBER}
 
-        # 1. Persistent fields (saved to flow JSON)
-        self._persistent_fields = ["label", "threshold"]
+    # 3. Persistent fields (automatically saved and restored during pipeline import)
+    persistent_fields: List[str] = ["label", "threshold"]
 
-        # 2. Accepted input types
-        self.accepted_input_types = [IOTypes.NUMBER]
+    # 4. Custom attribute defaults
+    threshold: float = 0.5
 
-        # 3. Output terminals
-        self.outputs = {"RESULT": IOTypes.NUMBER}
-        self.connections = {k: [] for k in self.outputs}
-
-        # 4. Unique DPG tags
-        self._slider_tag = f"my_slider_{self.UUID}"
+    def __init__(self, threshold: float = 0.5, **kwargs: Any) -> None:
+        """
+        No need to repeat label, win_width, win_height, pos, uuid, or visible!
+        Simply pass custom parameters and forward **kwargs to super().__init__.
+        """
+        super().__init__(**kwargs)
         self.threshold = threshold
 
-        # 5. Build the DPG window
-        with dpg.window(
-            label=self.label,
-            width=self.win_width,
-            height=self.win_height,
-            pos=self.pos,
-            tag=self.winID,
-            show=self.visible,
-        ):
+        # Unique DPG tags (always suffix with self.UUID)
+        self._slider_tag = f"my_slider_{self.UUID}"
+
+        # 5. Build the DPG window with concise context manager
+        with self.window():
             dpg.add_text("Threshold:")
             dpg.add_slider_float(
                 tag=self._slider_tag,
@@ -121,21 +107,27 @@ EXPORTED_NAME  = "My Node"
 
 ## `WindowBase` Contract
 
-`WindowBase.__init__()` provides the following attributes that your module can use:
+`WindowBase` provides built-in behaviors and declarative defaults:
 
+### Declarative Class Attributes
 | Attribute | Type | Description |
 |---|---|---|
-| `self.UUID` | `str` | Unique identifier for this instance |
-| `self.winID` | `str` | DPG tag for the top-level window (`f"{label}_{UUID}"`) |
-| `self.label` | `str` | Display name of the node |
-| `self.pos` | `tuple` | Current (x, y) position in pixels |
-| `self.win_width` | `int` | Window width in pixels |
-| `self.win_height` | `int` | Window height in pixels |
-| `self.visible` | `bool` | Whether the window is currently shown |
-| `self.connections` | `dict` | Maps output name → list of downstream UUIDs |
-| `self._persistent_fields` | `list` | Field names to save/restore in flow JSON |
-| `self.accepted_input_types` | `list` | IOTypes this node accepts as input |
-| `self.outputs` | `dict` | Maps output name → IOType |
+| `label` | `str` | Default display name of the window |
+| `win_width` | `int` | Default width in pixels (or `-1` for auto) |
+| `win_height` | `int` | Default height in pixels (or `-1` for auto) |
+| `pos` | `tuple` | Default `(x, y)` position |
+| `visible` | `bool` | Initial window visibility |
+| `accepted_input_types` | `list` | List of `IOTypes` accepted as inputs |
+| `outputs` | `dict` | Maps output port name → `IOTypes` |
+| `persistent_fields` | `list` | Attribute names saved in pipeline JSON and restored on reimport |
+
+### Instance Attributes & Helpers
+| Member | Description |
+|---|---|
+| `self.UUID` | Unique identifier generated for this instance |
+| `self.winID` | Top-level DPG window tag (`f"{label}_{UUID}"`) |
+| `self.connections` | Auto-initialized dictionary `{port_name: [targets]}` matching `outputs` |
+| `with self.window(**kwargs):` | Context manager wrapping `dpg.window(...)` configured with this module's geometry |
 
 ---
 
@@ -143,7 +135,7 @@ EXPORTED_NAME  = "My Node"
 
 If your node should support being "fused" into a `FusionManager` tab, `WindowBase` handles this automatically. The fusion manager will hide the standalone window and embed its children inside a tab panel.
 
-No extra code is required, just ensure all your DPG children are created inside the `dpg.window(tag=self.winID)` block.
+No extra code is required, simply create your widgets inside `with self.window():`.
 
 ---
 

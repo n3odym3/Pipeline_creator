@@ -130,7 +130,7 @@ Workspaces are stored as human-readable JSON:
 | `is_relative` | If `true`, `pos`/`size` are screen percentages (portable across resolutions) |
 | `uuid` | Unique identifier for the node instance |
 | `module` | Python import path of the module class |
-| `params` | Saved values from the module's `_persistent_fields` list |
+| `params` | Saved values from the module's `persistent_fields` list |
 | `connections` | Wires between output terminals and destination nodes |
 
 ---

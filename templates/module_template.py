@@ -14,80 +14,38 @@ class Template_win(WindowBase):
     A basic example module window using the WindowBase system.
 
     This template demonstrates:
-    - Declaring input/output types
-    - Handling incoming data
-    - Sending messages to downstream connected modules
-    - Saving persistent fields (e.g., label, default_number)
+    - Declaring window defaults (label, win_width, win_height)
+    - Declaring input/output types (checked by Module Health Check)
+    - Saving persistent fields (e.g., default_number)
+    - Handling incoming data via input_cb
+    - Sending messages downstream to connected modules
     - Adapting UI permissions based on app_state mode
     """
 
-    default_number: int
-    btn_tag: str
-    number_tag: str
+    # 1. Window Configuration (Optional class defaults - can also be passed via kwargs)
+    label = "Template"
+    win_width = 300
+    win_height = 200
 
-    def __init__(
-        self,
-        label: str = "Template",
-        win_width: int = 300,
-        win_height: int = 200,
-        pos: Tuple[int, int] = (10, 10),
-        uuid: Optional[str] = None,
-        outputs: Optional[Dict[str, Any]] = None,
-        visible: bool = True,
-        default_number: int = 10,
-    ) -> None:
-        """
-        Initialize a new Template window with optional label, size, and position.
+    # 2. Input/Output definitions (Required by Module Health Check)
+    accepted_input_types = [IOTypes.TEXT]
+    outputs = {
+        "TEXT": IOTypes.TEXT,
+        "NUMBER": IOTypes.NUMBER,
+    }
 
-        Args:
-            label: The window title and base ID.
-            win_width: Width of the window.
-            win_height: Height of the window.
-            pos: Initial position of the window.
-            uuid: Optional fixed UUID for serialization.
-            outputs: Optional output dictionary.
-            visible: Whether the window is shown on creation.
-            default_number: A persistent parameter value example.
-        """
-        super().__init__(
-            label=label,
-            pos=pos,
-            win_width=win_width,
-            win_height=win_height,
-            uuid=uuid,
-            outputs=outputs,
-            visible=visible,
-        )
+    # 3. Persistent fields saved into pipeline JSON (WindowBase automatically preserves 'label')
+    persistent_fields = ["label", "default_number"]
 
-        # Declare which properties should be preserved when the workspace is saved
-        self._persistent_fields = ["label", "default_number"]
+    def __init__(self, default_number: int = 10, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
 
-        # Define input expectations
-        self.accepted_input_types = [IOTypes.TEXT]
-
-        # Define output terminals
-        self.outputs = {
-            "TEXT": IOTypes.TEXT,
-            "NUMBER": IOTypes.NUMBER,
-        }
-
-        # Initialize connections map for each output terminal
-        self.connections = {k: [] for k in self.outputs}
-
-        # Unique DPG tags based on self.UUID to prevent element collision
+        self.default_number = default_number
         self.btn_tag = f"template_btn_{self.UUID}"
         self.number_tag = f"template_number_{self.UUID}"
-        self.default_number = default_number
 
-        # Build DPG Window UI
-        with dpg.window(
-            label=self.label,
-            width=self.win_width,
-            height=self.win_height,
-            pos=self.pos,
-            tag=self.winID,
-            show=self.visible,
-        ):
+        # Build DPG Window UI using the convenient self.window() context manager
+        with self.window():
             dpg.add_button(tag=self.btn_tag, label="Hello world", callback=self.trigger_cb)
 
             dpg.add_input_int(

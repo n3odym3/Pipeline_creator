@@ -15,26 +15,24 @@ class Parallel_plot_win(WindowBase):
     Parallel Plot - Displays plots in a separate OS window.
     Uses multiprocessing with PlotViewportProcess for independent plotting.
     """
-    
-    def __init__(self,
-                label="Parallel Plot",
-                win_width=350,
-                win_height=250,
-                pos=(50, 50),
-                uuid=None,
-                outputs=None,
-                visible=True,
-                autoscale=True,
-                smooth=False,
-                smooth_window=5):
-        
-        super().__init__(label=label, pos=pos, win_width=win_width, win_height=win_height,
-                        uuid=uuid, outputs=outputs or [], visible=visible)
-        
-        # Plot settings
-        self.autoscale = autoscale
-        self.smooth = smooth
-        self.smooth_window = smooth_window
+    label = "Parallel Plot"
+    win_width = 350
+    win_height = 250
+    pos = (50, 50)
+    persistent_fields = ["label", "autoscale", "smooth", "smooth_window"]
+
+    autoscale = True
+    smooth = False
+    smooth_window = 5
+
+    accepted_input_types = [IOTypes.DATALIST, IOTypes.CMD_DICT]
+    outputs = {
+        "Dragline": IOTypes.POSITION,
+        "Events": IOTypes.CMD_DICT,
+    }
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         
         # Multiprocessing components
         self.process = None
@@ -43,28 +41,16 @@ class Parallel_plot_win(WindowBase):
         self.shutdown_event = None
         self.process_running = False
         
-        # IO
-        self.accepted_input_types = [IOTypes.DATALIST, IOTypes.CMD_DICT]
-        self.outputs = {
-            "Dragline": IOTypes.POSITION,
-            "Events": IOTypes.CMD_DICT,
-        }
-        self.connections = {k: [] for k in self.outputs}
-        
         # Monitoring thread (like binarize pattern)
         self._monitor_thread = threading.Thread(target=self._monitor_loop, daemon=True)
         self._monitor_thread_running = False
-        
-        # Persistent fields
-        self._persistent_fields = ["label", "autoscale", "smooth", "smooth_window"]
         
         self._build_interface()
         self.start_parallel_viewport()
     
     def _build_interface(self):
         """Build the control window in main process."""
-        with dpg.window(label=self.label, width=self.win_width, height=self.win_height,
-                        pos=self.pos, tag=self.winID, show=self.visible):
+        with self.window():
             
             dpg.add_text("Parallel Plot Control", color=(100, 200, 255))
             dpg.add_separator()

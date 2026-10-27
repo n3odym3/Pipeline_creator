@@ -12,46 +12,20 @@ class TestSample_win(WindowBase):
     A simple DearPyGui window that generates test sample data on trigger.
     """
 
+    label: str = "Test Sample"
+    accepted_input_types: List[IOTypes] = []
+    outputs: Dict[str, Any] = {
+        "Data": IOTypes.SAMPLE,
+    }
+
     trigger_btn_tag: str
 
-    def __init__(
-        self,
-        label: str = "Test Sample",
-        win_width: int = -1,
-        win_height: int = -1,
-        pos: Tuple[int, int] = (10, 10),
-        uuid: Optional[str] = None,
-        outputs: Optional[Dict[str, Any]] = None,
-        visible: bool = True,
-    ) -> None:
-        super().__init__(
-            label=label,
-            pos=pos,
-            win_width=win_width,
-            win_height=win_height,
-            uuid=uuid,
-            outputs=outputs,
-            visible=visible,
-        )
-
-        self._persistent_fields = ["label"]
-
-        self.accepted_input_types = []
-        self.outputs = {
-            "Data": IOTypes.SAMPLE,
-        }
-        self.connections = {k: [] for k in self.outputs}
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
 
         self.trigger_btn_tag = f"test_sample_trig_{self.UUID}"
 
-        with dpg.window(
-            label=self.label,
-            width=self.win_width,
-            height=self.win_height,
-            pos=self.pos,
-            tag=self.winID,
-            show=self.visible,
-        ):
+        with self.window():
             dpg.add_button(
                 label="Trigger",
                 tag=self.trigger_btn_tag,

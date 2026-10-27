@@ -14,17 +14,17 @@ class Parallel_viewer_win(WindowBase):
     Parallel Viewer - Displays data in a separate OS window.
     Uses multiprocessing to create an independent viewport.
     """
-    def __init__(self,
-                label="Parallel Viewer",
-                win_width=400,
-                win_height=200,
-                pos=(50, 50),
-                uuid=None,
-                outputs=None,
-                visible=True):
-        
-        super().__init__(label=label, pos=pos, win_width=win_width, win_height=win_height,
-                        uuid=uuid, outputs=outputs or [], visible=visible)
+    label = "Parallel Viewer"
+    win_width = 400
+    win_height = 200
+    pos = (50, 50)
+    accepted_input_types = [IOTypes.TEXT, IOTypes.DATALIST, IOTypes.CMD_DICT]
+    outputs = {
+        "Out": IOTypes.TEXT
+    }
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         
         # Multiprocessing components
         self.process = None
@@ -32,14 +32,6 @@ class Parallel_viewer_win(WindowBase):
         self.output_queue = None  # NEW: Output queue for receiving events
         self.shutdown_event = None
         self.process_running = False
-        
-        # IO
-        self.accepted_input_types = [IOTypes.TEXT, IOTypes.DATALIST, IOTypes.CMD_DICT]
-        self.outputs = {
-            "Out": IOTypes.TEXT
-        }
-        self._persistent_fields=[]
-        self.connections = {k: [] for k in self.outputs}
         
         # Monitoring thread (like binarize pattern)
         self._monitor_thread = threading.Thread(target=self._monitor_loop, daemon=True)
@@ -50,8 +42,7 @@ class Parallel_viewer_win(WindowBase):
     
     def _build_interface(self):
         """Build the control window in main process."""
-        with dpg.window(label=self.label, width=self.win_width, height=self.win_height,
-                        pos=self.pos, tag=self.winID, show=self.visible):
+        with self.window():
             
             dpg.add_text("Parallel Viewer Control", color=(100, 200, 255))
             dpg.add_separator()

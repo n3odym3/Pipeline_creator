@@ -79,12 +79,12 @@ def update_permission(self) -> None:
         dpg.configure_item(self.slider_tag, enabled=not is_user)
 ```
 
-### 3. Declare `_persistent_fields`
+### 3. Declare `persistent_fields`
 
-Fields listed in `_persistent_fields` are automatically serialized into the flow JSON when the workspace is saved:
+Fields listed in `persistent_fields` (or `_persistent_fields` for backward compatibility) are automatically serialized into the flow JSON when the workspace is saved:
 
 ```python
-self._persistent_fields = ["label", "threshold_val", "default_path"]
+persistent_fields = ["label", "threshold_val", "default_path"]
 ```
 
 The values are restored when the workspace is reloaded.

@@ -26,7 +26,24 @@ class Sample_container_win(WindowBase):
 
     description: str = "Centralized data series container with reordering, CSV import/export, and preview."
 
-    export_path: str
+    label: str = "Sample Container"
+    win_width: int = 300
+    win_height: int = 200
+    persistent_fields: List[str] = ["label", "export_path", "duplicate_mode"]
+
+    accepted_input_types: List[IOTypes] = [
+        IOTypes.SAMPLE,
+        IOTypes.FOLDER_PATH,
+        IOTypes.TRIGGER,
+        IOTypes.CMD_DICT,
+    ]
+    
+    outputs: Dict[str, Any] = {
+        "Data": IOTypes.SAMPLE,
+    }
+
+    export_path: str = ""
+    duplicate_mode: str = "override"
     samples_dict: Dict[str, Dict[str, Any]]
     samples_order: List[str]
     _handle_to_uuid: Dict[str, str]
@@ -45,57 +62,8 @@ class Sample_container_win(WindowBase):
     _combo_uuid_map: Dict[str, str]
     _last_combo_items: List[str]
 
-    def __init__(
-        self,
-        label: str = "Sample Container",
-        win_width: int = 300,
-        win_height: int = 200,
-        pos: Tuple[int, int] = (10, 10),
-        uuid: Optional[str] = None,
-        outputs: Optional[Dict[str, Any]] = None,
-        visible: bool = True,
-        export_path: str = "",
-        **kwargs: Any,
-    ) -> None:
-        """
-        Initialize the Sample Container window module.
-
-        Args:
-            label: Window display title.
-            win_width: Initial window width in pixels.
-            win_height: Initial window height in pixels.
-            pos: Initial (x, y) window position on screen.
-            uuid: Optional unique module identifier.
-            outputs: Optional predefined output connections dictionary.
-            visible: Whether the window is visible on creation.
-            export_path: Pre-configured working path for CSV imports/exports.
-            **kwargs: Additional configuration parameters.
-        """
-        self._persistent_fields = ["label", "export_path"]
-
-        super().__init__(
-            label=label,
-            pos=pos,
-            win_width=win_width,
-            win_height=win_height,
-            uuid=uuid,
-            outputs=outputs,
-            visible=visible,
-            export_path=export_path,
-            **kwargs,
-        )
-
-        self.export_path = export_path
-        self.accepted_input_types = [
-            IOTypes.SAMPLE,
-            IOTypes.FOLDER_PATH,
-            IOTypes.TRIGGER,
-            IOTypes.CMD_DICT,
-        ]
-        self.outputs = {
-            "Data": IOTypes.SAMPLE,
-        }
-        self.connections = {k: [] for k in self.outputs}
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
 
         self.clear_samples_tag = f"clear_samples_{self.UUID}"
         self.samples_group_tag = f"samples_group_{self.UUID}"
@@ -123,14 +91,7 @@ class Sample_container_win(WindowBase):
             dpg.add_theme_color(dpg.mvThemeCol_ButtonHovered, (60, 180, 80, 220), category=dpg.mvThemeCat_Core)
             dpg.add_theme_color(dpg.mvThemeCol_ButtonActive, (40, 150, 60, 255), category=dpg.mvThemeCat_Core)
 
-        with dpg.window(
-            label=self.label,
-            width=self.win_width,
-            height=self.win_height,
-            pos=self.pos,
-            tag=self.winID,
-            show=self.visible,
-        ):
+        with self.window():
             with dpg.collapsing_header(label="Import/export", tag=self.export_header_tag):
                 dpg.add_text("X axis reference:")
                 dpg.add_combo(items=["individual", "index"], default_value="individual", tag=self.x_axis_combo_tag, width=-1)
@@ -142,7 +103,13 @@ class Sample_container_win(WindowBase):
                     dpg.add_text("Export selected samples to clipboard in TSV format (aligned + individual)")
 
                 dpg.add_text("Duplicate:")
-                dpg.add_combo(items=["override", "append"], default_value="override", tag=self.duplicate_mode_tag, width=-1)
+                dpg.add_combo(
+                    items=["override", "append"],
+                    default_value=self.duplicate_mode,
+                    tag=self.duplicate_mode_tag,
+                    width=-1,
+                    callback=self._on_duplicate_mode_changed,
+                )
                 with dpg.tooltip(self.duplicate_mode_tag):
                     dpg.add_text("Action when a sample has the same name:\n- 'override': replaces existing data\n- 'append': adds a new sample with a suffix")
 
@@ -185,6 +152,13 @@ class Sample_container_win(WindowBase):
                 pass
         return ""
 
+    def _on_duplicate_mode_changed(self, sender: Any = None, value: str = "", *args, **kwargs) -> None:
+        """Callback triggered when the duplicate mode combo selection changes."""
+        if value:
+            self.duplicate_mode = value
+        elif dpg.does_item_exist(self.duplicate_mode_tag):
+            self.duplicate_mode = dpg.get_value(self.duplicate_mode_tag)
+
     def add_or_update_sample(
         self,
         name: str,
@@ -204,7 +178,8 @@ class Sample_container_win(WindowBase):
         Returns:
             str: Unique UUID assigned to the sample.
         """
-        mode = dpg.get_value(self.duplicate_mode_tag) if dpg.does_item_exist(self.duplicate_mode_tag) else "override"
+        mode = dpg.get_value(self.duplicate_mode_tag) if dpg.does_item_exist(self.duplicate_mode_tag) else self.duplicate_mode
+        self.duplicate_mode = mode
 
         existing_uuid = None
         for k, v in self.samples_dict.items():

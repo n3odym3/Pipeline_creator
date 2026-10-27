@@ -15,50 +15,27 @@ class CSVReader_win(WindowBase):
     CSV Reader module that loads CSV files and emits a SAMPLE dict for each column.
     """
 
-    last_file_path: Optional[str]
+    label: str = "CSV Reader"
+    win_width: int = 300
+    win_height: int = 150
+    persistent_fields: List[str] = ["label", "last_file_path"]
+
+    accepted_input_types: List[IOTypes] = []
+    outputs: Dict[str, Any] = {
+        "Data": IOTypes.SAMPLE,
+    }
+
+    last_file_path: Optional[str] = None
     file_explorer: FileExplorer
     load_csv_btn_tag: str
 
-    def __init__(
-        self,
-        label: str = "CSV Reader",
-        win_width: int = 300,
-        win_height: int = 150,
-        pos: Tuple[int, int] = (10, 10),
-        uuid: Optional[str] = None,
-        outputs: Optional[Dict[str, Any]] = None,
-        visible: bool = True,
-    ) -> None:
-        super().__init__(
-            label=label,
-            pos=pos,
-            win_width=win_width,
-            win_height=win_height,
-            uuid=uuid,
-            outputs=outputs,
-            visible=visible,
-        )
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
 
-        self._persistent_fields = ["label", "last_file_path"]
-
-        self.accepted_input_types = []
-        self.outputs = {
-            "Data": IOTypes.SAMPLE,
-        }
-        self.connections = {k: [] for k in self.outputs}
-
-        self.last_file_path = None
         self.file_explorer = FileExplorer()
         self.load_csv_btn_tag = f"csv_load_btn_{self.UUID}"
 
-        with dpg.window(
-            label=self.label,
-            width=self.win_width,
-            height=self.win_height,
-            pos=self.pos,
-            tag=self.winID,
-            show=self.visible,
-        ):
+        with self.window():
             dpg.add_button(
                 label="Load CSV File",
                 tag=self.load_csv_btn_tag,

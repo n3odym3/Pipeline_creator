@@ -153,7 +153,7 @@ The recommended pattern is a **Hybrid module**: a `WindowBase` subclass that own
 
 ```python
 from __future__ import annotations
-from typing import Any, Dict, Tuple, Optional
+from typing import Any, Dict, List, Optional
 import dearpygui.dearpygui as dpg
 from core.window_base import WindowBase
 from core.input_output_types import IOTypes
@@ -165,21 +165,29 @@ class MyHybridNode(WindowBase):
     A UI node with an embedded background processor.
     """
 
-    def __init__(self, label="My Processor Node", ..., multiplier: float = 1.0) -> None:
-        super().__init__(label=label, ...)
+    # 1. Declarative geometry and window defaults
+    label: str = "My Processor Node"
+    win_width: int = 300
+    win_height: int = 150
 
-        self._persistent_fields = ["label", "multiplier"]
-        self.accepted_input_types = [IOTypes.NUMBER]
-        self.outputs = {"OUTPUT": IOTypes.NUMBER}
-        self.connections = {k: [] for k in self.outputs}
+    # 2. Port specifications and persistent attributes
+    accepted_input_types: List[Any] = [IOTypes.NUMBER]
+    outputs: Dict[str, Any] = {"OUTPUT": IOTypes.NUMBER}
+    persistent_fields: List[str] = ["label", "multiplier"]
+
+    # 3. Custom attributes
+    multiplier: float = 1.0
+
+    def __init__(self, multiplier: float = 1.0, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
         self.multiplier = multiplier
 
         # Create and start the background worker
         self._processor = MyProcessor(params={"multiplier": self.multiplier})
         self._processor.start()
 
-        # ── DPG window
-        with dpg.window(label=self.label, width=300, height=150, pos=self.pos, tag=self.winID, show=self.visible):
+        # ── DPG window built using concise self.window() context manager
+        with self.window():
             dpg.add_text("Multiplier:")
             dpg.add_slider_float(
                 tag=f"mult_slider_{self.UUID}",

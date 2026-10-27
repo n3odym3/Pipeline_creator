@@ -33,9 +33,6 @@ def _canon_axis(name: Optional[str]) -> str:
     return name if name in _AXIS_OPTIONS else _AXIS_ALIASES.get(name, AXIS_PRIMARY)
 
 
-# ----------------------------------------------------------------------------
-# Smoothing filters (pure functions, 1D float arrays -> list)
-# ----------------------------------------------------------------------------
 def _odd_window(w: int, n: int) -> int:
     """Largest valid odd window <= n, starting from w (rounded up to odd)."""
     w = w if w % 2 else w + 1
@@ -150,52 +147,22 @@ class Lineplot_win(WindowBase):
 
     smooth_algo_items: List[str] = list(_SMOOTHERS)
 
-    def __init__(
-        self,
-        label: str = "Lineplot",
-        win_width: int = 300,
-        win_height: int = 200,
-        pos: Tuple[int, int] = (10, 10),
-        uuid: Optional[str] = None,
-        outputs: Optional[Dict[str, Any]] = None,
-        visible: bool = True,
-        autoscale: bool = True,
-        smooth: bool = False,
-        smooth_algo: str = "Rolling Median",
-        smooth_window: int = 5,
-        log_x: bool = False,
-        **kwargs: Any,
-    ) -> None:
-        """
-        Initialize the Lineplot window module.
+    label: str = "Lineplot"
+    win_width: int = 300
+    win_height: int = 200
+    persistent_fields: List[str] = ["label", "autoscale", "smooth", "smooth_algo", "smooth_window", "log_x"]
 
-        Args:
-            label: Window display title.
-            win_width: Initial window width in pixels.
-            win_height: Initial window height in pixels.
-            pos: Initial (x, y) window position on screen.
-            uuid: Optional unique module identifier.
-            outputs: Optional predefined output connections dictionary.
-            visible: Whether the window is visible on creation.
-            autoscale: Automatically fit axes when data updates.
-            smooth: Enable real-time curve smoothing.
-            smooth_algo: Smoothing filter algorithm name.
-            smooth_window: Smoothing window length.
-            log_x: Apply logarithmic scaling to horizontal axis.
-            **kwargs: Additional configuration parameters and persistent fields.
-        """
-        self._persistent_fields = ["label", "autoscale", "smooth", "smooth_algo", "smooth_window", "log_x"]
+    accepted_input_types: List[IOTypes] = [IOTypes.SAMPLE, IOTypes.ROI_SAMPLE, IOTypes.DATALIST, IOTypes.CMD_DICT]
+    outputs: Dict[str, Any] = {"Datalist": IOTypes.DATALIST, "DataFrame": IOTypes.DATAFRAME}
 
-        super().__init__(
-            label=label,
-            pos=pos,
-            win_width=win_width,
-            win_height=win_height,
-            uuid=uuid,
-            outputs=outputs,
-            visible=visible,
-            **kwargs,
-        )
+    autoscale: bool = True
+    smooth: bool = False
+    smooth_algo: str = "Rolling Median"
+    smooth_window: int = 5
+    log_x: bool = False
+
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
 
         u = self.UUID
         self.plot_tag = f"lineplot_plot_{u}"
@@ -217,11 +184,8 @@ class Lineplot_win(WindowBase):
         self.drag_line_check_tag = f"lineplot_vline_check_{u}"
         self.drag_line_tag = f"lineplot_vline_{u}"
 
-        self.autoscale = autoscale
-        self.smooth = smooth
-        self.smooth_algo = smooth_algo if smooth_algo in self.smooth_algo_items else "Rolling Median"
-        self.smooth_window = smooth_window
-        self.log_x = log_x
+        if self.smooth_algo not in self.smooth_algo_items:
+            self.smooth_algo = "Rolling Median"
         self.selected_serie: Optional[Any] = None
         self.raw_data: Dict[str, Dict[str, Any]] = {}
         self.secondary_axes: Dict[str, str] = {}  # canonical axis name -> DPG axis tag
@@ -230,18 +194,7 @@ class Lineplot_win(WindowBase):
         self._displayed_colors: Dict[str, Tuple[int, int, int]] = {}  # uid -> RGB currently applied to the curve
         self._annot_active = False
 
-        self.accepted_input_types = [IOTypes.SAMPLE, IOTypes.ROI_SAMPLE, IOTypes.DATALIST, IOTypes.CMD_DICT]
-        self.outputs = {"Datalist": IOTypes.DATALIST, "DataFrame": IOTypes.DATAFRAME}
-        self.connections = {k: [] for k in self.outputs}
-
-        with dpg.window(
-            label=self.label,
-            width=self.win_width,
-            height=self.win_height,
-            pos=self.pos,
-            tag=self.winID,
-            show=self.visible,
-        ):
+        with self.window():
             with dpg.group(horizontal=True):
                 dpg.add_checkbox(
                     label="Anotation",

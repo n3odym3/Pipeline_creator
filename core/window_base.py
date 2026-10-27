@@ -28,6 +28,7 @@ class WindowBase:
     accepted_input_types: List[Any]
     description: str
     connections: Dict[str, List[Any]]
+    persistent_fields: List[str]
     _persistent_fields: List[str]
     _original_children: List[Union[int, str]]
     merged_into: Optional[WindowBase]
@@ -36,7 +37,7 @@ class WindowBase:
     def __init__(
         self,
         label: str = "Window",
-        pos: Tuple[int, int] = (10, 10),
+        pos: Tuple[int, int] = (50, 50),
         win_width: int = -1,
         win_height: int = -1,
         uuid: Optional[str] = None,
@@ -57,31 +58,82 @@ class WindowBase:
             visible: Whether the window is visible at creation.
             **kwargs: Additional persistent fields to apply.
         """
-        self.label = label
-        self.pos = pos
-        self.win_width = win_width
-        self.win_height = win_height
-        self.visible = visible
-        self.outputs = outputs or {}
+        cls = type(self)
+
+        # 1. Label resolution (argument -> class attribute -> EXPORTED_NAME -> "Window")
+        if label != "Window":
+            self.label = label
+        elif hasattr(cls, "label") and cls.label != "Window":
+            self.label = cls.label
+        elif hasattr(cls, "EXPORTED_NAME") and cls.EXPORTED_NAME:
+            self.label = cls.EXPORTED_NAME
+        else:
+            self.label = "Window"
+
+        # 2. Geometry & Visibility (argument -> class attribute -> default)
+        self.win_width = win_width if win_width != -1 else getattr(cls, "win_width", -1)
+        self.win_height = win_height if win_height != -1 else getattr(cls, "win_height", -1)
+        self.pos = pos if pos != (50, 50) else getattr(cls, "pos", (50, 50))
+        self.visible = visible if visible is not True else getattr(cls, "visible", True)
+
         self.UUID = uuid or str(dpg.generate_uuid())
-        self.winID = f"{label}_{self.UUID}"
+        self.winID = f"{self.label}_{self.UUID}"
         self.handler_tag = None
-        self.accepted_input_types = []
         self.description = ""
 
-        if not hasattr(self, "_persistent_fields"):
-            self._persistent_fields = ["label"]
+        if outputs is not None:
+            self.outputs = outputs
+        elif not hasattr(self, "outputs"):
+            self.outputs = {}
+        else:
+            self.outputs = dict(self.outputs)
 
-        for field in self._persistent_fields:
+        if not hasattr(self, "accepted_input_types"):
+            self.accepted_input_types = []
+        else:
+            self.accepted_input_types = list(self.accepted_input_types)
+
+        # Resolve persistent fields (persistent_fields -> _persistent_fields -> ["label"])
+        raw_fields = getattr(self, "persistent_fields", getattr(self, "_persistent_fields", None))
+        if raw_fields is None:
+            raw_fields = getattr(cls, "persistent_fields", getattr(cls, "_persistent_fields", ["label"]))
+
+        self.persistent_fields = list(raw_fields)
+        if "label" not in self.persistent_fields:
+            self.persistent_fields.insert(0, "label")
+        self._persistent_fields = self.persistent_fields
+
+        for field in self.persistent_fields:
             if field in kwargs:
                 setattr(self, field, kwargs[field])
+            elif hasattr(cls, field):
+                setattr(self, field, getattr(cls, field))
+            elif not hasattr(self, field):
+                setattr(self, field, None)
 
-        self.connections = {k: [] for k in self.outputs}
+        if not hasattr(self, "connections"):
+            self.connections = {k: [] for k in self.outputs}
         self._original_children = []
         self.merged_into = None
         self._merge_wrapper_id = None
 
         register_module(self)
+
+    def __setattr__(self, name: str, value: Any) -> None:
+        """Intercept attribute assignments to auto-synchronize connections and persistent fields."""
+        super().__setattr__(name, value)
+        if name == "outputs" and isinstance(value, dict):
+            conns = getattr(self, "connections", None)
+            if conns is None:
+                super().__setattr__("connections", {k: [] for k in value})
+            else:
+                for k in value:
+                    if k not in conns:
+                        conns[k] = []
+        elif name == "persistent_fields":
+            super().__setattr__("_persistent_fields", value)
+        elif name == "_persistent_fields":
+            super().__setattr__("persistent_fields", value)
 
     def update_permission(self) -> None:
         """
@@ -89,6 +141,24 @@ class WindowBase:
         Subclasses should override this to hide/show or lock specific widgets.
         """
         pass
+
+    def window(self, **kwargs: Any) -> Any:
+        """
+        Convenience context manager to create the DPG window with this module's standard settings.
+        Usage:
+            with self.window():
+                dpg.add_button(...)
+        """
+        params = {
+            "label": self.label,
+            "width": self.win_width,
+            "height": self.win_height,
+            "pos": self.pos,
+            "tag": self.winID,
+            "show": self.visible,
+        }
+        params.update(kwargs)
+        return dpg.window(**params)
 
     def _list_children(self) -> List[Union[int, str]]:
         """Save the current list of children for potential restoration."""
@@ -270,7 +340,8 @@ class WindowBase:
             self.win_width, self.win_height = dpg.get_item_rect_size(self.winID)
             self.visible = dpg.is_item_visible(self.winID)
 
-        params = {field: getattr(self, field, None) for field in self._persistent_fields if hasattr(self, field)}
+        fields = getattr(self, "persistent_fields", getattr(self, "_persistent_fields", ["label"]))
+        params = {field: getattr(self, field, None) for field in fields if hasattr(self, field)}
 
         if self.merged_into:
             params["merged_into"] = self.merged_into.UUID

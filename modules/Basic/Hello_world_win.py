@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, Dict, List, Tuple, Optional
+from typing import Any
 import dearpygui.dearpygui as dpg
 from core.window_base import WindowBase
 from core.input_output_types import IOTypes
@@ -9,42 +9,16 @@ class HelloWorld_win(WindowBase):
     """
     A simple DearPyGui window containing a button that acts as a trigger source.
     """
+    label = "Hello World"
+    accepted_input_types = []
+    outputs = {
+        "Out": IOTypes.TEXT,
+    }
 
-    def __init__(
-        self,
-        label: str = "Hello World",
-        win_width: int = -1,
-        win_height: int = -1,
-        pos: Tuple[int, int] = (10, 10),
-        uuid: Optional[str] = None,
-        visible: bool = True,
-        outputs: Optional[Dict[str, Any]] = None
-    ) -> None:
-        super().__init__(
-            label=label,
-            pos=pos,
-            win_width=win_width,
-            win_height=win_height,
-            uuid=uuid,
-            visible=visible,
-            outputs=outputs,
-        )
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
 
-        self._persistent_fields = ["label"]
-        self.accepted_input_types = []
-        self.outputs = {
-            "Out": IOTypes.TEXT,
-        }
-        self.connections = {k: [] for k in self.outputs}
-
-        with dpg.window(
-            label=self.label,
-            width=self.win_width,
-            height=self.win_height,
-            pos=self.pos,
-            tag=self.winID,
-            show=self.visible,
-        ):
+        with self.window():
             dpg.add_button(label="Hello World", callback=self.trigger_cb)
 
         self.update_permission()

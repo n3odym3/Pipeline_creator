@@ -13,57 +13,31 @@ class CMDSender_win(WindowBase):
     and send it downstream on trigger.
     """
 
-    status: Dict[str, str]
+    label: str = "CMD Sender"
+    persistent_fields: List[str] = ["label", "status"]
+    accepted_input_types: List[IOTypes] = [IOTypes.TRIGGER]
+    outputs: Dict[str, Any] = {
+        "Dict": IOTypes.CMD_DICT,
+        "TXT": IOTypes.TEXT,
+    }
+
+    status: Dict[str, str] = {}
     _rows: Dict[str, Tuple[str, str]]
     _row_counter: int
     rows_container_tag: str
     add_key_btn_tag: str
 
-    def __init__(
-        self,
-        label: str = "CMD Sender",
-        win_width: int = -1,
-        win_height: int = -1,
-        pos: Tuple[int, int] = (10, 10),
-        uuid: Optional[str] = None,
-        outputs: Optional[Dict[str, Any]] = None,
-        visible: bool = True,
-        status: Optional[Dict[str, str]] = None,
-    ) -> None:
-        super().__init__(
-            label=label,
-            pos=pos,
-            win_width=win_width,
-            win_height=win_height,
-            uuid=uuid,
-            outputs=outputs,
-            visible=visible,
-        )
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
 
-        self._persistent_fields = ["label", "status"]
-        self.status = status if status is not None else {}
-
-        self.accepted_input_types = [IOTypes.TRIGGER]
-        self.outputs = {
-            "Dict": IOTypes.CMD_DICT,
-            "TXT": IOTypes.TEXT,
-        }
-        self.connections = {k: [] for k in self.outputs}
-
+        self.status = dict(self.status) if hasattr(self, "status") and self.status else {}
         self._rows = {}
         self._row_counter = 0
 
         self.rows_container_tag = f"rows_container_{self.UUID}"
         self.add_key_btn_tag = f"add_key_btn_{self.UUID}"
 
-        with dpg.window(
-            label=self.label,
-            width=self.win_width,
-            height=self.win_height,
-            pos=self.pos,
-            tag=self.winID,
-            show=self.visible,
-        ):
+        with self.window():
             with dpg.group(horizontal=True):
                 dpg.add_button(
                     label="Add Key",
