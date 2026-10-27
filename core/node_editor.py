@@ -116,6 +116,13 @@ class NodeEditor(NodeHighlightMixin, NodePopupMixin, NodeCallbacksMixin, NodeSer
 
                 # Save
                 with dpg.menu(label="Save"):
+                    dpg.add_menu_item(label="Edit / Update Pipeline...", callback=self._on_edit_pipeline_pressed)
+                    with dpg.tooltip(parent=dpg.last_item()):
+                        dpg.add_text(
+                            "Surgically update an existing pipeline JSON without overwriting views,\n"
+                            "automation scripts, or custom metadata."
+                        )
+                    dpg.add_separator()
                     dpg.add_menu_item(label="Pipeline to File...", callback=self._on_save_pressed)
                     dpg.add_menu_item(label="Pipeline to Clipboard", callback=self._on_save_clipboard_pressed)
                     dpg.add_separator()
@@ -349,6 +356,17 @@ class NodeEditor(NodeHighlightMixin, NodePopupMixin, NodeCallbacksMixin, NodeSer
             main_win._on_load_workspace()
         except ImportError:
             logger.error("Could not import main_win to load workspace")
+
+    def _on_edit_pipeline_pressed(
+        self, sender: Any = None, app_data: Any = None, user_data: Any = None, *args: Any, **kwargs: Any
+    ) -> None:
+        """Open the surgical pipeline editor / merger dialog."""
+        try:
+            from core.pipeline_merger import open_edit_pipeline_dialog
+
+            open_edit_pipeline_dialog(self)
+        except Exception as e:
+            logger.error(f"Could not open Edit Pipeline dialog: {e}")
 
     def _on_save_pressed(
         self, sender: Any = None, app_data: Any = None, user_data: Any = None, *args: Any, **kwargs: Any

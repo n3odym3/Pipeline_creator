@@ -199,6 +199,7 @@ class MainWin:
             dpg.add_menu_item(label="Select Working Dir.", callback=working_directory_manager.select_directory)
             dpg.add_separator()
             dpg.add_menu_item(label="Load Pipeline", callback=self._on_load_workspace)
+            dpg.add_menu_item(label="Edit / Update Pipeline...", callback=self._on_edit_pipeline)
             dpg.add_menu_item(label="Pipeline Editor", callback=self._on_pipeline_editor)
             dpg.add_separator()
             dpg.add_menu_item(label="Load Automation Script", callback=self._on_load_automation_script)
@@ -318,30 +319,8 @@ class MainWin:
             dpg.add_menu_item(label="Open Tutorial Manager", callback=lambda *args: tutorial_manager.show())
             dpg.add_separator()
             
-            with dpg.menu(label="Tutorials"):
-                from core.paths import TUTORIALS_DIR
-                import json
-                
-                if TUTORIALS_DIR.exists():
-                    for filepath in TUTORIALS_DIR.glob("*.json"):
-                        desc = "No description provided."
-                        try:
-                            with open(filepath, 'r', encoding='utf-8') as f_in:
-                                data = json.load(f_in)
-                                if isinstance(data, dict):
-                                    desc = data.get("description", desc)
-                        except Exception:
-                            pass
-                        
-                        item_label = filepath.stem
-                            
-                        def _make_cb(fp):
-                            return lambda *a: tutorial_manager.load_and_play(fp)
-                            
-                        mi = dpg.add_menu_item(label=item_label, callback=_make_cb(filepath))
-                        if mi and desc and desc != "No description provided.":
-                            with dpg.tooltip(parent=mi):
-                                dpg.add_text(desc, wrap=300)
+            with dpg.menu(label="Tutorials", tag="menu_tutorials"):
+                tutorial_manager.populate_tutorials_menu("menu_tutorials")
 
     def _create_theme_submenu(self) -> None:
         """Populate the Theme sub-menu with all auto-discovered palettes."""
@@ -492,17 +471,24 @@ class MainWin:
 
     def _on_save_workspace(self, sender: Any = None, app_data: Any = None, user_data: Any = None, *args) -> None:
         """
-        Save the current workspace layout to a JSON file.
+        Save the current workspace pipeline to a JSON file.
         
         Opens a file dialog and exports all module positions, connections,
         and persistent fields to the selected file.
         """
         import json
-        from core.paths import LAYOUTS_DIR
+        from core.paths import PIPELINES_DIR
         
-        path = file_explorer.save_file(default_path=str(LAYOUTS_DIR), default_name="manual_layout.json")
+        path = file_explorer.save_file(default_path=str(PIPELINES_DIR), default_name="manual_layout.json")
         if path:
             node_positions = self.node_editor.get_node_positions()
+            # If target file already exists, protect existing views, scripts, and metadata by using surgical update!
+            if Path(path).exists():
+                from core.pipeline_merger import surgical_update_pipeline
+                res = surgical_update_pipeline(path, node_positions=node_positions)
+                if res.get("success", False):
+                    logger.success(f"Workspace surgically updated into existing file: {path}")
+                    return
             export_workspace(MODULES_REGISTRY, path, node_positions=node_positions)
 
             # Append native link nodes to the JSON
@@ -541,22 +527,22 @@ class MainWin:
             popup_id = "clipboard_save_popup"
             if dpg.does_item_exist(popup_id):
                 dpg.delete_item(popup_id)
-            with dpg.window(label="Copy Layout to Clipboard", modal=True, show=True, tag=popup_id, width=600, height=400):
+            with dpg.window(label="Copy pipeline to Clipboard", modal=True, show=True, tag=popup_id, width=600, height=400):
                 dpg.add_text("System clipboard copy failed or 'pyperclip' missing. Please copy the JSON below manually:")
                 dpg.add_input_text(multiline=True, width=-1, height=-40, default_value=json_str, readonly=True)
                 dpg.add_button(label="Close", callback=lambda: dpg.delete_item(popup_id))
     
     def _on_load_workspace(self, sender: Any = None, app_data: Any = None, user_data: Any = None, *args) -> None:
         """
-        Load a workspace layout from a JSON file.
+        Load a workspace pipeline from a JSON file.
         
         Opens a file dialog, clears the current workspace, and loads
         all modules and connections from the selected file.
         """
-        from core.paths import LAYOUTS_DIR
+        from core.paths import PIPELINES_DIR
 
         path = file_explorer.select_file(
-            default_path=str(LAYOUTS_DIR), 
+            default_path=str(PIPELINES_DIR), 
             extensions=[("JSON files", "*.json")]
         )
         
@@ -564,6 +550,11 @@ class MainWin:
             return
             
         self.load_workspace_from_path(path)
+
+    def _on_edit_pipeline(self, sender: Any = None, app_data: Any = None, user_data: Any = None, *args: Any, **kwargs: Any) -> None:
+        """Open the surgical pipeline editor / merger dialog."""
+        from core.pipeline_merger import open_edit_pipeline_dialog
+        open_edit_pipeline_dialog(self.node_editor if hasattr(self, "node_editor") else None)
 
     def _on_pipeline_editor(self, sender: Any = None, app_data: Any = None, user_data: Any = None, *args: Any, **kwargs: Any) -> None:
         """Open the interactive Pipeline Editor tool."""
@@ -600,7 +591,7 @@ class MainWin:
                 raw = json.load(f)
             views = raw.get("views", {})
             
-            # Inject the default layout as a view
+            # Inject the default pipeline as a view
             views["Default"] = {
                 "windows": raw.get("windows", []),
                 "is_relative": raw.get("is_relative", False)
@@ -659,11 +650,11 @@ class MainWin:
         """
         Open a dialog to export the current window layout as a view into an existing pipeline JSON file.
 
-        Allows choosing the pipeline file (from layouts/ or custom file), typing a view name
+        Allows choosing the pipeline file (from pipelines/ or custom file), typing a view name
         (e.g., 'Video', 'Figures'), and injects the view into the pipeline's 'views' dictionary.
         """
         import json
-        from core.paths import LAYOUTS_DIR
+        from core.paths import PIPELINES_DIR
         from core.module_registry import LAST_LOADED_WORKSPACE, export_view, AVAILABLE_VIEWS
         from config.display_scaling import display_scaling
 
@@ -671,11 +662,11 @@ class MainWin:
         if dpg.does_item_exist(popup_id):
             dpg.delete_item(popup_id)
 
-        # Discover all layout files in LAYOUTS_DIR
+        # Discover all pipeline files in PIPELINES_DIR
         layout_files = sorted(
-            [f for f in LAYOUTS_DIR.glob("*.json") if f.is_file()],
+            [f for f in PIPELINES_DIR.glob("*.json") if f.is_file()],
             key=lambda p: p.stem.lower()
-        ) if LAYOUTS_DIR.exists() else []
+        ) if PIPELINES_DIR.exists() else []
 
         # Find initial selected file
         default_file = ""
@@ -724,7 +715,7 @@ class MainWin:
 
         def _on_browse_file(sender=None, app_data=None, user_data=None, *args, **kwargs):
             chosen = file_explorer.select_file(
-                default_path=str(LAYOUTS_DIR),
+                default_path=str(PIPELINES_DIR),
                 extensions=[("JSON files", "*.json")]
             )
             if chosen:
@@ -851,11 +842,11 @@ class MainWin:
         """
         Load a sub-pipeline layout from a JSON file and append it to the current workspace.
         """
-        # Calculate absolute path to layouts directory
-        from core.paths import LAYOUTS_DIR
+        # Calculate absolute path to pipelines directory
+        from core.paths import PIPELINES_DIR
  
         path = file_explorer.select_file(
-            default_path=str(LAYOUTS_DIR), 
+            default_path=str(PIPELINES_DIR), 
             extensions=[("JSON files", "*.json")]
         )
         
@@ -932,7 +923,7 @@ class MainWin:
 
     def _on_load_clipboard(self, sender: Any = None, app_data: Any = None, user_data: Any = None, *args) -> None:
         """
-        Open a popup to paste layout JSON and load it.
+        Open a popup to paste pipeline JSON and load it.
         """
         popup_id = "clipboard_load_popup"
         text_input_id = f"{popup_id}_text"
@@ -940,8 +931,8 @@ class MainWin:
         if dpg.does_item_exist(popup_id):
             dpg.delete_item(popup_id)
             
-        with dpg.window(label="Load Layout from Clipboard", modal=True, show=True, tag=popup_id, width=600, height=400):
-            dpg.add_text("Paste your layout JSON here:")
+        with dpg.window(label="Load pipeline from Clipboard", modal=True, show=True, tag=popup_id, width=600, height=400):
+            dpg.add_text("Paste your pipeline JSON here:")
             dpg.add_input_text(tag=text_input_id, multiline=True, width=-1, height=-50)
             
             def _do_load(*args, **kwargs):
@@ -970,7 +961,7 @@ class MainWin:
                 except json.JSONDecodeError as e:
                     logger.error(f"Invalid JSON: {e}")
                 except Exception as e:
-                    logger.error(f"Error loading layout: {e}")
+                    logger.error(f"Error loading pipeline: {e}")
 
             with dpg.group(horizontal=True):
                 dpg.add_button(label="Load", callback=_do_load, width=100)
