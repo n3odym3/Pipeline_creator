@@ -479,8 +479,15 @@ class MainWin:
         import json
         from core.paths import PIPELINES_DIR
         
-        path = file_explorer.save_file(default_path=str(PIPELINES_DIR), default_name="manual_layout.json")
+        path = file_explorer.save_file(
+            default_path=str(PIPELINES_DIR),
+            default_name="manual_pipeline.json",
+            extensions=[("JSON files", "*.json")],
+        )
         if path:
+            if not path.lower().endswith(".json"):
+                path = f"{path}.json"
+
             node_positions = self.node_editor.get_node_positions()
             # If target file already exists, protect existing views, scripts, and metadata by using surgical update!
             if Path(path).exists():

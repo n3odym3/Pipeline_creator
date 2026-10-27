@@ -10,17 +10,26 @@
         },
         "preload_modules": {
             "description": "If enabled, preloads all available modules at startup.",
-            "values": [true, false]
+            "values": [
+                true,
+                false
+            ]
         },
         "skip_import_validation": {
             "description": "If enabled, skips import validation during module loading.",
-            "values": [true, false]
+            "values": [
+                true,
+                false
+            ]
         }
     },
     "Splash": {
         "enabled": {
             "description": "Show or hide the splash screen on startup.",
-            "values": [true, false]
+            "values": [
+                true,
+                false
+            ]
         },
         "image": {
             "description": "Path to the image displayed on the splash screen.",
@@ -44,53 +53,99 @@
     "Login": {
         "enabled": {
             "description": "Request authentication/profile selection at application startup.",
-            "values": [true, false]
+            "values": [
+                true,
+                false
+            ]
         },
         "default_mode": {
             "description": "Default profile mode proposed during login.",
-            "values": ["user", "advanced", "dev"]
+            "values": [
+                "user",
+                "advanced",
+                "dev"
+            ]
         }
     },
     "UI": {
         "theme_name": {
             "description": "Visual theme loaded at application startup.",
-            "values": ["DEFAULT", "CARBON", "CLASSIC", "GREY", "NAVY", "EMERALD", "AMBER"]
+            "values": [
+                "DEFAULT",
+                "CARBON",
+                "CLASSIC",
+                "GREY",
+                "NAVY",
+                "EMERALD",
+                "AMBER"
+            ]
         },
         "colorblind_type": {
             "description": "Colorblind palette correction type.",
-            "values": ["none", "universal", "protanopia", "deuteranopia", "tritanopia"]
+            "values": [
+                "none",
+                "universal",
+                "protanopia",
+                "deuteranopia",
+                "tritanopia"
+            ]
         },
         "mascot": {
             "description": "Show the assistant mascot on the UI.",
-            "values": [true, false]
+            "values": [
+                true,
+                false
+            ]
         }
     },
     "Debug": {
         "enabled": {
             "description": "Enable global debugging mode and debug logs.",
-            "values": [true, false]
+            "values": [
+                true,
+                false
+            ]
         },
         "log_level": {
             "description": "Verbosity level of the logs.",
-            "values": ["TRACE", "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
+            "values": [
+                "TRACE",
+                "DEBUG",
+                "INFO",
+                "WARNING",
+                "ERROR",
+                "CRITICAL"
+            ]
         },
         "log_mkdocs": {
             "description": "Show logs related to the MkDocs documentation server.",
-            "values": [true, false]
+            "values": [
+                true,
+                false
+            ]
         }
     },
     "Window": {
         "vsync": {
             "description": "Enable vertical synchronization to prevent screen tearing.",
-            "values": [true, false]
+            "values": [
+                true,
+                false
+            ]
         },
         "minimize_to_tray": {
             "description": "Minimize the application to the system tray instead of the taskbar.",
-            "values": [true, false]
+            "values": [
+                true,
+                false
+            ]
         },
         "show_console": {
             "description": "Show the system console in the background (Windows only).",
-            "values": [true, false]
+            "values": [
+                true,
+                false
+            ]
         }
     },
     "Paths": {
@@ -108,7 +163,10 @@
         },
         "show_loader_on_startup": {
             "description": "Show startup dialog to select a pipeline or script if none is specified.",
-            "values": [true, false]
+            "values": [
+                true,
+                false
+            ]
         },
         "default_pipeline_folder": {
             "description": "Default directory where pipeline/layout JSON files are located.",
@@ -119,17 +177,21 @@
             "values": "folder_browser"
         }
     },
-    "Cameras": {
-        "IDS": {
-            "rotation": {
-                "description": "Rotation angle (in degrees) applied to the video feed of IDS cameras.",
-                "values": [0, 90, 180, 270]
-            }
-        },
-        "Alvium": {
-            "rotation": {
-                "description": "Rotation angle (in degrees) applied to the video feed of Alvium cameras.",
-                "values": [0, 90, 180, 270]
+    "Viewers": {
+        "video_viewer": {
+            "texture_mode": {
+                "description": "Texture rendering mode for Video Viewer: 'raw' (high-frequency streaming) or 'static' (recreate on update).",
+                "values": [
+                    "raw",
+                    "static"
+                ]
+            },
+            "preserve_aspect_ratio": {
+                "description": "Preserve video aspect ratio (true) or stretch video to fit the canvas (false).",
+                "values": [
+                    true,
+                    false
+                ]
             }
         }
     }

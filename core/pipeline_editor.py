@@ -178,6 +178,9 @@ class PipelineEditor:
             if not target:
                 return False
 
+        if not str(target).lower().endswith('.json'):
+            target = f'{target}.json'
+
         try:
             with open(target, "w", encoding="utf-8") as f:
                 json.dump(self.pipeline_data, f, indent=4)

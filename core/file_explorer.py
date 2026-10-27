@@ -255,12 +255,30 @@ class FileExplorer:
         init_dir = str(Path(default_path)) if default_path else str(Path.cwd())
         filetypes = extensions if extensions else [("All files", "*.*")]
 
+        default_ext = ""
+        if extensions:
+            for _, pattern in extensions:
+                ext = pattern.replace("*", "").strip()
+                if ext.startswith(".") and ext != ".*":
+                    default_ext = ext
+                    break
+        if not default_ext and default_name:
+            suffix = Path(default_name).suffix
+            if suffix:
+                default_ext = suffix
+
+        dialog_kwargs: dict[str, Any] = {
+            "initialdir": init_dir,
+            "initialfile": default_name,
+            "filetypes": filetypes,
+        }
+        if default_ext:
+            dialog_kwargs["defaultextension"] = default_ext
+
         return self._run_dialog(
             filedialog.asksaveasfilename,
             callback=callback,
-            initialdir=init_dir,
-            initialfile=default_name,
-            filetypes=filetypes,
+            **dialog_kwargs,
         )
 
     def select_folder(
@@ -287,5 +305,3 @@ class FileExplorer:
 
 # Global singleton instance
 file_explorer: FileExplorer = FileExplorer()
-
-

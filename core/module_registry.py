@@ -738,6 +738,8 @@ def export_workspace(
     }
 
     if filepath:
+        if not str(filepath).lower().endswith(".json"):
+            filepath = f"{filepath}.json"
         with open(filepath, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=4)
         logger.success(f"Workspace exported to {filepath}")

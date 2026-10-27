@@ -1,0 +1,59 @@
+{
+    "is_relative": true,
+    "windows": [
+        {
+            "module": "Video.video_reader_win",
+            "class_name": "VideoReader_win",
+            "uuid": "509",
+            "pos": [
+                0.078125,
+                2.6646928201332347
+            ],
+            "size": [
+                20.078125,
+                96.96521095484826
+            ],
+            "visible": true,
+            "params": {
+                "label": "Video Reader",
+                "recursive": true,
+                "reprocess": true,
+                "file_format": "All",
+                "folder": "C:\\Users\\gerva\\OneDrive\\Documents\\GitHub\\Pipeline_creator"
+            },
+            "node_pos": [
+                36,
+                11
+            ]
+        },
+        {
+            "module": "Video.video_viewer_win",
+            "class_name": "VideoViewerWin",
+            "uuid": "565",
+            "pos": [
+                20.2734375,
+                2.7387120651369354
+            ],
+            "size": [
+                79.5703125,
+                96.96521095484826
+            ],
+            "visible": true,
+            "params": {
+                "label": "Video Viewer",
+                "fps_counter_enabled": true
+            },
+            "node_pos": [
+                221,
+                13
+            ]
+        }
+    ],
+    "connections": [
+        {
+            "from": "509",
+            "output": "Frame",
+            "to": "565"
+        }
+    ]
+}

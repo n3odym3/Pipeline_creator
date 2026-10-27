@@ -19,7 +19,7 @@
         "default_mode": "dev"
     },
     "UI": {
-        "theme_name": "DEFAULT",
+        "theme_name": "OCEAN_DARK",
         "colorblind_type": "none",
         "mascot": true
     },
@@ -41,5 +41,11 @@
         "show_loader_on_startup": true,
         "default_pipeline_folder": "pipelines",
         "default_scripts_folder": "scripts"
+    },
+    "Viewers": {
+        "video_viewer": {
+            "texture_mode": "raw",
+            "preserve_aspect_ratio": true
+        }
     }
 }
