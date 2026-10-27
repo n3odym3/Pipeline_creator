@@ -1,7 +1,7 @@
 """
 Automation Manager module for Pipeline Creator.
 
-Manages automated JSON script execution, workflow layout loading, workspace directory setup,
+Manages automated JSON script execution, workflow pipelines loading, workspace directory setup,
 and automated step dispatching.
 """
 
@@ -19,14 +19,14 @@ import dearpygui.dearpygui as dpg
 from loguru import logger
 
 from core.module_registry import MODULES_REGISTRY, PROJECT_ROOT
-from core.paths import LAYOUTS_DIR
+from core.paths import PIPELINES_DIR
 from core.working_directory_manager import working_directory_manager
 
 
 class AutomationManager:
     """
     Manages automated tasks defined in a JSON script file.
-    Can be used to set up the environment, load layouts, and trigger module actions on startup.
+    Can be used to set up the environment, load pipelines, and trigger module actions on startup.
     """
 
     def __init__(self) -> None:
@@ -246,8 +246,8 @@ class AutomationManager:
         filename = Path(path).name
 
         candidates = [
-            LAYOUTS_DIR / filename,
-            LAYOUTS_DIR / path_clean,
+            PIPELINES_DIR / filename,
+            PIPELINES_DIR / path_clean,
             PROJECT_ROOT / path_clean,
             working_directory_manager.get_directory() / path_clean,
             Path(path),
@@ -261,8 +261,8 @@ class AutomationManager:
 
         if not resolved_path:
             logger.error(
-                f"Layout file not found: {path} "
-                f"(Checked LAYOUTS_DIR: {LAYOUTS_DIR}, Root: {PROJECT_ROOT}, CWD: {working_directory_manager.get_directory()})"
+                f"Pipeline file not found: {path} "
+                f"(Checked PIPELINES_DIR: {PIPELINES_DIR}, Root: {PROJECT_ROOT}, CWD: {working_directory_manager.get_directory()})"
             )
             return
 
@@ -272,11 +272,11 @@ class AutomationManager:
             main_win.load_workspace_from_path(str(resolved_path))
             logger.info(f"Automation successfully loaded pipeline: {resolved_path.name}")
         except Exception as e:
-            logger.error(f"Failed to load layout in automation: {e}")
+            logger.error(f"Failed to load pipeline in automation: {e}")
 
     def apply_view(self, step: Dict[str, Any]) -> None:
         """
-        Apply a saved named view layout preset.
+        Apply a saved named view pipeline preset.
 
         Args:
             step: Dict containing the 'view_name' to apply.

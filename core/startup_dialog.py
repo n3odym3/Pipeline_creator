@@ -29,11 +29,11 @@ class StartupDialog:
     Startup Loader Dialog component class.
 
     Presents a centered modal dialog at boot allowing the user to select
-    and load an Automation Script or a Pipeline / Layout.
+    and load an Automation Script or a Pipeline.
     """
 
     MODE_SCRIPT = "Automation Script"
-    MODE_PIPELINE = "Pipeline / Layout"
+    MODE_PIPELINE = "Pipeline"
 
     def __init__(self, main_win: MainWin) -> None:
         self.main_win: MainWin = main_win
@@ -121,7 +121,7 @@ class StartupDialog:
     def _refresh_file_list(self) -> None:
         selected_mode = dpg.get_value(self._radio_tag)
         folder_key = "default_pipeline_folder" if selected_mode == self.MODE_PIPELINE else "default_scripts_folder"
-        default_folder_name = "layouts" if selected_mode == self.MODE_PIPELINE else "scripts"
+        default_folder_name = "pipelines" if selected_mode == self.MODE_PIPELINE else "scripts"
         folder_path = self._resolve_folder_path(folder_key, default_folder_name)
 
         file_map = self._scan_folder_json_files(folder_path)
@@ -179,7 +179,7 @@ class StartupDialog:
     ) -> None:
         selected_mode = dpg.get_value(self._radio_tag)
         folder_key = "default_pipeline_folder" if selected_mode == self.MODE_PIPELINE else "default_scripts_folder"
-        default_folder_name = "layouts" if selected_mode == self.MODE_PIPELINE else "scripts"
+        default_folder_name = "pipelines" if selected_mode == self.MODE_PIPELINE else "scripts"
         folder_path = self._resolve_folder_path(folder_key, default_folder_name)
 
         path_str = file_explorer.select_file(
@@ -268,7 +268,7 @@ class StartupDialog:
             pos=[pos_x, pos_y],
         ):
             dpg.add_spacer(height=s(6))
-            dpg.add_text("Choose a Script or Pipeline / Layout to load on startup:", color=(180, 180, 200, 255))
+            dpg.add_text("Choose a Script or Pipeline to load on startup:", color=(180, 180, 200, 255))
             dpg.add_separator()
             dpg.add_spacer(height=s(8))
 

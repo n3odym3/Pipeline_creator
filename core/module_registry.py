@@ -219,7 +219,7 @@ _IN_FRAME_PUMP: bool = False
 def pump_dpg_frames(count: int = 2) -> None:
     """
     Pump a given number of DPG frames on the main thread so ImGui computes geometry,
-    viewport dimensions, and widget bounding rects during initial layout loading.
+    viewport dimensions, and widget bounding rects during initial pipeline loading.
     """
     global _IN_FRAME_PUMP
     if _IN_FRAME_PUMP:
@@ -286,6 +286,8 @@ def clear_registry() -> None:
             main_win.refresh_view_menu()
         if hasattr(main_win, "node_editor") and hasattr(main_win.node_editor, "refresh_view_menu"):
             main_win.node_editor.refresh_view_menu()
+        from core.tutorial_manager import tutorial_manager
+        tutorial_manager._update_step_toolbar_state()
     except Exception:
         pass
 
@@ -683,11 +685,11 @@ def _report_missing_dependencies(missing_deps: Dict[str, List[str]]) -> None:
 
 def export_workspace(
     instances: Optional[Any] = None,
-    filepath: Optional[str] = "layout.json",
+    filepath: Optional[str] = "pipeline.json",
     node_positions: Optional[Dict[str, Tuple[float, float]]] = None,
     is_relative: bool = True,
 ) -> Dict[str, Any]:
-    """Export the layout and connections of all modules to a JSON file and return the dict."""
+    """Export the pipeline and connections of all modules to a JSON file and return the dict."""
     if instances is None:
         inst_list = list(get_registered_modules())
     elif isinstance(instances, dict):
@@ -745,13 +747,13 @@ def export_workspace(
 
 
 def load_workspace(
-    filepath: str = "layout.json",
+    filepath: str = "pipeline.json",
     module_registry: Optional[Dict[str, Type[Any]]] = None,
     start_cleaned: bool = True,
     only_position: bool = False
 ) -> Dict[str, Any]:
     """
-    Load a workspace layout from a JSON file.
+    Load a workspace pipeline from a JSON file.
     If only_position is True, the function will only reposition existing windows
     based on the JSON without instantiating or destroying them.
     """
@@ -875,7 +877,7 @@ def load_from_dict(
     start_cleaned: bool = True
 ) -> Dict[str, Any]:
     """
-    Load a workspace layout from a dictionary and recreate modules, merges, and connections.
+    Load a workspace pipeline from a dictionary and recreate modules, merges, and connections.
     Returns a dict mapping UUID → instance.
     
     Args:
@@ -936,12 +938,12 @@ def load_from_dict(
         module_key = wdata["module"]
         cls = module_registry.get(module_key)
         
-        # Fallback for older layouts where "modules." might have been omitted
+        # Fallback for older pipelines where "modules." might have been omitted
         if not cls and not module_key.startswith("modules."):
             cls = module_registry.get(f"modules.{module_key}")
             
         if not cls:
-            msg = f"Unknown module in layout: {module_key}"
+            msg = f"Unknown module in pipeline: {module_key}"
             logger.warning(msg)
             continue
 
@@ -1078,11 +1080,11 @@ def load_from_dict(
         if src and (tgt := instances.get(tgt_entry)) and output_key is not None:
             src.connect_to(tgt, output=output_key)
 
-    # Final frame pump to settle layout geometry after merging (only if merges exist)
+    # Final frame pump to settle pipeline geometry after merging (only if merges exist)
     if merge_requests:
         pump_dpg_frames(1)
 
-    # Load and register views if they exist in layout data
+    # Load and register views if they exist in pipeline data
     views = dict(data.get("views", {}))
     views["Default"] = {
         "windows": data.get("windows", []),
@@ -1103,7 +1105,7 @@ def load_from_dict(
 
 def apply_view_data(view_data: dict) -> None:
     """
-    Apply a view layout directly from a dictionary.
+    Apply a view pipeline directly from a dictionary.
     Hides all registered windows, then shows and repositions only the listed ones.
     """
     # Step 1 – hide every registered window
@@ -1143,6 +1145,8 @@ def register_views(views: Dict[str, Any], merge: bool = False) -> None:
             main_win.refresh_view_menu()
         if hasattr(main_win, "node_editor") and hasattr(main_win.node_editor, "refresh_view_menu"):
             main_win.node_editor.refresh_view_menu()
+        from core.tutorial_manager import tutorial_manager
+        tutorial_manager._update_step_toolbar_state()
     except Exception:
         pass
 
@@ -1165,7 +1169,7 @@ def apply_named_view(view_name: str) -> bool:
 
 def apply_view(mode: str) -> None:
     """
-    Apply a secondary layout view for the given mode.
+    Apply a secondary pipeline view for the given mode.
 
     Strategy:
       1. Hide ALL currently registered windows.

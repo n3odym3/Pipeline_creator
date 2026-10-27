@@ -29,7 +29,7 @@ class WindowBase:
     description: str
     connections: Dict[str, List[Any]]
     persistent_fields: List[str]
-    _persistent_fields: List[str]
+    persistent_fields: List[str]
     _original_children: List[Union[int, str]]
     merged_into: Optional[WindowBase]
     _merge_wrapper_id: Optional[Union[int, str]]
@@ -93,15 +93,15 @@ class WindowBase:
         else:
             self.accepted_input_types = list(self.accepted_input_types)
 
-        # Resolve persistent fields (persistent_fields -> _persistent_fields -> ["label"])
-        raw_fields = getattr(self, "persistent_fields", getattr(self, "_persistent_fields", None))
+        # Resolve persistent fields (persistent_fields -> persistent_fields -> ["label"])
+        raw_fields = getattr(self, "persistent_fields", getattr(self, "persistent_fields", None))
         if raw_fields is None:
-            raw_fields = getattr(cls, "persistent_fields", getattr(cls, "_persistent_fields", ["label"]))
+            raw_fields = getattr(cls, "persistent_fields", getattr(cls, "persistent_fields", ["label"]))
 
         self.persistent_fields = list(raw_fields)
         if "label" not in self.persistent_fields:
             self.persistent_fields.insert(0, "label")
-        self._persistent_fields = self.persistent_fields
+        self.persistent_fields = self.persistent_fields
 
         for field in self.persistent_fields:
             if field in kwargs:
@@ -131,8 +131,8 @@ class WindowBase:
                     if k not in conns:
                         conns[k] = []
         elif name == "persistent_fields":
-            super().__setattr__("_persistent_fields", value)
-        elif name == "_persistent_fields":
+            super().__setattr__("persistent_fields", value)
+        elif name == "persistent_fields":
             super().__setattr__("persistent_fields", value)
 
     def update_permission(self) -> None:
@@ -340,7 +340,7 @@ class WindowBase:
             self.win_width, self.win_height = dpg.get_item_rect_size(self.winID)
             self.visible = dpg.is_item_visible(self.winID)
 
-        fields = getattr(self, "persistent_fields", getattr(self, "_persistent_fields", ["label"]))
+        fields = getattr(self, "persistent_fields", getattr(self, "persistent_fields", ["label"]))
         params = {field: getattr(self, field, None) for field in fields if hasattr(self, field)}
 
         if self.merged_into:
@@ -368,8 +368,9 @@ class WindowBase:
 
     def close(self) -> None:
         """Clean up and unregister the window from the registry."""
-        if getattr(self, "_is_closing", False):
+        if getattr(self, "_is_closed", False):
             return
+        self._is_closed = True
         self._is_closing = True
 
         logger.trace(f"Closing {self.label} ({self.UUID})")

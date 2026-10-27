@@ -42,7 +42,7 @@ def get_project_root() -> Path:
 PROJECT_ROOT: Path = get_project_root()
 
 MODULES_DIR: Path = PROJECT_ROOT / "modules"
-LAYOUTS_DIR: Path = PROJECT_ROOT / "layouts"
+PIPELINES_DIR: Path = PROJECT_ROOT / "pipelines"
 SCRIPTS_DIR: Path = PROJECT_ROOT / "scripts"
 CONFIG_DIR: Path = PROJECT_ROOT / "config"
 LOGS_DIR: Path = PROJECT_ROOT / "logs"

@@ -19,7 +19,7 @@ from loguru import logger
 
 from config.display_scaling import display_scaling
 from core.file_explorer import file_explorer
-from core.paths import LAYOUTS_DIR, PROJECT_ROOT, SCRIPTS_DIR
+from core.paths import PIPELINES_DIR, PROJECT_ROOT, SCRIPTS_DIR
 from core.automation_manager import automation_manager
 
 
@@ -77,7 +77,7 @@ class AutomationEditor:
             "name": "Untitled Automation",
             "steps": [
                 {"action": "fullscreen", "enabled": True},
-                {"action": "load_pipeline", "path": "/layouts/Radial_Counter.json"},
+                {"action": "load_pipeline", "path": "/pipelines/Radial_Counter.json"},
             ],
         }
         self.selected_step_idx = 0
@@ -155,12 +155,12 @@ class AutomationEditor:
         if not layout_path_str:
             return {"layout_name": None, "modules": [], "views": []}
 
-        # Resolve layout path
+        # Resolve pipeline path
         path_clean = str(layout_path_str).lstrip("/\\")
         filename = Path(layout_path_str).name
         candidates = [
-            LAYOUTS_DIR / filename,
-            LAYOUTS_DIR / path_clean,
+            PIPELINES_DIR / filename,
+            PIPELINES_DIR / path_clean,
             PROJECT_ROOT / path_clean,
             Path(layout_path_str),
         ]
@@ -200,11 +200,11 @@ class AutomationEditor:
                 "views": views,
             }
         except Exception as e:
-            logger.debug(f"Could not parse layout for automation context: {e}")
+            logger.debug(f"Could not parse pipeline for automation context: {e}")
             return {"layout_name": filename, "modules": [], "views": []}
 
     def _on_pick_module_for_step(self, step: Dict[str, Any], chosen_item: str, mods: List[Dict[str, Any]]) -> None:
-        """Set module_uuid and module_type from layout picker."""
+        """Set module_uuid and module_type from pipeline picker."""
         for m in mods:
             item_label = f"[{m['uuid']}] {m['label']} ({m['class_name'] or m['module']})"
             if item_label == chosen_item:
@@ -470,7 +470,7 @@ class AutomationEditor:
                 dpg.add_text(f"Editing Step #{self.selected_step_idx + 1}: {action}", color=(255, 205, 90))
                 if layout_name:
                     dpg.add_spacer(width=s(10))
-                    dpg.add_text(f"(Layout: {layout_name} - {len(mods)} modules, {len(views_list)} views)", color=(140, 190, 240))
+                    dpg.add_text(f"(pipeline: {layout_name} - {len(mods)} modules, {len(views_list)} views)", color=(140, 190, 240))
 
             dpg.add_separator()
             dpg.add_spacer(height=s(4))
@@ -531,8 +531,8 @@ class AutomationEditor:
 
             elif action == "load_pipeline":
                 layout_files = (
-                    sorted([f.name for f in LAYOUTS_DIR.glob("*.json") if f.is_file()], key=str.lower)
-                    if LAYOUTS_DIR.exists()
+                    sorted([f.name for f in PIPELINES_DIR.glob("*.json") if f.is_file()], key=str.lower)
+                    if PIPELINES_DIR.exists()
                     else []
                 )
                 curr_path = str(step.get("path", ""))
@@ -545,7 +545,7 @@ class AutomationEditor:
                             items=layout_files,
                             default_value=curr_layout_name if curr_layout_name in layout_files else (layout_files[0] if layout_files else ""),
                             width=s(240),
-                            callback=lambda s, a, u, *args: (step.__setitem__("path", f"/layouts/{a}"), self._populate_steps_list(), self._populate_step_details()),
+                            callback=lambda s, a, u, *args: (step.__setitem__("path", f"/pipelines/{a}"), self._populate_steps_list(), self._populate_step_details()),
                         )
                     dpg.add_button(
                         label="Browse",
@@ -565,7 +565,7 @@ class AutomationEditor:
                 curr_view = str(step.get("view_name", ""))
                 if views_list:
                     with dpg.group(horizontal=True):
-                        dpg.add_text("Pick Layout View:")
+                        dpg.add_text("Pick Pipeline View:")
                         dpg.add_combo(
                             items=views_list,
                             default_value=curr_view if curr_view in views_list else (views_list[0] if views_list else ""),
@@ -588,7 +588,7 @@ class AutomationEditor:
                     curr_mod_display = next((f"[{m['uuid']}] {m['label']} ({m['class_name'] or m['module']})" for m in mods if m['uuid'] == curr_uuid), "")
 
                     with dpg.group(horizontal=True):
-                        dpg.add_text("Pick Module from Layout:")
+                        dpg.add_text("Pick Module from Pipeline:")
                         dpg.add_combo(
                             items=mod_items,
                             default_value=curr_mod_display,
@@ -639,7 +639,7 @@ class AutomationEditor:
                     curr_mod_display = next((f"[{m['uuid']}] {m['label']} ({m['class_name'] or m['module']})" for m in mods if m['uuid'] == curr_uuid), "")
 
                     with dpg.group(horizontal=True):
-                        dpg.add_text("Pick Module from Layout:")
+                        dpg.add_text("Pick Module from Pipeline:")
                         dpg.add_combo(
                             items=mod_items,
                             default_value=curr_mod_display,
@@ -711,7 +711,7 @@ class AutomationEditor:
             if new_action == "fullscreen" and "enabled" not in step:
                 step["enabled"] = True
             elif new_action == "load_pipeline" and "path" not in step:
-                step["path"] = "/layouts/Radial_Counter.json"
+                step["path"] = "/pipelines/Radial_Counter.json"
             elif new_action == "apply_view" and "view_name" not in step:
                 step["view_name"] = "default"
             elif new_action == "send_command":
@@ -805,7 +805,7 @@ class AutomationEditor:
 
     def _on_browse_pipeline_path(self, step: Dict[str, Any]) -> None:
         chosen = file_explorer.select_file(
-            default_path=str(LAYOUTS_DIR),
+            default_path=str(PIPELINES_DIR),
             extensions=[("JSON files", "*.json")],
         )
         if chosen:

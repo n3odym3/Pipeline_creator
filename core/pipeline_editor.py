@@ -2,7 +2,7 @@
 Pipeline Editor module for Pipeline Creator.
 
 Provides an interactive GUI tool to open, inspect, edit, and create pipeline JSON layouts.
-Users can view and modify modules, connections ("who connects to what"), layout views,
+Users can view and modify modules, connections ("who connects to what"), pipeline views,
 and raw JSON configurations, as well as load edited pipelines directly into the workspace.
 """
 
@@ -18,7 +18,7 @@ from loguru import logger
 
 from config.display_scaling import display_scaling
 from core.file_explorer import file_explorer
-from core.paths import LAYOUTS_DIR, PROJECT_ROOT
+from core.paths import PIPELINES_DIR, PROJECT_ROOT
 
 
 class PipelineEditor:
@@ -60,10 +60,10 @@ class PipelineEditor:
         # 1. Explicit filepath or active loaded pipeline JSON
         if target_file and Path(target_file).exists():
             self.load_file(str(target_file))
-        # 2. Fallback to first available layout file in layouts directory if no pipeline loaded
-        elif LAYOUTS_DIR.exists() and list(LAYOUTS_DIR.glob("*.json")):
-            layouts = sorted(list(LAYOUTS_DIR.glob("*.json")), key=lambda p: p.stem.lower())
-            self.load_file(str(layouts[0].resolve()))
+        # 2. Fallback to first available pipeline file in pipelines directory if no pipeline loaded
+        elif PIPELINES_DIR.exists() and list(PIPELINES_DIR.glob("*.json")):
+            pipelines = sorted(list(PIPELINES_DIR.glob("*.json")), key=lambda p: p.stem.lower())
+            self.load_file(str(pipelines[0].resolve()))
         # 3. Empty template
         else:
             self._init_empty_pipeline()
@@ -91,13 +91,20 @@ class PipelineEditor:
                 if link_nodes:
                     data["link_nodes"] = link_nodes
 
-            self.pipeline_data = {
-                "is_relative": data.get("is_relative", True),
-                "windows": data.get("windows", []),
-                "connections": data.get("connections", []),
-                "views": data.get("views", {}),
-                "link_nodes": data.get("link_nodes", []),
-            }
+            existing_views = copy.deepcopy(self.pipeline_data.get("views", {}))
+            try:
+                from core.module_registry import AVAILABLE_VIEWS
+                for av_name, av_data in AVAILABLE_VIEWS.items():
+                    if av_name not in existing_views:
+                        existing_views[av_name] = copy.deepcopy(av_data)
+            except Exception:
+                pass
+
+            self.pipeline_data["is_relative"] = data.get("is_relative", True)
+            self.pipeline_data["windows"] = data.get("windows", [])
+            self.pipeline_data["connections"] = data.get("connections", [])
+            self.pipeline_data["views"] = existing_views
+            self.pipeline_data["link_nodes"] = data.get("link_nodes", [])
             self.current_filepath = (
                 str(Path(LAST_LOADED_WORKSPACE).resolve())
                 if LAST_LOADED_WORKSPACE and Path(LAST_LOADED_WORKSPACE).exists()
@@ -139,13 +146,12 @@ class PipelineEditor:
                 logger.error(f"Invalid JSON in {filepath}: root must be an object.")
                 return False
 
-            self.pipeline_data = {
-                "is_relative": data.get("is_relative", True),
-                "windows": data.get("windows", []),
-                "connections": data.get("connections", []),
-                "views": data.get("views", {}),
-                "link_nodes": data.get("link_nodes", []),
-            }
+            self.pipeline_data = copy.deepcopy(data)
+            self.pipeline_data.setdefault("is_relative", True)
+            self.pipeline_data.setdefault("windows", [])
+            self.pipeline_data.setdefault("connections", [])
+            self.pipeline_data.setdefault("views", {})
+            self.pipeline_data.setdefault("link_nodes", [])
             self.current_filepath = str(Path(filepath).resolve())
             self.selected_module_idx = 0 if self.pipeline_data["windows"] else -1
             self.selected_connection_idx = None
@@ -165,7 +171,7 @@ class PipelineEditor:
         target = filepath or self.current_filepath
         if not target:
             target = file_explorer.save_file(
-                default_path=str(LAYOUTS_DIR),
+                default_path=str(PIPELINES_DIR),
                 default_name="pipeline.json",
                 extensions=[("JSON files", "*.json")],
             )
@@ -275,8 +281,8 @@ class PipelineEditor:
         """Top selector bar for choosing, browsing, or creating pipelines."""
         s = display_scaling.scale
         layout_files = (
-            sorted([f for f in LAYOUTS_DIR.glob("*.json") if f.is_file()], key=lambda p: p.stem.lower())
-            if LAYOUTS_DIR.exists()
+            sorted([f for f in PIPELINES_DIR.glob("*.json") if f.is_file()], key=lambda p: p.stem.lower())
+            if PIPELINES_DIR.exists()
             else []
         )
         file_map = {f.stem: str(f.resolve()) for f in layout_files}
@@ -981,7 +987,7 @@ class PipelineEditor:
             with dpg.group(horizontal=True):
                 # Left pane: View list
                 with dpg.child_window(width=s(230), height=-1, border=True):
-                    dpg.add_text("Layout Views", color=(200, 200, 220))
+                    dpg.add_text("Pipeline Views", color=(200, 200, 220))
                     dpg.add_separator()
 
                     with dpg.child_window(tag=f"{self.winID}_views_list_child", height=-s(45), border=False):
@@ -2106,7 +2112,7 @@ class PipelineEditor:
     def _on_browse_open(self, *args, **kwargs) -> None:
         """Open a file explorer dialog to select any pipeline JSON file."""
         chosen = file_explorer.select_file(
-            default_path=str(LAYOUTS_DIR),
+            default_path=str(PIPELINES_DIR),
             extensions=[("JSON files", "*.json")],
         )
         if chosen:
@@ -2126,7 +2132,7 @@ class PipelineEditor:
     def _on_save_as_clicked(self, *args, **kwargs) -> None:
         """Save as a new pipeline file."""
         chosen = file_explorer.save_file(
-            default_path=str(LAYOUTS_DIR),
+            default_path=str(PIPELINES_DIR),
             default_name="new_pipeline.json",
             extensions=[("JSON files", "*.json")],
         )
