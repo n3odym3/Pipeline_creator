@@ -97,5 +97,10 @@ class IOTypes(str, Enum):
         "Ordered list of frame dicts, each containing 'image' (np.ndarray), optional 'filename', 'x', etc.",
     )
     VECTORS = ("vectors", "dict", "Vector field and orientation data ({'angles': [...], 'magnitudes': [...], ...})")
+    PLAYBACK = (
+        "playback",
+        "dict",
+        "Video playback state {path, name, frame_idx, total_frames, playing} emitted for every displayed frame",
+    )
     ANY = ("any", "Any", "Generic data type for flexible connections")
 

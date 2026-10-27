@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 import threading
 import time
 from typing import Any, Dict, List, Optional, Set, Tuple
@@ -57,6 +58,7 @@ class TutorialManager:
         self.is_recording = False
         self._is_playing = False
         self.current_step_idx = 0
+        self.selected_step_idx = 0
         self.single_step_mode = False
         self._last_highlighted_item = None
         self._last_focus_time = 0.0
@@ -69,6 +71,9 @@ class TutorialManager:
         self.overlay_info_win = dpg.generate_uuid()
         
         self._last_step_focused = -1
+        self._last_rendered_links_key = None
+        self._step_label_items: List[Any] = []
+        self._row_selectables: List[Tuple[Any, Any]] = []
         self._ui_initialized = False
 
         self.tutorials_dir = TUTORIALS_DIR
@@ -81,6 +86,7 @@ class TutorialManager:
         # Worker thread fields (started dynamically on playback)
         self._worker_thread = None
         self._worker_event = None
+        self._overlay_lock = threading.RLock()
 
     @property
     def is_playing(self) -> bool:
@@ -139,6 +145,7 @@ class TutorialManager:
                     with dpg.group():
                         self.overlay_msg = dpg.add_text("Instruction", wrap=400)
                         dpg.add_spacer(height=5)
+                        self.overlay_links_group = dpg.add_group(show=False)
                         with dpg.group(horizontal=True) as self.nav_buttons_group:
                             self.overlay_prev_btn = dpg.add_button(label="\uf060", callback=self.prev_step, width=40)
                             self.overlay_next_btn = dpg.add_button(label="\uf061", callback=self.manual_next_step, width=40)
@@ -278,6 +285,7 @@ class TutorialManager:
         self._init_ui_components()
         
         if dpg.does_item_exist(self.winID):
+            self._update_step_toolbar_state()
             dpg.show_item(self.winID)
             dpg.focus_item(self.winID)
             return
@@ -293,6 +301,8 @@ class TutorialManager:
                 dpg.add_button(label="Load", callback=lambda *_: self.load_tutorial())
                 dpg.add_button(label="Clear", callback=self.clear_tutorial)
                 self.btn_play = dpg.add_button(label="Play", callback=self.toggle_play)
+
+            dpg.add_button(label="Add Central Popup", callback=self.add_center_step, width=-1)
                 
             dpg.add_separator()
             
@@ -302,6 +312,35 @@ class TutorialManager:
                 self.main_next_btn = dpg.add_button(label="\uf061", callback=self.manual_next_step)
                 
             dpg.add_separator()
+
+            with dpg.group(horizontal=True):
+                dpg.add_text("Step:")
+                self.btn_step_up = dpg.add_button(label="\uf062", callback=lambda *_: self.move_selected_step(-1), width=28)
+                with dpg.tooltip(parent=self.btn_step_up):
+                    dpg.add_text("Move selected step up")
+                self.btn_step_down = dpg.add_button(label="\uf063", callback=lambda *_: self.move_selected_step(1), width=28)
+                with dpg.tooltip(parent=self.btn_step_down):
+                    dpg.add_text("Move selected step down")
+                self.btn_step_run = dpg.add_button(label="Run", callback=self.run_selected_step)
+                with dpg.tooltip(parent=self.btn_step_run):
+                    dpg.add_text("Play only the selected step")
+                self.btn_step_del = dpg.add_button(label="Delete", callback=self.delete_selected_step)
+                with dpg.tooltip(parent=self.btn_step_del):
+                    dpg.add_text("Delete the selected step")
+                self.btn_step_link = dpg.add_button(label="+Link", callback=self.add_link_to_selected_step)
+                with dpg.tooltip(parent=self.btn_step_link):
+                    dpg.add_text("Add a link to another tutorial (for Central Popup steps)")
+
+            with dpg.group(horizontal=True):
+                dpg.add_text("View:")
+                self.step_view_combo = dpg.add_combo(
+                    items=["(None)"],
+                    default_value="(None)",
+                    width=-1,
+                    callback=self._on_step_view_changed,
+                )
+                with dpg.tooltip(parent=self.step_view_combo):
+                    dpg.add_text("Switch to this workspace view when this step starts")
             
             with dpg.child_window(height=-1):
                 self.step_list_group = dpg.add_group()
@@ -443,6 +482,10 @@ class TutorialManager:
         self.play_single_step(0)
 
     def _hide_overlay_completely(self):
+        with self._overlay_lock:
+            self._hide_overlay_completely_impl()
+
+    def _hide_overlay_completely_impl(self):
         self._clear_window_highlight()
         if dpg.does_item_exist(getattr(self, "overlay_drawlist", 0)):
             dpg.configure_item(self.overlay_drawlist, show=False)
@@ -462,6 +505,166 @@ class TutorialManager:
                 pass
         self._last_highlighted_item = None
 
+    def _format_rel_tutorial_path(self, filepath: str | Path) -> str:
+        """Format a tutorial path relative to TUTORIALS_DIR (or PROJECT_ROOT) using forward slashes."""
+        p = Path(filepath)
+        try:
+            return p.resolve().relative_to(self.tutorials_dir.resolve()).as_posix()
+        except Exception:
+            pass
+        try:
+            return p.resolve().relative_to(PROJECT_ROOT.resolve()).as_posix()
+        except Exception:
+            return p.as_posix()
+
+    def _resolve_tutorial_link(self, link_entry: Any) -> Tuple[str, Optional[Path], str]:
+        """
+        Resolve a tutorial link entry (str or dict with 'label'/'path') to:
+        (display_label, resolved_Path_or_None, description)
+        """
+        if isinstance(link_entry, dict):
+            raw_path = str(link_entry.get("path", "")).strip()
+            custom_label = str(link_entry.get("label", "")).strip()
+        else:
+            raw_path = str(link_entry).strip()
+            custom_label = ""
+
+        if not raw_path:
+            return (custom_label or "Unknown", None, "")
+
+        candidates: List[Path] = []
+        raw_p = Path(raw_path)
+        if raw_p.is_absolute():
+            candidates.append(raw_p)
+        else:
+            candidates.append(self.tutorials_dir / raw_p)
+            if raw_p.suffix.lower() != ".json":
+                candidates.append(self.tutorials_dir / f"{raw_path}.json")
+            candidates.append(PROJECT_ROOT / raw_p)
+            if raw_p.suffix.lower() != ".json":
+                candidates.append(PROJECT_ROOT / f"{raw_path}.json")
+
+        resolved: Optional[Path] = None
+        for cand in candidates:
+            if cand.exists() and cand.is_file():
+                resolved = cand
+                break
+
+        if resolved is None and self.tutorials_dir.exists():
+            target_stem = raw_p.stem.lower()
+            for found in self.tutorials_dir.rglob("*.json"):
+                if found.stem.lower() == target_stem:
+                    resolved = found
+                    break
+
+        display_label = custom_label or (resolved.stem if resolved else raw_p.stem or raw_path)
+        desc = ""
+        if resolved and resolved.exists():
+            try:
+                with open(resolved, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    if isinstance(data, dict):
+                        desc = data.get("description", "")
+            except Exception:
+                pass
+
+        return (display_label, resolved, desc)
+
+    def _update_overlay_links(self, step: Dict[str, Any]) -> None:
+        """Rebuild the clickable tutorial links inside the overlay HUD when the step's links change."""
+        links_group = getattr(self, "overlay_links_group", 0)
+        if not links_group or not dpg.does_item_exist(links_group):
+            return
+
+        links = step.get("links") or []
+        try:
+            key = (self.current_step_idx, json.dumps(links, sort_keys=True))
+        except Exception:
+            key = (self.current_step_idx, str(links))
+
+        if key == getattr(self, "_last_rendered_links_key", None):
+            return
+
+        self._last_rendered_links_key = key
+        dpg.delete_item(links_group, children_only=True)
+
+        if not links:
+            dpg.configure_item(links_group, show=False)
+            return
+
+        dpg.configure_item(links_group, show=True)
+        for link_entry in links:
+            label, resolved_path, desc = self._resolve_tutorial_link(link_entry)
+
+            def _on_link_click(s, a, u, *args, **kwargs):
+                if u and Path(u).exists():
+                    self.load_and_play(u)
+                else:
+                    logger.warning(f"Linked tutorial not found: {u}")
+
+            btn = dpg.add_button(
+                label=f"\uf061  {label}",
+                callback=_on_link_click,
+                user_data=str(resolved_path) if resolved_path else "",
+                enabled=(resolved_path is not None and resolved_path.exists()),
+                width=-1,
+                parent=links_group,
+            )
+            tooltip_txt = desc if desc else (str(resolved_path.relative_to(self.tutorials_dir)) if (resolved_path and resolved_path.is_relative_to(self.tutorials_dir)) else "")
+            if btn and tooltip_txt:
+                with dpg.tooltip(parent=btn):
+                    dpg.add_text(tooltip_txt, wrap=300)
+
+        dpg.add_spacer(height=5, parent=links_group)
+
+    def populate_tutorials_menu(self, parent_menu_tag: Any = "menu_tutorials") -> None:
+        """Recursively populate the Tutorials menu from TUTORIALS_DIR."""
+        if not dpg.does_item_exist(parent_menu_tag):
+            return
+        dpg.delete_item(parent_menu_tag, children_only=True)
+        if not self.tutorials_dir.exists():
+            return
+
+        def _populate_dir(directory: Path, parent_tag: Any) -> None:
+            try:
+                entries = list(directory.iterdir())
+            except Exception:
+                return
+
+            subdirs = sorted(
+                [e for e in entries if e.is_dir() and not e.name.startswith(".") and e.name != "__pycache__"],
+                key=lambda p: p.name.lower(),
+            )
+            files = sorted(
+                [e for e in entries if e.is_file() and e.suffix.lower() == ".json"],
+                key=lambda p: p.stem.lower(),
+            )
+
+            for subdir in subdirs:
+                if any(subdir.rglob("*.json")):
+                    submenu = dpg.add_menu(label=subdir.name, parent=parent_tag)
+                    _populate_dir(subdir, submenu)
+
+            for filepath in files:
+                desc = "No description provided."
+                try:
+                    with open(filepath, "r", encoding="utf-8") as f_in:
+                        data = json.load(f_in)
+                        if isinstance(data, dict):
+                            desc = data.get("description", desc)
+                except Exception:
+                    pass
+
+                def _make_cb(fp: Path):
+                    return lambda *a: self.load_and_play(fp)
+
+                mi = dpg.add_menu_item(label=filepath.stem, callback=_make_cb(filepath), parent=parent_tag)
+                if mi and desc and desc != "No description provided.":
+                    with dpg.tooltip(parent=mi):
+                        dpg.add_text(desc, wrap=300)
+
+        _populate_dir(self.tutorials_dir, parent_menu_tag)
+
     def save_tutorial(self, *args, **kwargs):
         filepath = file_explorer.save_file(
             default_path=str(self.tutorials_dir),
@@ -479,6 +682,7 @@ class TutorialManager:
             }
             with open(filepath, 'w', encoding='utf-8') as f:
                 json.dump(data, f, indent=4)
+            self.populate_tutorials_menu("menu_tutorials")
             logger.info(f"Saved tutorial to {filepath}")
         except Exception as e:
             logger.error(f"Failed to save tutorial: {e}")
@@ -508,10 +712,30 @@ class TutorialManager:
                 dpg.set_value(desc_widget, self.description)
             
             self.current_step_idx = 0
+            self.selected_step_idx = 0
+            self._last_resolved_step = -1
+            self._last_step_focused = -1
+            self._last_rendered_links_key = None
             self.refresh_ui()
             logger.info(f"Loaded tutorial from {filepath}")
         except Exception as e:
             logger.error(f"Failed to load tutorial: {e}")
+
+    def add_center_step(self, *args, **kwargs):
+        """Append a step showing a popup at the center of the viewport, not bound to any UI element."""
+        if self.is_playing:
+            return
+        self.recording_steps.append({
+            "path": [],  # Empty path -> HUD is centered in _update_overlay
+            "instruction": "Message",
+            "dim": True,
+            "type": "center",
+            "links": []
+        })
+        self.selected_step_idx = len(self.recording_steps) - 1
+        self.refresh_ui()
+        self._scroll_ui_to_current_step()
+        logger.info("Added central popup step.")
 
     def clear_tutorial(self, *args, **kwargs):
         self.recording_steps = []
@@ -519,14 +743,115 @@ class TutorialManager:
         if dpg.does_item_exist(getattr(self, "desc_input", 0)):
             dpg.set_value(self.desc_input, "")
         self.current_step_idx = 0
+        self.selected_step_idx = 0
+        self._last_rendered_links_key = None
         self.refresh_ui()
         logger.info("Tutorial cleared.")
+
+    def select_step(self, idx: int) -> None:
+        """Select a step row in the table and update the centralized step toolbar."""
+        if not self.recording_steps:
+            self.selected_step_idx = 0
+        else:
+            self.selected_step_idx = max(0, min(idx, len(self.recording_steps) - 1))
+
+        for i, (sel_num, sel_name) in enumerate(getattr(self, "_row_selectables", [])):
+            is_sel = (i == self.selected_step_idx)
+            if dpg.does_item_exist(sel_num):
+                dpg.set_value(sel_num, is_sel)
+            if dpg.does_item_exist(sel_name):
+                dpg.set_value(sel_name, is_sel)
+
+        self._update_step_toolbar_state()
+
+    def _update_step_toolbar_state(self) -> None:
+        """Enable or disable the centralized step action buttons based on the selected step."""
+        n = len(self.recording_steps)
+        has_sel = (0 <= self.selected_step_idx < n)
+        sel_step = self.recording_steps[self.selected_step_idx] if has_sel else {}
+        is_center = has_sel and (sel_step.get("type") == "center")
+
+        if dpg.does_item_exist(getattr(self, "btn_step_up", 0)):
+            dpg.configure_item(self.btn_step_up, enabled=(has_sel and self.selected_step_idx > 0))
+        if dpg.does_item_exist(getattr(self, "btn_step_down", 0)):
+            dpg.configure_item(self.btn_step_down, enabled=(has_sel and self.selected_step_idx < n - 1))
+        if dpg.does_item_exist(getattr(self, "btn_step_run", 0)):
+            dpg.configure_item(self.btn_step_run, enabled=has_sel)
+        if dpg.does_item_exist(getattr(self, "btn_step_del", 0)):
+            dpg.configure_item(self.btn_step_del, enabled=has_sel)
+        if dpg.does_item_exist(getattr(self, "btn_step_link", 0)):
+            dpg.configure_item(self.btn_step_link, enabled=is_center)
+
+        combo = getattr(self, "step_view_combo", 0)
+        if dpg.does_item_exist(combo):
+            from core.module_registry import get_available_views
+            avail_views = list(get_available_views().keys())
+            curr_view = sel_step.get("view", "") if has_sel else ""
+            if curr_view and curr_view not in avail_views:
+                avail_views.append(curr_view)
+            items = ["(None)"] + avail_views
+            dpg.configure_item(combo, items=items, enabled=has_sel)
+            dpg.set_value(combo, curr_view if curr_view else "(None)")
+
+    def _on_step_view_changed(self, sender, app_data, *args, **kwargs) -> None:
+        if 0 <= self.selected_step_idx < len(self.recording_steps):
+            step = self.recording_steps[self.selected_step_idx]
+            if not app_data or app_data == "(None)":
+                step.pop("view", None)
+            else:
+                step["view"] = app_data
+            self.refresh_ui()
+
+    def move_selected_step(self, delta: int) -> None:
+        idx = self.selected_step_idx
+        new_idx = idx + delta
+        if 0 <= idx < len(self.recording_steps) and 0 <= new_idx < len(self.recording_steps):
+            steps = self.recording_steps
+            steps[idx], steps[new_idx] = steps[new_idx], steps[idx]
+            if self.current_step_idx == idx:
+                self.current_step_idx = new_idx
+            elif self.current_step_idx == new_idx:
+                self.current_step_idx = idx
+            self.selected_step_idx = new_idx
+            self.refresh_ui()
+            self._scroll_ui_to_current_step()
+
+    def run_selected_step(self, *args, **kwargs) -> None:
+        if 0 <= self.selected_step_idx < len(self.recording_steps):
+            self.play_single_step(self.selected_step_idx)
+
+    def delete_selected_step(self, *args, **kwargs) -> None:
+        if 0 <= self.selected_step_idx < len(self.recording_steps):
+            self.recording_steps.pop(self.selected_step_idx)
+            if self.selected_step_idx >= len(self.recording_steps):
+                self.selected_step_idx = max(0, len(self.recording_steps) - 1)
+            if self.current_step_idx >= len(self.recording_steps):
+                self.current_step_idx = max(0, len(self.recording_steps) - 1)
+            self.refresh_ui()
+
+    def add_link_to_selected_step(self, *args, **kwargs) -> None:
+        if 0 <= self.selected_step_idx < len(self.recording_steps):
+            step = self.recording_steps[self.selected_step_idx]
+            if step.get("type") != "center":
+                return
+            selected = file_explorer.select_file(
+                default_path=str(self.tutorials_dir),
+                extensions=[("JSON files", "*.json")]
+            )
+            if selected:
+                rel_path = self._format_rel_tutorial_path(selected)
+                default_lbl = Path(selected).stem
+                links_list = step.setdefault("links", [])
+                links_list.append({"label": default_lbl, "path": rel_path})
+                self._last_rendered_links_key = None
+                self.refresh_ui()
 
     def play_single_step(self, idx):
         if self.is_recording: return
         self.is_playing = True
         self.single_step_mode = True
         self.current_step_idx = idx
+        self.selected_step_idx = idx
         btn = getattr(self, "btn_play", 0)
         if dpg.does_item_exist(btn):
             dpg.configure_item(btn, label="Stop Playback")
@@ -535,6 +860,8 @@ class TutorialManager:
         logger.info(f"Single step playback started for step {idx+1}")
 
     def load_and_play(self, filepath):
+        if self.is_playing:
+            self.toggle_play()
         self.load_tutorial(filepath)
         threading.Timer(0.1, lambda: self.toggle_play() if not self.is_playing else None).start()
 
@@ -550,6 +877,16 @@ class TutorialManager:
         if not self.is_playing or self.current_step_idx >= len(self.recording_steps):
             return
         step = self.recording_steps[self.current_step_idx]
+        view_name = step.get("view")
+        if view_name:
+            try:
+                from core.module_registry import apply_named_view
+                if apply_named_view(view_name):
+                    self._last_resolved_step = -1
+                    self.last_interaction_time = time.time()
+            except Exception as e:
+                logger.warning(f"Failed to apply tutorial step view '{view_name}': {e}")
+
         icon_type = step.get("icon_type")
         if not icon_type:
             step_type = step.get("type", "")
@@ -586,57 +923,127 @@ class TutorialManager:
                 self.toggle_play()
 
     def _scroll_ui_to_current_step(self):
-        if not dpg.does_item_exist(getattr(self, "step_list_group", 0)): return
-        children = dpg.get_item_children(self.step_list_group, 1) or []
-        for i, child in enumerate(children):
-            items = dpg.get_item_children(child, 1) or []
-            if len(items) >= 2:
-                lbl = items[1]
-                if i == self.current_step_idx:
-                    dpg.configure_item(lbl, color=(255, 150, 0))
-                else:
-                    dpg.configure_item(lbl, color=(150, 150, 150))
+        if self.is_playing and 0 <= self.current_step_idx < len(self.recording_steps):
+            self.select_step(self.current_step_idx)
 
     def refresh_ui(self):
         if not dpg.does_item_exist(getattr(self, "step_list_group", 0)): return
         dpg.delete_item(self.step_list_group, children_only=True)
-        
-        for i, step in enumerate(self.recording_steps):
-            with dpg.group(parent=self.step_list_group, horizontal=True):
-                dpg.add_text(f"{i+1}.")
-                
+        self._step_label_items = []
+        self._row_selectables = []
+
+        if self.recording_steps:
+            self.selected_step_idx = max(0, min(self.selected_step_idx, len(self.recording_steps) - 1))
+        else:
+            self.selected_step_idx = 0
+
+        self._update_step_toolbar_state()
+
+        with dpg.table(
+            parent=self.step_list_group,
+            header_row=True,
+            row_background=True,
+            borders_innerH=True,
+            borders_outerH=True,
+            borders_innerV=True,
+            borders_outerV=True,
+            resizable=True,
+            policy=dpg.mvTable_SizingStretchProp,
+        ):
+            dpg.add_table_column(label="Dim", width_fixed=True, init_width_or_weight=30)
+            dpg.add_table_column(label="#", width_fixed=True, init_width_or_weight=28)
+            dpg.add_table_column(label="Target", width_fixed=True, init_width_or_weight=95)
+            dpg.add_table_column(label="Instruction", width_stretch=True)
+
+            for i, step in enumerate(self.recording_steps):
                 name = "Unknown"
                 path = step.get("path", [])
                 if path:
                     last_item = path[-1]
                     name = last_item.get("label") or str(last_item.get("tag")) or last_item.get("type", "").split("::")[-1]
-                    
-                label_col = (150, 150, 150)
-                dpg.add_text(f"[{name}]", color=label_col)
-                
-                def _delete(s, a, u, *args, **kwargs):
-                    if isinstance(u, int) and 0 <= u < len(self.recording_steps):
-                        self.recording_steps.pop(u)
-                        if self.current_step_idx >= len(self.recording_steps):
-                            self.current_step_idx = max(0, len(self.recording_steps)-1)
-                        self.refresh_ui()
-                    
-                def _run_single(s, a, u, *args, **kwargs):
-                    if isinstance(u, int) and 0 <= u < len(self.recording_steps):
-                        self.play_single_step(u)
+                elif step.get("type") == "center":
+                    name = "Center Popup"
+
+                step_view = step.get("view")
+                if step_view:
+                    name = f"{name} [{step_view}]"
+
+                is_selected = (i == self.selected_step_idx)
+
+                def _on_select_row(s, a, u, *args, **kwargs):
+                    if isinstance(u, int):
+                        self.select_step(u)
 
                 def _update_dim(s, a, u, *args, **kwargs):
                     if isinstance(u, int) and 0 <= u < len(self.recording_steps):
                         self.recording_steps[u]["dim"] = a
+                        self.select_step(u)
 
                 def _update_instr(s, a, u, *args, **kwargs):
                     if isinstance(u, int) and 0 <= u < len(self.recording_steps):
                         self.recording_steps[u]["instruction"] = a
-                
-                dpg.add_button(label="X", callback=_delete, user_data=i)
-                dpg.add_button(label="Run", callback=_run_single, user_data=i)
-                dpg.add_checkbox(label="Dim", default_value=step.get("dim", True), callback=_update_dim, user_data=i)
-                dpg.add_input_text(default_value=step.get("instruction", ""), width=-1, callback=_update_instr, user_data=i)
+                        self.select_step(u)
+
+                with dpg.table_row():
+                    dpg.add_checkbox(default_value=step.get("dim", True), callback=_update_dim, user_data=i)
+                    sel_num = dpg.add_selectable(
+                        label=f"{i+1}",
+                        default_value=is_selected,
+                        callback=_on_select_row,
+                        user_data=i,
+                    )
+                    sel_name = dpg.add_selectable(
+                        label=f"{name}",
+                        default_value=is_selected,
+                        callback=_on_select_row,
+                        user_data=i,
+                    )
+                    self._row_selectables.append((sel_num, sel_name))
+
+                    with dpg.group():
+                        dpg.add_input_text(
+                            default_value=step.get("instruction", ""),
+                            width=-1,
+                            callback=_update_instr,
+                            user_data=i,
+                        )
+                        links = step.get("links") or []
+                        for j, link_entry in enumerate(links):
+                            disp_lbl, _, _ = self._resolve_tutorial_link(link_entry)
+                            raw_path = link_entry.get("path", "") if isinstance(link_entry, dict) else str(link_entry)
+
+                            def _del_link(s, a, u, *args, **kwargs):
+                                step_idx, link_idx = u
+                                if 0 <= step_idx < len(self.recording_steps):
+                                    l_list = self.recording_steps[step_idx].get("links", [])
+                                    if 0 <= link_idx < len(l_list):
+                                        l_list.pop(link_idx)
+                                        self._last_rendered_links_key = None
+                                        self.select_step(step_idx)
+                                        self.refresh_ui()
+
+                            def _upd_link_label(s, a, u, *args, **kwargs):
+                                step_idx, link_idx = u
+                                if 0 <= step_idx < len(self.recording_steps):
+                                    l_list = self.recording_steps[step_idx].get("links", [])
+                                    if 0 <= link_idx < len(l_list):
+                                        cur = l_list[link_idx]
+                                        if isinstance(cur, dict):
+                                            cur["label"] = a
+                                        else:
+                                            l_list[link_idx] = {"label": a, "path": str(cur)}
+                                        self._last_rendered_links_key = None
+
+                            with dpg.group(horizontal=True):
+                                dpg.add_text("\uf061", color=(255, 150, 0))
+                                dpg.add_button(label="X", callback=_del_link, user_data=(i, j))
+                                dpg.add_input_text(
+                                    default_value=disp_lbl,
+                                    width=90,
+                                    callback=_upd_link_label,
+                                    user_data=(i, j),
+                                )
+                                dpg.add_text(f"({raw_path})", color=(150, 150, 150))
 
     def _start_worker(self) -> None:
         try:
@@ -676,8 +1083,12 @@ class TutorialManager:
                 self._worker_event.wait(timeout=0.033)
 
     def _update_overlay(self):
+        with self._overlay_lock:
+            self._update_overlay_impl()
+
+    def _update_overlay_impl(self):
         if not self.is_playing or self.current_step_idx >= len(self.recording_steps):
-            self._hide_overlay_completely()
+            self._hide_overlay_completely_impl()
             return
             
         if not self._ui_initialized:
@@ -756,6 +1167,9 @@ class TutorialManager:
 
         
         # Position HUD Window — resolve real dimensions for clamping
+        if dpg.does_item_exist(self.overlay_info_win):
+            self._update_overlay_links(step)
+
         hud_w_est, hud_h_est = 260, 140
         try:
             _s = dpg.get_item_rect_size(self.overlay_info_win)
@@ -922,6 +1336,7 @@ class TutorialManager:
             "dim": True,
             "type": "observe"
         })
+        self.selected_step_idx = len(self.recording_steps) - 1
         if dpg.does_item_exist(getattr(self, "step_list_group", 0)):
             self.refresh_ui()
             self._scroll_ui_to_current_step()
@@ -992,6 +1407,7 @@ class TutorialManager:
                 "dim": True,
                 "type": "interact"
             })
+            self.selected_step_idx = len(self.recording_steps) - 1
             if dpg.does_item_exist(getattr(self, "step_list_group", 0)):
                 self.refresh_ui()
                 self._scroll_ui_to_current_step()
