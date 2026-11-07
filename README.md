@@ -188,6 +188,7 @@ Pipeline Creator is built on an extensible architecture. Depending on your needs
 | Name | Repository | Description |
 | :--- | :--- | :--- |
 | **Pipeline Creator TARA** | [n3odym3/Pipeline_creator_TARA](https://github.com/n3odym3/Pipeline_creator_TARA) | Complete software implementation for the **Polymager** instrument, deployed during the [Tara Coral Expedition](https://fondationtaraocean.org/en/expedition/tara-coral/) for photosynthetic efficiency analysis ($F_v/F_m$) and coral bleaching assessment. |
+| **Pipeline Creator Motilitometer** | [n3odym3/Pipeline_creator_Motilitometer](https://github.com/n3odym3/Pipeline_creator_Motilitometer) | Complete software implementation for the **Motilitometer**, dedicated to microalgal motility and cell tracking analysis with real-time extraction of swimming speeds, trajectory distributions, and phototactic directionality. |
 
 ---
 
