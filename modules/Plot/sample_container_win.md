@@ -49,7 +49,7 @@ The **Sample Container** module is a centralized repository and manager for data
   - **X axis reference** (Dropdown): Selects the reference mode (`index`, `individual`, or a specific sample).
   - **Import CSV** (Button): Opens file explorer to import series from a CSV file.
   - **Export CSV** (Button): Opens file explorer to save selected samples into a CSV spreadsheet.
-  - **Duplicate** (Dropdown): Selects conflict resolution strategy (`override` vs `append`). Persisted across pipeline save/load.
+  - **Duplicate** (Dropdown): Selects conflict resolution strategy (`override` vs `append`).
 - **Clear samples** (Button): Clears all samples from memory and sends unselect signals.
 - **Select all** / **Deselect all** (Buttons): Toggles selection state for all items simultaneously.
 - **Sample List Items**:

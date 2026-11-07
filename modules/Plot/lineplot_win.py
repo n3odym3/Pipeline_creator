@@ -6,10 +6,11 @@ import numpy as np
 import pandas as pd
 from loguru import logger
 
+from config.display_scaling import display_scaling
 from core.window_base import WindowBase
 from core.input_output_types import IOTypes
 from core.app_state import app_state
-from .clipboard_injector import clipboardinjector
+from core.tools.clipboard_injector import clipboardinjector
 
 _LINE_SERIES = "mvAppItemType::mvLineSeries"
 _OFFSCREEN = (-999999, -999999)
@@ -33,6 +34,9 @@ def _canon_axis(name: Optional[str]) -> str:
     return name if name in _AXIS_OPTIONS else _AXIS_ALIASES.get(name, AXIS_PRIMARY)
 
 
+# ----------------------------------------------------------------------------
+# Smoothing filters (pure functions, 1D float arrays -> list)
+# ----------------------------------------------------------------------------
 def _odd_window(w: int, n: int) -> int:
     """Largest valid odd window <= n, starting from w (rounded up to odd)."""
     w = w if w % 2 else w + 1
@@ -132,6 +136,25 @@ class Lineplot_win(WindowBase):
 
     description: str = "Interactive multi-series 2D line plot with smoothing, multi-axis, and cursor annotation."
 
+    # 1. Window Configuration
+    label = "Lineplot"
+    win_width = display_scaling.scale(300)
+    win_height = display_scaling.scale(200)
+
+    # 2. Input/Output definitions
+    accepted_input_types = [IOTypes.SAMPLE, IOTypes.ROI_SAMPLE, IOTypes.DATALIST, IOTypes.CMD_DICT]
+    outputs = {"Datalist": IOTypes.DATALIST, "DataFrame": IOTypes.DATAFRAME}
+
+    # 3. Persistent fields
+    persistent_fields = ["label", "autoscale", "smooth", "smooth_algo", "smooth_window", "log_x"]
+
+    # Persistent field defaults
+    autoscale: bool = True
+    smooth: bool = False
+    smooth_algo: str = "Rolling Median"
+    smooth_window: int = 5
+    log_x: bool = False
+
     _IMPLOT_COLORS: List[Tuple[int, int, int, int]] = [
         (76, 114, 176, 255),
         (221, 132, 82, 255),
@@ -147,21 +170,10 @@ class Lineplot_win(WindowBase):
 
     smooth_algo_items: List[str] = list(_SMOOTHERS)
 
-    label: str = "Lineplot"
-    win_width: int = 300
-    win_height: int = 200
-    persistent_fields: List[str] = ["label", "autoscale", "smooth", "smooth_algo", "smooth_window", "log_x"]
-
-    accepted_input_types: List[IOTypes] = [IOTypes.SAMPLE, IOTypes.ROI_SAMPLE, IOTypes.DATALIST, IOTypes.CMD_DICT]
-    outputs: Dict[str, Any] = {"Datalist": IOTypes.DATALIST, "DataFrame": IOTypes.DATAFRAME}
-
-    autoscale: bool = True
-    smooth: bool = False
-    smooth_algo: str = "Rolling Median"
-    smooth_window: int = 5
-    log_x: bool = False
-
     def __init__(self, **kwargs: Any) -> None:
+        """
+        Initialize the Lineplot window module.
+        """
         super().__init__(**kwargs)
 
         u = self.UUID
@@ -184,16 +196,23 @@ class Lineplot_win(WindowBase):
         self.drag_line_check_tag = f"lineplot_vline_check_{u}"
         self.drag_line_tag = f"lineplot_vline_{u}"
 
-        if self.smooth_algo not in self.smooth_algo_items:
-            self.smooth_algo = "Rolling Median"
+        self.autoscale = bool(self.autoscale if self.autoscale is not None else True)
+        self.smooth = bool(self.smooth if self.smooth is not None else False)
+        self.smooth_algo = str(self.smooth_algo if self.smooth_algo in self.smooth_algo_items else "Rolling Median")
+        self.smooth_window = int(self.smooth_window if self.smooth_window is not None else 5)
+        self.log_x = bool(self.log_x if self.log_x is not None else False)
+
+        self._is_closing = False
         self.selected_serie: Optional[Any] = None
         self.raw_data: Dict[str, Dict[str, Any]] = {}
+        self._serie_tag_to_uid: Dict[str, str] = {}
         self.secondary_axes: Dict[str, str] = {}  # canonical axis name -> DPG axis tag
         self.series_axis: Dict[str, str] = {}  # series uid -> canonical axis name
         self.series_colors: Dict[str, List[int]] = {}
         self._displayed_colors: Dict[str, Tuple[int, int, int]] = {}  # uid -> RGB currently applied to the curve
         self._annot_active = False
 
+        scale = display_scaling.scale
         with self.window():
             with dpg.group(horizontal=True):
                 dpg.add_checkbox(
@@ -218,7 +237,7 @@ class Lineplot_win(WindowBase):
                     items=self.smooth_algo_items,
                     default_value=self.smooth_algo,
                     tag=self.smooth_algo_tag,
-                    width=120,
+                    width=scale(120),
                     callback=self.update_smooth_algo,
                 )
                 dpg.add_drag_int(
@@ -227,7 +246,7 @@ class Lineplot_win(WindowBase):
                     default_value=self.smooth_window,
                     min_value=1,
                     max_value=50,
-                    width=50,
+                    width=scale(50),
                     callback=self.update_smooth_win,
                 )
                 dpg.add_checkbox(
@@ -242,7 +261,7 @@ class Lineplot_win(WindowBase):
                     ),
                 )
                 with dpg.popup(parent=self.axes_btn_tag, mousebutton=dpg.mvMouseButton_Left, tag=self.plot_popup_tag):
-                    with dpg.group(width=280):
+                    with dpg.group(width=scale(280)):
                         dpg.add_text("Y-Axes Configuration", color=(150, 200, 255))
                         dpg.add_separator()
                         dpg.add_group(tag=self.popup_content_tag)
@@ -299,6 +318,9 @@ class Lineplot_win(WindowBase):
             slot_type, label, tag = dpg.mvYAxis3, "Secondary 2", f"lineplot_dyn_yaxis3_{self.UUID}"
         else:
             slot_type, label, tag = dpg.mvYAxis2, "Secondary 1", f"lineplot_dyn_yaxis2_{self.UUID}"
+
+        if axis_name in self.secondary_axes and dpg.does_item_exist(tag):
+            return tag
 
         if dpg.does_item_exist(tag):
             dpg.set_item_label(tag, label)
@@ -522,7 +544,8 @@ class Lineplot_win(WindowBase):
         self._delete_secondary_axes()
         self._create_base_axes(parent=self.plot_tag)
 
-        for uid in self.raw_data:
+        for uid, info in self.raw_data.items():
+            info["bound_axis"] = None
             self._draw_series(uid)
         if self.autoscale:
             self.autofit_axis()
@@ -613,7 +636,7 @@ class Lineplot_win(WindowBase):
     def apply_smoothing(self, y_data: Any) -> List[float]:
         """Apply active smoothing filter algorithm to 1D y_data array."""
         if not self.smooth or len(y_data) <= 1:
-            return list(y_data)
+            return y_data if isinstance(y_data, list) else list(y_data)
         smoother = _SMOOTHERS.get(self.smooth_algo, _smooth_rolling_median)
         return smoother(np.asarray(y_data, dtype=float), max(1, int(self.smooth_window)))
 
@@ -622,18 +645,26 @@ class Lineplot_win(WindowBase):
         info = self.raw_data[uid]
         name = info["name"]
         serie_id = self.get_serie_tag(uid)
+        self._serie_tag_to_uid[serie_id] = uid
         plot_y = self.apply_smoothing(info["y"])
+        info["plot_y"] = plot_y
+        info["x_np"] = None
+        info["y_np"] = None
         target = self.get_or_create_axis(self.series_axis.get(uid, AXIS_PRIMARY))
 
+        if info.get("bound_axis") == target and dpg.does_item_exist(serie_id):
+            dpg.configure_item(serie_id, x=info["x"], y=plot_y)
+            if name and info.get("bound_name") != name:
+                dpg.set_item_label(serie_id, name)
+                info["bound_name"] = name
+            return
+
         if dpg.does_item_exist(serie_id):
-            if dpg.get_item_info(serie_id).get("parent") in (target, dpg.get_alias_id(target)):
-                dpg.configure_item(serie_id, x=info["x"], y=plot_y)
-                if name:
-                    dpg.set_item_label(serie_id, name)
-                return
             dpg.delete_item(serie_id)  # axis changed: recreate under the new axis
 
         dpg.add_line_series(x=info["x"], y=plot_y, label=name, parent=target, tag=serie_id)
+        info["bound_axis"] = target
+        info["bound_name"] = name
         self._attach_legend_menu(serie_id, uid, name)
 
     def replot_all(self) -> None:
@@ -705,14 +736,27 @@ class Lineplot_win(WindowBase):
         best = None
         best_d = np.inf
         for s in series:
-            data = dpg.get_value(s)
-            if not (data and len(data) >= 2 and data[0] is not None and data[1] is not None):
-                continue
-            xs, ys = np.asarray(data[0], dtype=float), np.asarray(data[1], dtype=float)
+            uid = self._serie_tag_to_uid.get(s) if isinstance(s, str) else None
+            info = self.raw_data.get(uid) if uid is not None else None
+            if info is not None:
+                xs = info.get("x_np")
+                ys = info.get("y_np")
+                if xs is None or ys is None:
+                    xs = np.asarray(info["x"], dtype=float)
+                    ys = np.asarray(info.get("plot_y", info["y"]), dtype=float)
+                    info["x_np"] = xs
+                    info["y_np"] = ys
+                parent = info.get("bound_axis") or self.yaxis_tag
+            else:
+                data = dpg.get_value(s)
+                if not (data and len(data) >= 2 and data[0] is not None and data[1] is not None):
+                    continue
+                xs, ys = np.asarray(data[0], dtype=float), np.asarray(data[1], dtype=float)
+                parent = dpg.get_item_parent(s)
+
             if xs.size == 0 or xs.size != ys.size:
                 continue
-            parent = dpg.get_item_parent(s)
-            fy = fy_primary if parent in (self.yaxis_tag, dpg.get_alias_id(self.yaxis_tag)) else (
+            fy = fy_primary if parent == self.yaxis_tag or parent in (self.yaxis_tag, dpg.get_alias_id(self.yaxis_tag)) else (
                 self._axis_unit_fn(parent) or fy_primary
             )
             d = np.hypot((fx(xs) - mx) * w, (fy(ys) - my) * h)
@@ -766,7 +810,7 @@ class Lineplot_win(WindowBase):
 
     def plot_change_callback(self, sender: Any = None, app_data: Any = None, user_data: Any = None, *args: Any) -> None:
         """Update on-hover point inspection tooltip when moving mouse across plot canvas."""
-        if not dpg.is_item_hovered(self.plot_tag):
+        if not self.raw_data or not dpg.does_item_exist(self.plot_tag) or not dpg.is_item_hovered(self.plot_tag):
             self._hide_annotation()
             return
 
@@ -778,15 +822,12 @@ class Lineplot_win(WindowBase):
             self._hide_annotation(force=True)
             return
 
-        all_series = self._line_series()
-        if not all_series:
-            self._hide_annotation()
-            return
-
         target = self.selected_serie
-        if not (
-            target is not None and dpg.does_item_exist(target) and dpg.get_item_type(target) == _LINE_SERIES
-        ):
+        if not (target is not None and target in self._serie_tag_to_uid and dpg.does_item_exist(target)):
+            all_series = self._line_series()
+            if not all_series:
+                self._hide_annotation()
+                return
             target = self.selected_serie = all_series[-1]
 
         mouse_x, mouse_y = dpg.get_plot_mouse_pos()  # coordinates relative to the primary axes
@@ -796,11 +837,14 @@ class Lineplot_win(WindowBase):
             return
         target, i, xplot, yplot = best
 
-        annot = f"[{dpg.get_item_label(target)}]\nIndex : {i}\nX : {xplot[i]:.4g}\nY : {yplot[i]:.4g}"
+        uid = self._serie_tag_to_uid.get(target)
+        info = self.raw_data.get(uid) if uid is not None else None
+        serie_label = info["name"] if info is not None else dpg.get_item_label(target)
+        annot = f"[{serie_label}]\nIndex : {i}\nX : {xplot[i]:.4g}\nY : {yplot[i]:.4g}"
         # The annotation lives on the primary axes: project secondary-axis values onto Y1.
         ay = float(yplot[i])
-        parent = dpg.get_item_parent(target)
-        if parent not in (self.yaxis_tag, dpg.get_alias_id(self.yaxis_tag)):
+        parent = (info.get("bound_axis") if info is not None else None) or dpg.get_item_parent(target)
+        if parent != self.yaxis_tag and parent not in (self.yaxis_tag, dpg.get_alias_id(self.yaxis_tag)):
             f_src, lo1_hi1 = self._axis_unit_fn(parent), dpg.get_axis_limits(self.yaxis_tag)
             if f_src is not None:
                 ay = lo1_hi1[0] + float(f_src(ay)) * (lo1_hi1[1] - lo1_hi1[0])
@@ -839,6 +883,7 @@ class Lineplot_win(WindowBase):
         self._annot_active = False
 
         self.raw_data.clear()
+        self._serie_tag_to_uid.clear()
         self.selected_serie = None
         self._refresh_popup_menu()
 
@@ -854,25 +899,35 @@ class Lineplot_win(WindowBase):
         """
         if y is None:
             return
-        y_list = list(y)
-        x_list = list(range(len(y_list))) if x is None else list(x)
+        y_list = y if isinstance(y, list) else list(y)
+        x_list = list(range(len(y_list))) if x is None else (x if isinstance(x, list) else list(x))
         uid = str(UUID) if UUID is not None else name
         serie_id = self.get_serie_tag(uid)
-        is_new_serie = (uid not in self.raw_data) or not dpg.does_item_exist(serie_id)
+        prev_info = self.raw_data.get(uid)
+        is_new_serie = prev_info is None or not dpg.does_item_exist(serie_id)
 
-        self.raw_data[uid] = {"x": x_list, "y": y_list, "name": name, "uuid": UUID}
+        self.raw_data[uid] = {
+            "x": x_list,
+            "y": y_list,
+            "name": name,
+            "uuid": UUID,
+            "bound_axis": prev_info.get("bound_axis") if prev_info else None,
+            "bound_name": prev_info.get("bound_name") if prev_info else None,
+        }
         self._draw_series(uid)
 
         if self.autoscale:
             self.autofit_axis()
-        if is_new_serie or self.selected_serie is None or not dpg.does_item_exist(self.selected_serie):
+        if is_new_serie or self.selected_serie is None:
             self.select_serie(None, None, serie_id)
-        self._refresh_popup_menu()
+        if is_new_serie and dpg.does_item_exist(self.plot_popup_tag) and dpg.is_item_shown(self.plot_popup_tag):
+            self._refresh_popup_menu()
 
     def _remove_series(self, uid: str) -> None:
         """Remove a series (data and DPG item) and drop unused secondary axes."""
         self.raw_data.pop(uid, None)
         serie_id = self.get_serie_tag(uid)
+        self._serie_tag_to_uid.pop(serie_id, None)
         if dpg.does_item_exist(serie_id):
             dpg.delete_item(serie_id)
         self.cleanup_unused_axes()
@@ -883,6 +938,7 @@ class Lineplot_win(WindowBase):
             return
         if uid in self.raw_data:
             self.raw_data[uid]["name"] = new_name
+            self.raw_data[uid]["bound_name"] = new_name
         serie_id = self.get_serie_tag(uid)
         if dpg.does_item_exist(serie_id):
             dpg.set_item_label(serie_id, new_name)
@@ -984,6 +1040,24 @@ class Lineplot_win(WindowBase):
                 module.input_cb(data=data, data_type=self.outputs[out_key])
             except Exception as e:
                 logger.error(f"Error triggering output {out_key}: {e}")
+
+    def on_close(self) -> None:
+        """Clean up global mouse handlers and series themes before window closure."""
+        if getattr(self, "_is_closing", False):
+            return
+        self._is_closing = True
+        if hasattr(self, "handler_tag") and dpg.does_item_exist(self.handler_tag):
+            dpg.delete_item(self.handler_tag)
+        for uid in set(self.raw_data) | set(self.series_colors) | set(self._displayed_colors):
+            theme_tag = f"lineplot_scolor_{self.UUID}_{uid}"
+            if dpg.does_item_exist(theme_tag):
+                dpg.delete_item(theme_tag)
+        super().on_close()
+
+    def close(self) -> None:
+        """Clean up resources and close window."""
+        self.on_close()
+        super().close()
 
 
 EXPORTED_CLASS = Lineplot_win
