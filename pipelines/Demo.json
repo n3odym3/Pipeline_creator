@@ -6,12 +6,12 @@
             "class_name": "HelloWorld_win",
             "uuid": "462",
             "pos": [
-                0.3125,
-                2.8127313101406366
+                25.1953125,
+                2.516654330125833
             ],
             "size": [
-                6.1328125,
-                7.401924500370097
+                8.125,
+                8.956328645447817
             ],
             "visible": true,
             "params": {
@@ -20,29 +20,32 @@
             "node_pos": [
                 46,
                 28
-            ]
+            ],
+            "hidden_items": []
         },
         {
             "module": "Basic.text_viewer_win",
             "class_name": "Text_viewer_win",
             "uuid": "472",
             "pos": [
-                6.5625,
-                2.7387120651369354
+                33.3984375,
+                2.5906735751295336
             ],
             "size": [
-                17.6171875,
-                27.239082161361956
+                66.5625,
+                27.387120651369358
             ],
             "visible": true,
             "params": {
                 "label": "Text Viewer",
-                "content": "(No content)"
+                "content": "Hello World",
+                "append_mode": false
             },
             "node_pos": [
-                212,
-                30
-            ]
+                215,
+                31
+            ],
+            "hidden_items": []
         },
         {
             "module": "Basic.test_sample_win",
@@ -53,51 +56,61 @@
                 30.273871206513693
             ],
             "size": [
-                6.25,
-                7.401924500370097
+                16.6015625,
+                28.645447816432274
             ],
             "visible": true,
             "params": {
-                "label": "Test Sample"
+                "label": "Test Sample",
+                "waveform": "Sine",
+                "num_points": 100,
+                "amplitude": 10.0,
+                "frequency": 1.0,
+                "offset": 0.0,
+                "noise_level": 0.8180000185966492,
+                "sample_name": "Test Sample"
             },
             "node_pos": [
-                47,
-                161
-            ]
+                45,
+                287
+            ],
+            "hidden_items": []
         },
         {
             "module": "Plot.sample_container_win",
             "class_name": "Sample_container_win",
             "uuid": "491",
             "pos": [
-                6.640625,
+                16.953125,
                 30.199851961509992
             ],
             "size": [
-                17.5390625,
+                16.4453125,
                 69.43005181347151
             ],
             "visible": true,
             "params": {
                 "label": "Sample Container",
                 "export_path": "",
-                "duplicate_mode": "append"
+                "duplicate_mode": "append",
+                "filter_text": ""
             },
             "node_pos": [
-                204,
-                159
-            ]
+                203,
+                289
+            ],
+            "hidden_items": []
         },
         {
             "module": "Plot.lineplot_win",
             "class_name": "Lineplot_win",
             "uuid": "521",
             "pos": [
-                24.3359375,
+                33.4765625,
                 30.199851961509992
             ],
             "size": [
-                75.625,
+                66.484375,
                 69.5780903034789
             ],
             "visible": true,
@@ -106,12 +119,41 @@
                 "autoscale": true,
                 "smooth": false,
                 "smooth_window": 5,
-                "log_x": false
+                "log_x": false,
+                "smooth_algo": "Rolling Median"
             },
             "node_pos": [
-                420,
-                159
+                409,
+                289
+            ],
+            "hidden_items": [
+                "tag:closest_point_anot_521"
             ]
+        },
+        {
+            "module": "Basic.cmd_sender_win",
+            "class_name": "CMDSender_win",
+            "uuid": "677",
+            "pos": [
+                11.40625,
+                2.516654330125833
+            ],
+            "size": [
+                13.7109375,
+                8.956328645447817
+            ],
+            "visible": true,
+            "params": {
+                "label": "CMD Sender",
+                "status": {
+                    "Hello": "World"
+                }
+            },
+            "node_pos": [
+                45,
+                137
+            ],
+            "hidden_items": []
         }
     ],
     "connections": [
@@ -129,6 +171,13 @@
             "from": "491",
             "output": "Data",
             "to": "521"
+        },
+        {
+            "from": "677",
+            "output": "TXT",
+            "to": "472"
         }
-    ]
+    ],
+    "link_nodes": [],
+    "views": {}
 }
