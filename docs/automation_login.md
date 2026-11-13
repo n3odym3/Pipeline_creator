@@ -3,7 +3,7 @@
 Pipeline Creator provides two independent, distinct startup options that can be used separately or together :
 
 1. **Login Dialog**: Controls user authentication and privilege levels. If disabled, the application skips the prompt and defaults directly to the privilege level specified by `default_mode` (which defaults to `"dev"`, the highest privilege level).
-2. **Workspace Preloading / Automation**: Automatically loads a specific pipeline layout file (`default_workspace`) and/or runs an automation script (`default_automation_script`) at launch.
+2. **Workspace Preloading / Automation**: Automatically loads a specific pipeline layout file (`default_pipeline`) and/or runs an automation script (`default_automation_script`) at launch.
 
 ---
 
@@ -101,7 +101,7 @@ An automation script is a JSON object with a `name` and a list of `steps`. Each 
 
 ### set_workspace
 
-Sets the working directory. All relative paths in subsequent steps are resolved against this directory.
+Sets the working directory. All relative paths in subsequent steps are resolved against this directory. If `browse` is `true` or no `path` is provided, it opens the interactive folder picker. *(Aliases: `set_working_dir`, `set_working_directory`, `set_directory`.)*
 
 ```json
 { "action": "set_workspace", "path": "C:/data/my_project" }
@@ -110,6 +110,17 @@ Sets the working directory. All relative paths in subsequent steps are resolved 
 | Parameter | Type | Description |
 |---|---|---|
 | `path` | `str` | Absolute or relative path to the working directory |
+| `browse` | `bool` | Optional. If `true`, opens an interactive folder selection dialog instead |
+
+---
+
+### browse_workspace
+
+Opens the interactive folder picker dialog so the operator can choose the working directory at startup. *(Aliases: `browse_working_dir`, `select_workspace`, `select_working_dir`, `browse_directory`.)*
+
+```json
+{ "action": "browse_workspace" }
+```
 
 ---
 

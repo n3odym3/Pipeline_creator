@@ -45,6 +45,7 @@ The **Uninstall Module** interface lists all dynamic modules installed in `/modu
 
 ## <u>Dynamic Registry Refresh</u>
 Both installation and uninstallation actions automatically:
+
 1. Re-scan the `/modules` folder.
 2. Invalidate the global module registry cache.
 3. Refresh the **Node Editor** search lists in real time.

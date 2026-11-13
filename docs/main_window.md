@@ -24,11 +24,11 @@ The following table summarizes all options in the menu bar along with their requ
 
 | Option / Menu | Privilege | Description |
 |---|---|---|
-| **Workspace** | Advanced, Dev | Allows loading and exporting pipelines or window layouts (*views*). |
+| **Workspace** | Advanced, Dev | Select working directory, load/edit pipelines, run automation scripts/editors, and manage or export window layouts (*views*). |
 | **Node Editor** | Advanced, Dev | Opens the [Node Editor](node_editor_guide.md). |
 | **Fusion Manager** | Advanced, Dev | Opens the [Fusion Manager](fusion_manager.md). |
-| **Tools** | User, Advanced, Dev | Access [theme controls](#themes), [display scaling](display_scaling.md), system debug/diagnostics panels, and the **[Module Manager](module_manager.md)** (Advanced and Dev modes only). |
-| **Help** | User, Advanced, Dev | Access system documentation and the [Tutorial Manager](tutorial_manager.md). |
+| **Tools** | User, Advanced, Dev | Access [theme controls](#themes), [display scaling](architecture.md#display-scaling-display_scalingpy), logs, config/app-state editors, [Flow Metrics](timing_benchmarks_and_safety.md), system debug/diagnostics panels, and the **[Module Manager](module_manager.md)** (Advanced and Dev modes only). |
+| **Help** | User, Advanced, Dev | Access system documentation, the [Tutorial Manager](tutorial_manager.md), and **[Bug report](#bug-report-crash-recovery)**. |
 | **Pinned** | User, Advanced, Dev | Displays the list of currently pinned modules. |
 
 ---
@@ -77,36 +77,12 @@ Set `UI.colorblind_type` in `config.json` to one of:
 
 The **Fusion Manager** is a visual helper panel that allows you to organize and clean up your workspace by combining multiple independent module panels into a single, unified tabbed window.
 
-For more details on the layout system, see the dedicated [Fusion Manager Guide](fusion_manager.md).
-
 ### Accessing the Fusion Manager
 
 1. Ensure the application is running in **Advanced** or **Dev** privilege mode.
 2. In the main menu bar, click **Fusion Manager** to open its control window.
 
-### Drag-and-Drop Docking
-
-To combine floating windows:
-- Locate the modules you wish to combine in the Fusion Manager table.
-- Click and hold the module's button in the **Module** column.
-- Drag and drop it onto another module's button within the same column.
-- The dragged module's standalone window will automatically hide, and its controls will be embedded as a new tab inside the target module's window.
-- **Nested Merging**: Hierarchical docking is fully supported. You can merge a module into another module, and then merge that container module into a third module (e.g., merging A into B, and then B into C), creating nested, multi-level tabbed groups.
-
-### Quick Controls
-
-Inside the Fusion Manager table, you can interact with the module buttons:
-- **Left-Click** a button to bring that module's window to focus.
-- **Right-Click** a button to trigger an automatic resize on that module's window.
-
-### Undocking / Restoring Windows
-
-To split a module back out of a tab group:
-- Locate the merged module in the Fusion Manager list.
-- Click the **Restore** button in the **Actions** column.
-- The module will immediately be detached and restored as its own standalone floating window.
-
----
+For more details on the layout system, see the dedicated [Fusion Manager Guide](fusion_manager.md).
 
 ## <u>Privilege Modes</u>
 
@@ -118,7 +94,7 @@ Whether the login screen is displayed at startup is controlled by the `"Login"` 
 
 The login dialog can also be reopened at any time via the shortcut `Ctrl + Shift + L`.
 
-When a user logs in, their username is stored in the global state container [app_state.py](core/app_state.py) (via the `app_state.username` attribute). This allows any module to retrieve the current username if needed (e.g., for user-specific logs, paths, or actions).
+When a user logs in, their username is stored in the global state container [app_state.py](architecture.md#app-state-app_statepy) (via the `app_state.username` attribute). This allows any module to retrieve the current username if needed (e.g., for user-specific logs, paths, or actions).
 
 ![Login Screen](media/Login.png){ width="50%" }
 
@@ -148,3 +124,28 @@ Pipeline Creator includes an in-app **Log Viewer** window that captures and disp
 - **Clear View**: Clear the current logs displayed in the viewer window.
 - **Filter**: Enter a search query to filter logs dynamically in real time.
 - **Color-Coded Severity**: Logs are colored based on their severity level (e.g. TRACE, DEBUG, INFO, SUCCESS, WARNING, ERROR, CRITICAL).
+
+---
+
+## <u>Bug Report & Crash Recovery</u> {: #bug-report-crash-recovery }
+
+Pipeline Creator includes a built-in **Bug report** tool and automatic startup **crash detection** to capture diagnostic bundles when an issue occurs.
+
+- Open it manually anytime (in **User**, **Advanced**, or **Dev** mode) via **Help → Bug report**.
+- On startup, if `General.check_crash_on_boot` is enabled (default: `true`), the application inspects `logs/app.log` for a previous session marker that did not end cleanly with `"Pipeline Creator closed successfully"`. If detected, the **"Something went wrong"** modal popup appears before login.
+
+![Bug Report and Crash Recovery](media/Bug_report.png)
+
+### Crash Recovery Popup (Left)
+
+- **Report crash**: Opens the **Bug report** dialog pre-configured with `Type: Crash` and **Previous session** selected for log attachment.
+- **Ignore**: Dismisses the popup and continues booting normally.
+- **Don't check for crashes at startup**: Persists `General.check_crash_on_boot = false` in `config/config.json`.
+
+### Bug Report Window (Right)
+
+- **Problem Description & Type**: Describe the reproduction steps and classify the report as `Bug`, `Crash`, or `Suggestion`.
+- **Attach log**: Check to include `session.log` extracted from either the **Current session** or the **Previous session**.
+- **Related modules (optional)**: Search and select any affected modules from the discovered module list.
+- **Attachments**: Click **Browse...** to select files, or **Paste (Ctrl+V)** (also triggered via `Ctrl+V` when the window is focused or hovered) to attach files or clipboard screenshots directly.
+- **Saved Report Bundle**: Clicking **Send report** saves a timestamped folder in `logs/crash_report/<YYYYMMDD_HHMMSS>/` containing `description.txt`, `report.json` (report type, user/mode, active & selected modules, OS/Python/DearPyGui versions), `session.log`, and an `attachments/` subfolder, along with an **Open folder** shortcut. Native crashes (such as DearPyGui segfaults) also log Python stack traces to `fault.log`.

@@ -72,11 +72,77 @@ Auto-generated API documentation from source code docstrings.
 
 ---
 
+### Module Health Manager
+
+::: core.module_health_manager
+
+---
+
+### Module Manager
+
+::: core.module_manager
+
+---
+
+### Config Manager
+
+::: core.config_manager
+
+---
+
+### Working Directory Manager
+
+::: core.working_directory_manager
+
+---
+
+### Crash Detection
+
+::: core.crash_detection
+
+---
+
+### Bug Report
+
+::: core.bug_report
+
+---
+
+### Startup Dialog
+
+::: core.startup_dialog
+
+---
+
+### Flow Metrics Viewer
+
+::: core.flow_metrics_viewer
+
+---
+
+### Shared Memory Transport
+
+::: core.shm_transport
+
+---
+
+### Documentation Manager
+
+::: core.documentation_manager
+
+---
+
 ## Config Layer
 
 ### Theme Manager
 
 ::: config.theme_manager
+
+---
+
+### Theme Factory
+
+::: config.theme_factory
 
 ---
 

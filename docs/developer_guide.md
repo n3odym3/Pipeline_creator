@@ -124,7 +124,7 @@ class MyFilterWin(WindowBase):
 ```
 
 #### How It Serializes in the Flow JSON
-When the user saves the pipeline, `WindowBase.to_dict()` extracts every attribute listed in `self.persistent_fields` and places them into the `"params"` block of the module:
+When the user saves the pipeline, `WindowBase.serialize()` extracts every attribute listed in `self.persistent_fields` and places them into the `"params"` block of the module:
 
 ```json
 {
@@ -354,7 +354,7 @@ Use these clean templates as your starting point when creating a new module.
 
 ## Logging
 
-Pipeline Creator uses [loguru](https://github.com/Delgan/loguru) as its structured logging framework. Standardized logs are formatted and printed to the terminal console, automatically written to rolling timestamped log files in the `/logs` directory, and captured live by the in-app **Log Manager** (`Log Viewer` window, accessible via **Tools → Log Viewer**), which allows operators and developers to monitor and filter events in real time by severity level.
+Pipeline Creator uses [loguru](https://github.com/Delgan/loguru) as its structured logging framework. Standardized logs are formatted and printed to the terminal console, automatically written to rolling timestamped log files in the `/logs` directory, and captured live by the in-app **Log Manager** (`Log Viewer` window, accessible via **Tools → Show Logs**), which allows operators and developers to monitor and filter events in real time by severity level.
 
 ### How to Import and Log
 

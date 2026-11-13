@@ -32,4 +32,7 @@ Pipeline Creator simplifies the development of complex graphical interfaces by t
 | 🧩 [Core vs Dynamic Modules](core_vs_dynamic.md) | Static framework vs user-created extensions |
 | ⚙️ [Configuration Reference](config_reference.md) | All `config.json` keys explained |
 | 🤖 [Automation & Login](automation_login.md) | Startup scripts, login modes, CLI flags |
+| 📚 [Tutorial Manager](tutorial_manager.md) | Interactive step-by-step tutorials |
+| 📦 [Module Manager](module_manager.md) | Install and manage module packs |
 | 🛠️ [Developer Guide](developer_guide.md) | How to create UI nodes, processors, and themes |
+| 📖 [API Reference](reference.md) | Auto-generated core & config API reference |

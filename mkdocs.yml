@@ -69,15 +69,162 @@ nav:
 
   # [DYNAMIC_MODULES_START]
   - Modules Documentation:
-      - Basic:
-          - HelloWorld_win: modules/Basic/HelloWorld_win.md
-          - cmd_sender_win: modules/Basic/cmd_sender_win.md
-          - csv_reader_win: modules/Basic/csv_reader_win.md
-          - test_sample_win: modules/Basic/test_sample_win.md
-          - text_viewer_win: modules/Basic/text_viewer_win.md
-      - Plot:
-          - lineplot_win: modules/Plot/lineplot_win.md
-          - sample_container_win: modules/Plot/sample_container_win.md
+      - Camera:
+          - Alvium:
+              - Alvium: modules/Camera/Alvium/Alvium.md
+          - Hamamatsu:
+              - hamamatsu: modules/Camera/Hamamatsu/hamamatsu.md
+          - ids:
+              - ids: modules/Camera/ids/ids.md
+          - rtsp:
+              - rtsp: modules/Camera/rtsp/rtsp.md
+          - seecam_win:
+              - seecam_win: modules/Camera/seecam_win/seecam_win.md
+          - virtual_camera:
+              - virtual_camera: modules/Camera/virtual_camera/virtual_camera.md
+          - webcam:
+              - webcam: modules/Camera/webcam/webcam.md
+      - Motilitometer:
+          - counter_tracker:
+              - counter_tracker: modules/Motilitometer/counter_tracker/counter_tracker.md
+          - kymograph_plotter:
+              - kymograph_plotter: modules/Motilitometer/kymograph_plotter/kymograph_plotter.md
+          - light_controller:
+              - light_controller: modules/Motilitometer/light_controller/light_controller.md
+          - motility_reprocessor:
+              - motility_reprocessor: modules/Motilitometer/motility_reprocessor/motility_reprocessor.md
+          - motility_simulator:
+              - motility_simulator: modules/Motilitometer/motility_simulator/motility_simulator.md
+              - motility_simulator_win: modules/Motilitometer/motility_simulator/motility_simulator_win.md
+          - radial_contour_tracker:
+              - radial_contour_tracker: modules/Motilitometer/radial_contour_tracker/radial_contour_tracker.md
+          - video_reader:
+              - video_reader_win: modules/Motilitometer/video_reader/video_reader_win.md
+          - video_writer:
+              - video_writer: modules/Motilitometer/video_writer/video_writer.md
+              - video_writer_win: modules/Motilitometer/video_writer/video_writer_win.md
+      - Polymager:
+          - Fluo_controller:
+              - fluo_calibration: modules/Polymager/Fluo_controller/fluo_calibration.md
+              - fluo_calibration_win: modules/Polymager/Fluo_controller/fluo_calibration_win.md
+              - fluo_controller: modules/Polymager/Fluo_controller/fluo_controller.md
+              - fluo_controller_win: modules/Polymager/Fluo_controller/fluo_controller_win.md
+          - Polymager_automation:
+              - Polymager_automation: modules/Polymager/Polymager_automation/Polymager_automation.md
+          - TARA:
+              - overlay_aligner:
+                  - overlay_aligner: modules/Polymager/TARA/overlay_aligner/overlay_aligner.md
+          - image_container:
+              - image_container_win: modules/Polymager/image_container/image_container_win.md
+          - phototaxis_processor:
+              - phototaxis_processor_win: modules/Polymager/phototaxis_processor/phototaxis_processor_win.md
+          - roi_manager:
+              - roi_manager_win: modules/Polymager/roi_manager/roi_manager_win.md
+      - ai_helper:
+          - ai_helper_win: modules/ai_helper/ai_helper_win.md
+      - autonomous_ai_helper:
+          - autonomous_ai_helper: modules/autonomous_ai_helper/autonomous_ai_helper.md
+      - basic_ui:
+          - HelloWorld_win: modules/basic_ui/HelloWorld_win.md
+          - basic_ui: modules/basic_ui/index.md
+          - cmd_sender_win: modules/basic_ui/cmd_sender_win.md
+          - coucouxureil_win: modules/basic_ui/coucouxureil_win.md
+          - csv_reader_win: modules/basic_ui/csv_reader_win.md
+          - file_scanner_emitter_win: modules/basic_ui/file_scanner_emitter_win.md
+          - gate_win: modules/basic_ui/gate_win.md
+          - json_parser_win: modules/basic_ui/json_parser_win.md
+          - simple_button_win: modules/basic_ui/simple_button_win.md
+          - test_sample_win: modules/basic_ui/test_sample_win.md
+          - text_viewer_win: modules/basic_ui/text_viewer_win.md
+          - Dynamic_cmd_sender:
+              - dynamic_cmd_sender_win: modules/basic_ui/Dynamic_cmd_sender/dynamic_cmd_sender_win.md
+      - catalase_calculator:
+          - file_parser_win: modules/catalase_calculator/file_parser_win.md
+          - output_formatter_win: modules/catalase_calculator/output_formatter_win.md
+      - communication:
+          - discord_webhook:
+              - discord_win: modules/communication/discord_webhook/discord_win.md
+          - http_frame_sender:
+              - http_frame_sender: modules/communication/http_frame_sender/http_frame_sender.md
+          - mqtt:
+              - mqtt: modules/communication/mqtt/mqtt.md
+          - slack_webhook:
+              - slack_win: modules/communication/slack_webhook/slack_win.md
+          - webrtc:
+              - webrtc_remote: modules/communication/webrtc/webrtc_remote.md
+          - zmq:
+              - zmq: modules/communication/zmq/zmq.md
+      - computer_vision:
+          - barcode_reader:
+              - barcode_reader: modules/computer_vision/barcode_reader/barcode_reader.md
+          - binarize:
+              - binarize: modules/computer_vision/binarize/binarize.md
+          - color_mapper:
+              - color_mapper: modules/computer_vision/color_mapper/color_mapper.md
+          - contour_detection:
+              - contour_detection: modules/computer_vision/contour_detection/contour_detection.md
+          - gpu_gaussian_blur:
+              - gpu_gaussian_blur: modules/computer_vision/gpu_gaussian_blur/gpu_gaussian_blur.md
+          - image_extractor:
+              - image_extractor: modules/computer_vision/image_extractor/image_extractor.md
+          - image_processing:
+              - image_processing: modules/computer_vision/image_processing/image_processing.md
+          - nodal_shader_processor:
+              - nodal_shader_processor: modules/computer_vision/nodal_shader_processor/nodal_shader_processor.md
+          - ocr_reader:
+              - ocr_reader: modules/computer_vision/ocr_reader/ocr_reader.md
+          - sam3_interactive:
+              - sam3_interactive: modules/computer_vision/sam3_interactive/sam3_interactive.md
+          - sam_interactive:
+              - sam_interactive: modules/computer_vision/sam_interactive/sam_interactive.md
+          - tracker:
+              - tracker: modules/computer_vision/tracker/tracker.md
+          - vignetting_corrector:
+              - vignetting_corrector: modules/computer_vision/vignetting_corrector/vignetting_corrector.md
+          - z_stacking_3d:
+              - z_stacking: modules/computer_vision/z_stacking_3d/z_stacking.md
+      - file_browser:
+          - file_browser: modules/file_browser/file_browser.md
+          - file_folder_browser: modules/file_browser/file_folder_browser.md
+          - folder_browser: modules/file_browser/folder_browser.md
+      - firesting_O2:
+          - firesting: modules/firesting_O2/firesting.md
+      - frp_tunnel:
+          - frp_tunnel: modules/frp_tunnel/frp_tunnel.md
+      - image_viewer:
+          - image_viewer: modules/image_viewer/image_viewer.md
+          - video_viewer_win: modules/image_viewer/video_viewer_win.md
+      - led_mapper:
+          - led_mapper_win: modules/led_mapper/led_mapper_win.md
+      - manim_module:
+          - manim_window: modules/manim_module/manim_window.md
+      - nodal_data_processor:
+          - nodal_data_processor_win: modules/nodal_data_processor/nodal_data_processor_win.md
+      - nodal_image_processor:
+          - nodal_image_processor: modules/nodal_image_processor/nodal_image_processor.md
+      - obs_controller:
+          - obs_controller: modules/obs_controller/obs_controller.md
+      - parallel_viewport:
+          - plot_viewer:
+              - parallel_plot_win: modules/parallel_viewport/plot_viewer/parallel_plot_win.md
+          - text_viewer:
+              - parallel_text_viewer_win: modules/parallel_viewport/text_viewer/parallel_text_viewer_win.md
+      - plot:
+          - boxplot_win: modules/plot/boxplot_win.md
+          - color_pie_win: modules/plot/color_pie_win.md
+          - histogram_win: modules/plot/histogram_win.md
+          - lineplot_win: modules/plot/lineplot_win.md
+          - matplot_win: modules/plot/matplot_win.md
+          - polar_plot_win: modules/plot/polar_plot_win.md
+          - sample_container_win: modules/plot/sample_container_win.md
+      - ruideng_PSU_control:
+          - ruideng_win: modules/ruideng_PSU_control/ruideng_win.md
+      - serial_sniffer:
+          - serial_sniffer_win: modules/serial_sniffer/serial_sniffer_win.md
+      - video_reader:
+          - video_reader_win: modules/video_reader/video_reader_win.md
+      - video_server:
+          - video_server_win: modules/video_server/video_server_win.md
   # [DYNAMIC_MODULES_END]
 
   - Architecture:

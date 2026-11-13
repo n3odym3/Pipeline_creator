@@ -195,7 +195,7 @@ Workspaces are stored as human-readable JSON:
 | `module` | Python import path of the module class |
 | `params` | Saved values from the module's `persistent_fields` list |
 | `connections` | Wires between output terminals and destination nodes |
-| `link_nodes` | Built-in Link In, Link Out, and Gate nodes (including their pass-through states and channels) |
+| `link_nodes` | Built-in proxy nodes (`Link In`, `Link Out`, `Gate`, `Working Directory`, and `Propagation Tester`) |
 
 ---
 
@@ -227,7 +227,7 @@ graph TD
     end
 ```
 
-- **Export View**: Save current window layout and live Gate states into a named preset via `Main Window → Views → Export View…` or from the **Pipeline Editor**.
+- **Export View**: Save current window layout and live Gate states into a named preset via `Main Window → Workspace → Export View...` or from the **Pipeline Editor**.
 - **Apply View**: Switching views via the **Views** menu or programmatically via `apply_named_view("ViewName")` applies window positioning and toggles all Gates to their saved state.
 - **Pipeline Editor**: Under the **Views** tab, expand the **Gates in this View** section to individually toggle which gates are pass-through for the selected view.
 

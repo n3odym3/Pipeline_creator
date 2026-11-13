@@ -1,6 +1,6 @@
 # <u>Configuration Reference</u>
 
-All application settings are stored in `config/config.json`. This file is loaded at startup, can be edited manually, or modified visually via the built-in configuration editor (**Tools → Config Editor**).
+All application settings are stored in `config/config.json`. This file is loaded at startup, can be edited manually, or modified visually via the built-in configuration editor (**Tools → Edit Config**).
 
 
 ## <u>Full Schema</u>
@@ -11,7 +11,8 @@ All application settings are stored in `config/config.json`. This file is loaded
         "app_name": "Pipeline creator",
         "ui_scale_multiplier": 0.75,
         "preload_modules": true,
-        "skip_import_validation": false
+        "skip_import_validation": false,
+        "check_crash_on_boot": true
     },
     "Splash": {
         "enabled": true,
@@ -86,7 +87,8 @@ All application settings are stored in `config/config.json`. This file is loaded
 | `app_name` | `str` | `"Pipeline creator"` | Title displayed in the OS viewport title bar. |
 | `ui_scale_multiplier` | `float` | `0.75` | Global scale multiplier applied on top of DPI auto-scaling. Adjust to enlarge or shrink UI elements across displays. |
 | `preload_modules` | `bool` | `true` | If `true`, preloads and caches all module classes at startup (instant instantiation, slightly longer initial startup). If `false`, modules load on first instantiation. |
-| `skip_import_validation` | `bool` | `false` | If `true`, skips startup module import health checks for faster boot. Manual health checks from **Tools → Health Check** remain available. |
+| `skip_import_validation` | `bool` | `false` | If `true`, skips startup module import health checks for faster boot. Manual health checks from **Tools → Check Dependencies** remain available. |
+| `check_crash_on_boot` | `bool` | `true` | If `true`, checks `logs/app.log` at startup for an unclosed previous session and offers a crash report popup if detected. |
 
 ### Splash
 
@@ -186,10 +188,53 @@ Settings for automated sequence execution and optical triggers:
 
 ## <u>Visual Configuration Editor</u>
 
-All parameters in `config.json` can be inspected and edited through a dedicated visual window:
-- Open **Tools → Config Editor** from the top menu bar.
-- Descriptions, sliders, dropdown selectors, and file/folder browsers are automatically rendered based on metadata annotations in `config/config_anotation.json`.
-- Changes are applied immediately and written to `config/config.json` upon clicking **Save**.
+All parameters in `config/config.json` can be inspected and edited through the **Visual Configuration Editor** (`core/config_editor.py`):
+
+- Open **Tools → Edit Config** from the top menu bar (available in **Advanced** and **Dev** modes).
+- The window builds collapsible sections and nested sub-trees directly from `config/config.json`. Hovering over any setting label displays its tooltip description.
+- Clicking **Save** validates and casts each widget back to its original Python type (`bool`, `int`, `float`, `str`, or `None`), updates the in-memory `config` singleton immediately, and writes `config/config.json` to disk (some startup settings require an application restart to take effect).
+
+![Visual Configuration Editor](media/Config_editor.png)
+
+### Configuration Description File (`config/config_anotation.json`)
+
+The Visual Configuration Editor reads metadata from **`config/config_anotation.json`** to know how to describe and render each setting. Its JSON hierarchy mirrors `config/config.json`, where each leaf key contains two fields:
+
+| Field | Type | Purpose |
+|---|---|---|
+| `description` | `str` | Tooltip text shown when hovering over the parameter label (defaults to `"No description available."` if omitted). |
+| `values` | `null \| str \| list` | Controls which DearPyGui input widget is generated for the parameter. |
+
+Supported `values` formats:
+
+| `values` Entry | Rendered Widget | Behavior |
+|---|---|---|
+| `[true, false]` *(or `null` on a `bool`)* | **Checkbox** | Toggles boolean settings. |
+| `["opt1", "opt2", ...]` | **Dropdown Combo** | Restricts selection to a predefined list of choices (strings or numbers). |
+| `"file_browser"` | **Browse... + Text Input** | Opens a file picker; paths inside the project root are automatically stored as relative paths. |
+| `"folder_browser"` | **Browse... + Text Input** | Opens a folder picker; paths inside the project root are automatically stored as relative paths. |
+| `null` *(or key omitted)* | **Text Input** | Free-form text field, cast back to the key's original type (`int`, `float`, `str`, `None`) upon saving. |
+
+```json
+{
+    "General": {
+        "check_crash_on_boot": {
+            "description": "If enabled, checks at startup whether the previous session ended abnormally.",
+            "values": [true, false]
+        }
+    },
+    "Paths": {
+        "default_pipeline": {
+            "description": "Path to the pipeline loaded by default on startup.",
+            "values": "file_browser"
+        },
+        "working_directory": {
+            "description": "Default root folder used to load and save pipelines and scripts.",
+            "values": "folder_browser"
+        }
+    }
+}
+```
 
 ---
 

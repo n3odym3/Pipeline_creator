@@ -46,19 +46,32 @@ The **static core** is the framework. You should **never need to modify** these 
 | `core/app_state.py` | Global session state singleton |
 | `core/link_bus.py` | Publish/subscribe zero-wire data broker |
 | `core/node_highlight.py` | Downstream graph highlighting & dimming |
+| `core/node_perf_profiler.py` | In-canvas live flow & latency profiling mixin |
 | `core/node_popup.py` | Right-click module search popup |
 | `core/node_callbacks.py` | DPG mouse event & link event handling |
 | `core/node_serialization.py` | Flow JSON save/load & graph reconstruction |
+| `core/node_link_proxies.py` | Built-in proxy nodes (`Link In`, `Link Out`, `Gate`, `Working Directory`, `Propagation Tester`) |
 | `core/login_dialog.py` | Login/profile dialog at startup |
+| `core/startup_dialog.py` | Startup pipeline/automation loader dialog |
 | `core/main_win.py` | Main window menu bar & host container |
 | `core/fusion_manager.py` | Tab-docking for module panel fusion |
+| `core/config_manager.py` | Global `config.json` loader & persistence manager |
+| `core/config_editor.py` | Visual configuration editor window |
 | `core/dependency_manager.py` | Missing package detection & reporting |
 | `core/module_validation_manager.py` | Post-load module contract enforcement |
+| `core/module_health_manager.py` | Unified dependency & validation health check dialog |
+| `core/health_cache.py` | Persistent disk cache (`.cache/health_check_cache.json`) |
+| `core/crash_detection.py` | Boot session marker & crash detection in `logs/app.log` |
+| `core/bug_report.py` | Crash popup & bug report packager |
 | `core/automation_manager.py` | JSON script-driven startup automation |
+| `core/flow_metrics_viewer.py` | Global pipeline telemetry & resource monitor |
+| `core/shm_transport.py` | Shared-memory IPC transport for large NumPy payloads |
 | `core/input_output_types.py` | `IOTypes` enum for typed terminal connections |
 | `core/tutorial_manager.py` | In-app guided tutorial system |
+| `core/documentation_manager.py` | Embedded MkDocs server & module doc indexer |
 | `core/system_tray.py` | System tray icon & context menu |
 | `core/splash.py` | Isolated splash screen process |
+| `core/working_directory_manager.py` | Global working directory state & listener notifications |
 | `core/paths.py` | Centralized project path constants |
 
 ### Config Layer
@@ -66,8 +79,9 @@ The **static core** is the framework. You should **never need to modify** these 
 | File | Purpose |
 |---|---|
 | `config/config.json` | User-editable application settings |
-| `config/config.py` | Safe JSON loader with defaults |
+| `config/config_anotation.json` | Metadata & UI widget annotations for the Config Editor |
 | `config/theme_manager.py` | Theme/palette loading & font management |
+| `config/theme_manager_win.py` | OS-specific (Windows) window titlebar styling |
 | `config/theme_colors.py` | All color palette dictionaries |
 | `config/theme_factory.py` | DPG theme item builders |
 | `config/display_scaling.py` | DPI detection & multi-monitor scaling |
