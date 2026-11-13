@@ -42,6 +42,30 @@ class ValidationIssue:
     suggestion: Optional[str] = None
     category: str = "general"  # "callback", "inheritance", "structure", "runtime", "attribute", "general"
 
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "level": self.level.value,
+            "message": self.message,
+            "line": self.line,
+            "suggestion": self.suggestion,
+            "category": self.category,
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "ValidationIssue":
+        lvl_str = data.get("level", "WARNING")
+        try:
+            lvl = ValidationLevel(lvl_str)
+        except ValueError:
+            lvl = ValidationLevel.WARNING
+        return cls(
+            level=lvl,
+            message=str(data.get("message", "")),
+            line=data.get("line"),
+            suggestion=data.get("suggestion"),
+            category=str(data.get("category", "general")),
+        )
+
 
 @dataclass
 class ValidationReport:
@@ -51,6 +75,37 @@ class ValidationReport:
     is_valid: bool = True
     module_kind: ModuleKind = ModuleKind.UNKNOWN
     issues: List[ValidationIssue] = field(default_factory=list)
+    from_cache: bool = False
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "is_valid": self.is_valid,
+            "module_kind": self.module_kind.value,
+            "issues": [i.to_dict() for i in self.issues],
+        }
+
+    @classmethod
+    def from_dict(cls, module_path: str, data: Dict[str, Any], from_cache: bool = True) -> "ValidationReport":
+        kind_str = data.get("module_kind", "Unknown")
+        try:
+            kind = ModuleKind(kind_str)
+        except ValueError:
+            kind = ModuleKind.UNKNOWN
+        issues = [
+            ValidationIssue.from_dict(item)
+            for item in data.get("issues", [])
+            if isinstance(item, dict)
+        ]
+        is_valid = bool(data.get("is_valid", True)) and not any(
+            i.level == ValidationLevel.ERROR for i in issues
+        )
+        return cls(
+            module_path=module_path,
+            is_valid=is_valid,
+            module_kind=kind,
+            issues=issues,
+            from_cache=from_cache,
+        )
 
     def add_error(
         self,
@@ -168,10 +223,14 @@ class ModuleValidator:
             self.project_root = Path(project_root)
         self.modules_dir = self.project_root / "modules"
 
-    def validate_module(self, module_path: str) -> ValidationReport:
+    def validate_module(
+        self,
+        module_path: str,
+        use_cache: bool = True,
+        source: Optional[str] = None,
+        tree: Optional[ast.Module] = None,
+    ) -> ValidationReport:
         """Validate a module file against WindowBase or ProcessingBase requirements."""
-        report = ValidationReport(module_path=module_path, is_valid=True)
-
         path = Path(module_path)
 
         if not path.is_absolute():
@@ -185,20 +244,63 @@ class ModuleValidator:
             else:
                 path = candidate1
 
+        from core.health_cache import health_check_cache
+
+        if use_cache and path.exists():
+            entry = health_check_cache.get_file_entry(path)
+            if (
+                entry is not None
+                and entry.get("validator_fingerprint") == health_check_cache.get_validator_fingerprint()
+                and isinstance(entry.get("validation_report"), dict)
+            ):
+                return ValidationReport.from_dict(module_path, entry["validation_report"], from_cache=True)
+
+        report = ValidationReport(module_path=module_path, is_valid=True, from_cache=False)
+
         if not self._validate_file_structure(path, report):
             return report
 
-        tree = self._parse_module(path, report)
-        if tree is None:
-            return report
+        if source is None or tree is None:
+            parsed = self._parse_module_with_source(path, report, source=source)
+            if parsed is None:
+                health_check_cache.update_file_entry(
+                    path,
+                    validation_report_dict=report.to_dict(),
+                )
+                return report
+            source, tree = parsed
 
         exported_class_name = self._validate_exports(tree, report)
         if exported_class_name is None:
+            health_check_cache.update_file_entry(
+                path,
+                has_exported_class=False,
+                validation_report_dict=report.to_dict(),
+            )
             return report
 
         class_node = self._find_class(tree, exported_class_name, report)
         if class_node is None:
+            health_check_cache.update_file_entry(
+                path,
+                has_exported_class=True,
+                validation_report_dict=report.to_dict(),
+            )
             return report
+
+        # Prime ModuleAnalyzer cache with already-parsed source & tree to avoid re-reading/re-parsing
+        analyzer = ModuleAnalyzer.for_file(path, source=source, tree=tree)
+        ancestor_files: Dict[str, int] = {}
+        if analyzer is not None:
+            info = analyzer.class_info(class_node)
+            ancestors, _, _ = analyzer.ancestry(info)
+            for anc in ancestors:
+                if not anc.is_core and anc.file.resolve() != path.resolve():
+                    try:
+                        anc_key = health_check_cache._normalize_key(anc.file)
+                        ancestor_files[anc_key] = anc.file.stat().st_mtime_ns
+                    except OSError:
+                        pass
 
         # Determine module kind (WindowBase vs ProcessingBase) with cross-file resolution
         module_kind = self._detect_and_validate_inheritance(path, class_node, report)
@@ -215,7 +317,14 @@ class ModuleValidator:
         self._check_code_quality(tree, class_node, report)
 
         # Static analysis: DPG callbacks (Nuitka robustness), undefined names, self calls
-        self._run_static_analysis(path, report)
+        self._run_static_analysis(path, report, source=source, tree=tree)
+
+        health_check_cache.update_file_entry(
+            path,
+            has_exported_class=True,
+            validation_report_dict=report.to_dict(),
+            ancestor_files=ancestor_files,
+        )
 
         return report
 
@@ -240,12 +349,18 @@ class ModuleValidator:
 
         return True
 
-    def _parse_module(self, path: Path, report: ValidationReport) -> Optional[ast.Module]:
-        """Parse module file to AST."""
+    def _parse_module_with_source(
+        self,
+        path: Path,
+        report: ValidationReport,
+        source: Optional[str] = None,
+    ) -> Optional[Tuple[str, ast.Module]]:
+        """Read and parse module file to AST once, returning (source, tree)."""
         try:
-            with open(path, "r", encoding="utf-8") as f:
-                source = f.read()
-            return ast.parse(source, filename=str(path))
+            if source is None:
+                with open(path, "r", encoding="utf-8") as f:
+                    source = f.read()
+            return source, ast.parse(source, filename=str(path))
         except SyntaxError as e:
             report.add_error(f"Syntax error: {e.msg}", line=e.lineno, category="structure")
             return None
@@ -253,17 +368,31 @@ class ModuleValidator:
             report.add_error(f"Failed to parse file: {e}", category="structure")
             return None
 
+    def _parse_module(self, path: Path, report: ValidationReport) -> Optional[ast.Module]:
+        """Parse module file to AST."""
+        res = self._parse_module_with_source(path, report)
+        return res[1] if res is not None else None
+
     def _validate_exports(self, tree: ast.Module, report: ValidationReport) -> Optional[str]:
         """Check for EXPORTED_CLASS variable."""
         exported_class = None
 
-        for node in ast.walk(tree):
+        for node in tree.body:
             if isinstance(node, ast.Assign):
                 for target in node.targets:
                     if isinstance(target, ast.Name) and target.id == "EXPORTED_CLASS":
                         if isinstance(node.value, ast.Name):
                             exported_class = node.value.id
                         break
+
+        if exported_class is None:
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Assign):
+                    for target in node.targets:
+                        if isinstance(target, ast.Name) and target.id == "EXPORTED_CLASS":
+                            if isinstance(node.value, ast.Name):
+                                exported_class = node.value.id
+                            break
 
         if exported_class is None:
             report.add_error(
@@ -278,6 +407,9 @@ class ModuleValidator:
 
     def _find_class(self, tree: ast.Module, class_name: str, report: ValidationReport) -> Optional[ast.ClassDef]:
         """Find the class definition."""
+        for node in tree.body:
+            if isinstance(node, ast.ClassDef) and node.name == class_name:
+                return node
         for node in ast.walk(tree):
             if isinstance(node, ast.ClassDef) and node.name == class_name:
                 return node
@@ -555,14 +687,20 @@ class ModuleValidator:
                 category="general",
             )
 
-    def _run_static_analysis(self, path: Path, report: ValidationReport) -> None:
+    def _run_static_analysis(
+        self,
+        path: Path,
+        report: ValidationReport,
+        source: Optional[str] = None,
+        tree: Optional[ast.Module] = None,
+    ) -> None:
         """
         Run static checks (DPG callbacks, undefined names, missing self calls).
         Callbacks without *args are recorded as WARNING (non-blocking for standard python,
         crucial warning for Nuitka compiled mode).
         """
         try:
-            static_issues = run_static_checks(path)
+            static_issues = run_static_checks(path, source=source, tree=tree)
             for issue in static_issues:
                 if issue.category == "callback":
                     if "does not exist" in issue.message:
@@ -638,7 +776,11 @@ class ModuleValidationManager:
         """Check if any module has callback issues."""
         return any(bool(report.callback_issues) for report in self.validation_issues.values())
 
-    def validate_all_modules(self, modules_path: Optional[Union[str, Path]] = None) -> None:
+    def validate_all_modules(
+        self,
+        modules_path: Optional[Union[str, Path]] = None,
+        use_cache: bool = True,
+    ) -> None:
         """Validate all modules in the given path."""
         self.validation_issues.clear()
         if modules_path is None:
@@ -651,9 +793,16 @@ class ModuleValidationManager:
             logger.warning(f"Modules path '{modules_base}' does not exist")
             return
 
+        from core.health_cache import health_check_cache
+
         for module_file in modules_base.rglob("*.py"):
             if module_file.name == "__init__.py" or "__pycache__" in module_file.parts:
                 continue
+
+            if use_cache:
+                entry = health_check_cache.get_file_entry(module_file)
+                if entry is not None and entry.get("has_exported_class") is False:
+                    continue
 
             try:
                 content = module_file.read_text(encoding="utf-8")
@@ -661,9 +810,14 @@ class ModuleValidationManager:
                 continue
 
             if "EXPORTED_CLASS" not in content:
+                health_check_cache.update_file_entry(module_file, has_exported_class=False)
                 continue
 
-            report = self.validator.validate_module(str(module_file))
+            report = self.validator.validate_module(
+                str(module_file),
+                use_cache=use_cache,
+                source=content,
+            )
 
             # Store only modules that have actual errors or warnings (exclude purely healthy modules with INFO)
             if report.has_issues:
@@ -672,6 +826,8 @@ class ModuleValidationManager:
                     logger.warning(f"Module '{module_file.name}' has validation errors")
                 else:
                     logger.info(f"Module '{module_file.name}' has {len(report.warnings)} validation warning(s)")
+
+        health_check_cache.save()
 
 
 # Global singleton instance

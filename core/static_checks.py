@@ -105,7 +105,7 @@ class ClassInfo:
     def is_core(self) -> bool:
         """True if the class is defined in the application core (out of module validation scope)."""
         try:
-            self.file.resolve().relative_to(CORE_DIR.resolve())
+            self.file.relative_to(CORE_DIR)
             return True
         except ValueError:
             return False
@@ -173,22 +173,33 @@ class ModuleAnalyzer:
     # -- construction --------------------------------------------------------
 
     @classmethod
-    def for_file(cls, path: Union[str, Path]) -> Optional["ModuleAnalyzer"]:
+    def for_file(
+        cls,
+        path: Union[str, Path],
+        source: Optional[str] = None,
+        tree: Optional[ast.Module] = None,
+    ) -> Optional["ModuleAnalyzer"]:
         """Return a (cached) analyzer for a file, or None if it cannot be parsed."""
         file_path = Path(path)
+        key = str(file_path).replace("\\", "/").lower()
+
+        cached = cls._cache.get(key)
+        if cached is not None and source is None and tree is None:
+            return cached[1]
+
         try:
-            key = str(file_path.resolve())
             mtime = file_path.stat().st_mtime
         except OSError:
             return None
 
-        cached = cls._cache.get(key)
         if cached and cached[0] == mtime:
             return cached[1]
 
         try:
-            source = file_path.read_text(encoding="utf-8")
-            tree = ast.parse(source, filename=str(file_path))
+            if source is None:
+                source = file_path.read_text(encoding="utf-8")
+            if tree is None:
+                tree = ast.parse(source, filename=str(file_path))
         except (SyntaxError, UnicodeDecodeError, OSError, ValueError):
             return None
 
@@ -299,11 +310,15 @@ class ModuleAnalyzer:
 
     def ancestry(self, info: ClassInfo) -> Tuple[List[ClassInfo], List[str], bool]:
         """
-        Resolve the class hierarchy of ``info``.
+        Resolve the class hierarchy of ``info`` (cached on ``info``).
 
         Returns:
             (resolved ancestors in DFS order, names of unresolved bases, True if fully resolved)
         """
+        cached_anc = getattr(info, "_cached_ancestry", None)
+        if cached_anc is not None:
+            return cached_anc
+
         ancestors: List[ClassInfo] = []
         unresolved: List[str] = []
         seen = {id(info.node)}
@@ -324,7 +339,9 @@ class ModuleAnalyzer:
                 visit(target)
 
         visit(info)
-        return ancestors, unresolved, not unresolved
+        res = (ancestors, unresolved, not unresolved)
+        setattr(info, "_cached_ancestry", res)
+        return res
 
 
 # ---------------------------------------------------------------------------
@@ -665,14 +682,18 @@ def check_self_calls(analyzer: ModuleAnalyzer) -> List[StaticIssue]:
 # ---------------------------------------------------------------------------
 
 
-def run_static_checks(path: Union[str, Path]) -> List[StaticIssue]:
+def run_static_checks(
+    path: Union[str, Path],
+    source: Optional[str] = None,
+    tree: Optional[ast.Module] = None,
+) -> List[StaticIssue]:
     """
     Run all static checks on a module file.
 
     Returns an empty list if the file cannot be parsed (syntax errors are
     reported by the structural validator / loader instead).
     """
-    analyzer = ModuleAnalyzer.for_file(path)
+    analyzer = ModuleAnalyzer.for_file(path, source=source, tree=tree)
     if analyzer is None:
         return []
 

@@ -9,13 +9,16 @@ Detects and manages missing Python package dependencies:
 
 from __future__ import annotations
 
+import importlib.metadata
+import importlib.util
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
 from loguru import logger
 
+from core.health_cache import health_check_cache, normalize_pkg_name
 from core.paths import PROJECT_ROOT
 
 
@@ -40,8 +43,16 @@ class DependencyManager:
         """Initialize the dependency manager."""
         self.missing_deps: Dict[str, List[str]] = {}
         self.install_in_progress: bool = False
+        self._pkg_installed_cache: Dict[str, bool] = {}
 
-    def check_all_modules(self, modules_path: str = "modules", clear_existing: bool = False) -> None:
+    def check_all_modules(
+        self,
+        modules_path: str = "modules",
+        clear_existing: bool = False,
+        use_cache: bool = True,
+        req_files: Optional[List[Path]] = None,
+        progress_callback: Optional[Callable[[str, int, int, bool], None]] = None,
+    ) -> Tuple[int, int]:
         """
         Scan all modules and check for missing dependencies.
 
@@ -52,34 +63,70 @@ class DependencyManager:
             modules_path: Base path where modules are located.
             clear_existing: If True, clears existing missing_deps before scanning.
                            If False, merges with existing auto-detected dependencies.
+            use_cache: If True, uses persistent health_check_cache for unmodified files.
+            req_files: Optional pre-discovered list of requirements.txt paths.
+            progress_callback: Optional callback(item_name, current_idx, total_count, from_cache).
+
+        Returns:
+            Tuple of (scanned_count, cached_count).
         """
         if clear_existing:
             self.missing_deps.clear()
+            self._pkg_installed_cache.clear()
 
         from core.paths import is_compiled
         if is_compiled():
             logger.debug("Compiled executable mode: skipping requirements.txt scanning (incompatible modules are ignored)")
-            return
+            return (0, 0)
 
-        full_modules_path = Path(modules_path)
-        if not full_modules_path.is_absolute():
-            full_modules_path = PROJECT_ROOT / modules_path
+        if req_files is None:
+            full_modules_path = Path(modules_path)
+            if not full_modules_path.is_absolute():
+                full_modules_path = PROJECT_ROOT / modules_path
 
-        if not full_modules_path.exists():
-            logger.warning(f"Modules path '{full_modules_path}' does not exist")
-            return
+            if not full_modules_path.exists():
+                logger.warning(f"Modules path '{full_modules_path}' does not exist")
+                return (0, 0)
 
-        for req_file in full_modules_path.rglob("requirements.txt"):
+            req_files = list(full_modules_path.rglob("requirements.txt"))
+
+        scanned_count = 0
+        cached_count = 0
+        total = len(req_files)
+
+        for idx, req_file in enumerate(req_files, start=1):
             module_name = req_file.parent.name
-            missing = self._check_requirements(req_file)
+            from_cache = False
+            missing: Optional[List[str]] = None
+
+            if use_cache:
+                missing = health_check_cache.get_requirements_entry(req_file)
+                if missing is not None:
+                    from_cache = True
+                    cached_count += 1
+
+            if missing is None:
+                missing = self._check_requirements(req_file)
+                health_check_cache.set_requirements_entry(req_file, missing)
+                scanned_count += 1
+
+            if progress_callback:
+                try:
+                    progress_callback(f"{module_name}/requirements.txt", idx, total, from_cache)
+                except Exception:
+                    pass
 
             if missing:
                 if module_name in self.missing_deps:
-                    self.missing_deps[module_name].extend(missing)
-                    self.missing_deps[module_name] = list(set(self.missing_deps[module_name]))
+                    for m in missing:
+                        if m not in self.missing_deps[module_name]:
+                            self.missing_deps[module_name].append(m)
                 else:
-                    self.missing_deps[module_name] = missing
+                    self.missing_deps[module_name] = list(missing)
                 logger.info(f"Module '{module_name}' has {len(missing)} missing dependencies")
+
+        health_check_cache.save()
+        return (scanned_count, cached_count)
 
     def _check_requirements(self, req_file: Path) -> List[str]:
         """
@@ -116,31 +163,40 @@ class DependencyManager:
     @staticmethod
     def _extract_package_name(spec: str) -> str:
         """Extract the base package name from a requirement specification."""
-        for sep in [">=", "==", "<=", "<", ">", "[", ";"]:
+        for sep in [">=", "==", "<=", "~=", "!=", "<", ">", "[", ";"]:
             spec = spec.split(sep)[0]
         return spec.strip()
 
-    @staticmethod
-    def _is_package_installed(package_name: str) -> bool:
-        """Check if a package is installed by inspecting distribution metadata or importing."""
-        import importlib.metadata
-        import importlib.util
+    def _is_package_installed(self, package_name: str) -> bool:
+        """Check if a package is installed using pre-indexed distribution metadata or find_spec."""
+        norm_name = normalize_pkg_name(package_name)
+        if norm_name in self._pkg_installed_cache:
+            return self._pkg_installed_cache[norm_name]
 
-        # Direct distribution check via importlib.metadata
+        # 1. Fast O(1) lookup in pre-indexed installed distributions
+        installed_dists = health_check_cache.get_installed_packages()
+        if norm_name in installed_dists or package_name.lower() in installed_dists:
+            self._pkg_installed_cache[norm_name] = True
+            return True
+
+        # 2. Direct distribution check fallback
         try:
             importlib.metadata.distribution(package_name)
+            self._pkg_installed_cache[norm_name] = True
             return True
         except Exception:
             pass
 
-        # Check by module import spec (fallback)
+        # 3. Check by module import spec (fallback)
         try:
             import_name = package_name.replace("-", "_")
             if importlib.util.find_spec(import_name) is not None:
+                self._pkg_installed_cache[norm_name] = True
                 return True
         except Exception:
             pass
 
+        self._pkg_installed_cache[norm_name] = False
         return False
 
     def get_missing_deps(self) -> Dict[str, List[str]]:
@@ -185,6 +241,8 @@ class DependencyManager:
             success = result.returncode == 0
             if success:
                 logger.success(f"Installed {package}")
+                self._pkg_installed_cache.clear()
+                health_check_cache.invalidate_env_cache()
             else:
                 logger.error(f"Failed to install {package}: {result.stderr}")
 
@@ -235,6 +293,8 @@ class DependencyManager:
             success = result.returncode == 0
             if success:
                 logger.success("All packages installed successfully")
+                self._pkg_installed_cache.clear()
+                health_check_cache.invalidate_env_cache()
                 return {pkg: True for pkg in packages}
             else:
                 logger.error(f"Package installation failed: {result.stderr}")
@@ -252,4 +312,3 @@ class DependencyManager:
 
 # Global singleton instance
 dependency_manager: DependencyManager = DependencyManager()
-

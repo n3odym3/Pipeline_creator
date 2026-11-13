@@ -13,7 +13,6 @@ from typing import Any, Dict, Optional, Tuple, Union
 
 import dearpygui.dearpygui as dpg
 
-
 class LogViewer:
     """
     Class to capture and display logs in a DearPyGui window.

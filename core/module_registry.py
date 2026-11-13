@@ -8,13 +8,15 @@ import json
 import os
 import re
 import sys
+import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Type, ValuesView
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Type, ValuesView
 
 import dearpygui.dearpygui as dpg
 from loguru import logger
 
-from core.ast_utils import extract_imports
+from core.ast_utils import extract_imports, extract_imports_from_tree
+from core.health_cache import health_check_cache, normalize_pkg_name
 from core.module_constants import get_package_name
 from core.paths import PROJECT_ROOT
 
@@ -153,57 +155,154 @@ def load_single_module_dynamic(module_name: str, file_path: str) -> Any:
     return None
 
 
-def _get_module_metadata_statically(file_path: str) -> Optional[Dict[str, Any]]:
+def _get_module_metadata_statically(
+    file_path: str,
+    use_cache: bool = True,
+    source: Optional[str] = None,
+    tree: Optional[ast.Module] = None,
+) -> Optional[Dict[str, Any]]:
     """
     Statically extract module EXPORTED_CLASS class name, description/EXPORTED_NAME,
     and class docstring. Returns None if EXPORTED_CLASS is not found.
     """
+    if use_cache:
+        entry = health_check_cache.get_file_entry(file_path)
+        if entry is not None:
+            if entry.get("has_exported_class") is False:
+                return None
+            if isinstance(entry.get("metadata"), dict):
+                return dict(entry["metadata"])
+
     try:
-        with open(file_path, "r", encoding="utf-8") as f:
-            source = f.read()
-        tree = ast.parse(source, filename=file_path)
+        if tree is None:
+            if source is None:
+                with open(file_path, "r", encoding="utf-8") as f:
+                    source = f.read()
+            if "EXPORTED_CLASS" not in source:
+                health_check_cache.update_file_entry(file_path, has_exported_class=False)
+                return None
+            tree = ast.parse(source, filename=file_path)
 
         exported_class = None
         exported_name = ""
-        for node in ast.walk(tree):
+        # Check top-level body first (fast O(top_level_stmts) instead of full ast.walk)
+        for node in tree.body:
             if isinstance(node, ast.Assign):
                 for target in node.targets:
                     if isinstance(target, ast.Name):
                         if target.id == "EXPORTED_CLASS" and isinstance(node.value, ast.Name):
                             exported_class = node.value.id
-                        elif target.id == "EXPORTED_NAME" and isinstance(node.value, (ast.Constant, ast.Str)):
-                            if isinstance(node.value, ast.Constant):
-                                exported_name = node.value.value
-                            else:
-                                exported_name = node.value.s
+                        elif target.id == "EXPORTED_NAME" and isinstance(node.value, ast.Constant):
+                            exported_name = str(node.value.value)
 
         if not exported_class:
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Assign):
+                    for target in node.targets:
+                        if isinstance(target, ast.Name):
+                            if target.id == "EXPORTED_CLASS" and isinstance(node.value, ast.Name):
+                                exported_class = node.value.id
+                            elif target.id == "EXPORTED_NAME" and isinstance(node.value, ast.Constant):
+                                exported_name = str(node.value.value)
+
+        if not exported_class:
+            health_check_cache.update_file_entry(file_path, has_exported_class=False)
             return None
 
         doc = ""
         description = exported_name
-        for node in ast.walk(tree):
-            if isinstance(node, ast.ClassDef) and node.name == exported_class:
-                doc = ast.get_docstring(node) or ""
-                for item in node.body:
-                    if isinstance(item, ast.Assign):
-                        for t in item.targets:
-                            if isinstance(t, ast.Name) and t.id in ("description", "DESCRIPTION"):
-                                if isinstance(item.value, (ast.Constant, ast.Str)):
-                                    if isinstance(item.value, ast.Constant):
-                                        description = item.value.value
-                                    else:
-                                        description = item.value.s
-                break
+        class_candidates = [n for n in tree.body if isinstance(n, ast.ClassDef) and n.name == exported_class]
+        if not class_candidates:
+            class_candidates = [n for n in ast.walk(tree) if isinstance(n, ast.ClassDef) and n.name == exported_class]
 
-        return {
+        for node in class_candidates:
+            doc = ast.get_docstring(node) or ""
+            for item in node.body:
+                if isinstance(item, ast.Assign):
+                    for t in item.targets:
+                        if isinstance(t, ast.Name) and t.id in ("description", "DESCRIPTION"):
+                            if isinstance(item.value, ast.Constant):
+                                description = str(item.value.value)
+            break
+
+        meta = {
             "class_name": exported_class,
             "description": description or exported_class,
             "doc": doc,
         }
+        health_check_cache.update_file_entry(file_path, has_exported_class=True, metadata=meta)
+        return meta
     except Exception as e:
         logger.debug(f"Failed to extract metadata statically from {file_path}: {e}")
         return None
+
+
+def _discover_module_files(search_path: Path) -> Tuple[List[Path], List[Path]]:
+    """
+    Single-pass discovery of candidate module .py files and requirements.txt files,
+    while registering local packages and adding module directories to sys.path.
+    Uses os.walk with in-place directory pruning for maximum speed on Windows/OneDrive.
+    """
+    candidate_py: List[Path] = []
+    req_files: List[Path] = []
+    local_packages: Set[str] = set()
+    sys_path_set = set(sys.path)
+    dirs_to_prepend: List[str] = []
+
+    for root, dirs, files in os.walk(search_path):
+        # Prune __pycache__ and hidden directories immediately
+        dirs[:] = [d for d in dirs if d != "__pycache__" and not d.startswith(".")]
+
+        root_path = Path(root)
+        file_set = set(files)
+
+        # If this directory is a Python package (contains __init__.py) and is not search_path itself:
+        if "__init__.py" in file_set and root_path != search_path:
+            local_packages.add(root_path.name)
+            # Still check if requirements.txt exists inside, then prune package sub-tree from module scan
+            if "requirements.txt" in file_set:
+                req_files.append(root_path / "requirements.txt")
+            dirs[:] = []
+            continue
+
+        if "requirements.txt" in file_set:
+            req_files.append(root_path / "requirements.txt")
+
+        has_py = False
+        for fname in files:
+            if fname.endswith(".py") and fname != "__init__.py":
+                candidate_py.append(root_path / fname)
+                has_py = True
+
+        if has_py:
+            mod_dir = str(root_path)
+            if mod_dir not in sys_path_set:
+                sys_path_set.add(mod_dir)
+                dirs_to_prepend.append(mod_dir)
+
+            # Also add non-package immediate subdirectories so local sibling helpers resolve cleanly
+            for d in dirs:
+                sub_path = root_path / d
+                if not (sub_path / "__init__.py").exists():
+                    sub_str = str(sub_path)
+                    if sub_str not in sys_path_set:
+                        sys_path_set.add(sub_str)
+                        dirs_to_prepend.append(sub_str)
+
+    for d in reversed(dirs_to_prepend):
+        sys.path.insert(0, d)
+
+    # Register LocalPackagesFinder once
+    finder_exists = any(isinstance(f, LocalPackagesFinder) for f in sys.meta_path)
+    if not finder_exists and local_packages:
+        sys.meta_path.insert(0, LocalPackagesFinder(local_packages))
+        logger.debug(f"Registered LocalPackagesFinder for packages: {', '.join(local_packages)}")
+    elif finder_exists and local_packages:
+        for f in sys.meta_path:
+            if isinstance(f, LocalPackagesFinder):
+                f.local_packages.update(local_packages)
+
+    return candidate_py, req_files
 
 
 # Global registry of module instances (UUID -> module instance)
@@ -245,6 +344,12 @@ def register_module(module: Any) -> None:
     uuid = getattr(module, "UUID", None)
     if uuid and uuid not in MODULES_REGISTRY:
         MODULES_REGISTRY[uuid] = module
+    try:
+        from core.data_stream_interceptor import data_stream_interceptor
+
+        data_stream_interceptor.hook_module(module)
+    except Exception:
+        pass
 
 
 def unregister_module(module: Any) -> None:
@@ -295,12 +400,25 @@ def clear_registry() -> None:
 _AVAILABLE_MODULES_CACHE: Optional[Dict[str, Type[Any]]] = None
 
 
-def get_available_modules(base_path: str = "modules", force_reload: bool = False) -> Dict[str, Type[Any]]:
+def get_available_modules(
+    base_path: str = "modules",
+    force_reload: bool = False,
+    force_validation: bool = False,
+    use_cache: bool = True,
+) -> Dict[str, Type[Any]]:
     """
     Discover available module files and return a dict mapping module paths to classes.
     Only modules defining `EXPORTED_CLASS` are included.
     Automatically detects and reports missing dependencies using static analysis.
     Validates modules before loading to ensure they meet project requirements.
+
+    Args:
+        base_path: Directory containing modules.
+        force_reload: Reload module registry instead of returning in-memory cache.
+        force_validation: If True, forces full dependency and code validation even if
+                         `skip_import_validation` is enabled in config.json (used for manual checks).
+        use_cache: If True, uses the persistent disk cache (.cache/health_check_cache.json)
+                   for unmodified files.
     """
     global _AVAILABLE_MODULES_CACHE
     if _AVAILABLE_MODULES_CACHE is not None and not force_reload:
@@ -310,25 +428,25 @@ def get_available_modules(base_path: str = "modules", force_reload: bool = False
 
     general_cfg = config.get("General", {})
     preload = general_cfg.get("preload_modules", True)
-    skip_validation = general_cfg.get("skip_import_validation", False)
+    skip_validation = general_cfg.get("skip_import_validation", False) and not force_validation
     if skip_validation:
-        logger.warning(
-            "Import validation is DISABLED (skip_import_validation=true). "
-            "All modules will be loaded regardless of missing dependencies."
+        logger.info(
+            "Startup health check is DISABLED (skip_import_validation=true). "
+            "Skipping requirements.txt scan, import checks, and AST validation."
         )
 
     module_registry: Dict[str, Type[Any]] = {}
     missing_deps_detected: Dict[str, List[str]] = {}
 
-    # Initialize validator
+    validator = None
+    if not skip_validation:
+        try:
+            from core.module_validation_manager import module_validation_manager
+            validator = module_validation_manager.validator
+        except ImportError:
+            logger.warning("Could not import module validator, skipping validation")
+            validator = None
 
-    try:
-        from core.module_validation_manager import module_validation_manager
-        validator = module_validation_manager.validator
-    except ImportError:
-        logger.warning("Could not import module validator, skipping validation")
-        validator = None
-        
     # Resolve base_path relative to project root if it's not absolute
     if not Path(base_path).is_absolute():
         search_path = PROJECT_ROOT / base_path
@@ -338,72 +456,30 @@ def get_available_modules(base_path: str = "modules", force_reload: bool = False
         logger.warning(f"Modules path '{search_path}' does not exist")
         return {}
 
-    # Scan requirements.txt files for missing package dependencies
-    try:
-        from core.dependency_manager import dependency_manager
-        from core.paths import is_compiled
-        if not is_compiled():
-            dependency_manager.check_all_modules(str(search_path), clear_existing=force_reload)
-    except Exception as e:
-        logger.warning(f"Could not check requirements.txt files: {e}")
-    # Pre-add all module directories to sys.path so their local libraries are immediately importable.
-    # We skip directories inside package folders to prevent polluting sys.path and causing import conflicts
-    # (especially case-insensitivity issues on Windows).
-    for full_path in search_path.rglob("*.py"):
-        if full_path.name != "__init__.py":
-            is_inside_package = False
-            for parent in full_path.parents:
-                if parent == search_path or parent == PROJECT_ROOT or not parent.is_relative_to(search_path):
-                    break
-                if (parent / "__init__.py").exists():
-                    is_inside_package = True
-                    break
-            if is_inside_package:
-                continue
+    candidate_py, req_files = _discover_module_files(search_path)
 
-            module_dir = str(full_path.parent)
-            if module_dir not in sys.path:
-                sys.path.insert(0, module_dir)
+    # Scan requirements.txt files for missing package dependencies (only when validation is enabled)
+    if not skip_validation:
+        try:
+            from core.dependency_manager import dependency_manager
+            from core.paths import is_compiled
+            if not is_compiled():
+                dependency_manager.check_all_modules(
+                    str(search_path),
+                    clear_existing=force_reload,
+                    use_cache=use_cache,
+                    req_files=req_files,
+                )
+        except Exception as e:
+            logger.warning(f"Could not check requirements.txt files: {e}")
 
-    # Register a custom meta path finder for local packages (directories with __init__.py).
-    # This is critical for Nuitka-compiled builds: --nofollow-import-to excludes these
-    # packages from compilation, but Nuitka's import hooks may block them at runtime.
-    # By registering LocalPackagesFinder, we bypass Nuitka's import hooks entirely and load them on-demand.
-    _local_packages: set = set()
-    for init_path in search_path.rglob("__init__.py"):
-        pkg_dir = init_path.parent
-        pkg_name = pkg_dir.name
-        if pkg_name != "__pycache__":
-            _local_packages.add(pkg_name)
-            
-    # Register our custom finder at the beginning of sys.meta_path
-    finder_exists = any(isinstance(f, LocalPackagesFinder) for f in sys.meta_path)
-    if not finder_exists and _local_packages:
-        sys.meta_path.insert(0, LocalPackagesFinder(_local_packages))
-        logger.debug(f"Registered LocalPackagesFinder for packages: {', '.join(_local_packages)}")
-
-    for full_path in search_path.rglob("*.py"):
-        if full_path.name == "__init__.py":
-            continue
-            
-        # Skip files that are inside a Python package directory (any subdirectory containing __init__.py)
-        is_inside_package = False
-        for parent in full_path.parents:
-            if parent == search_path or parent == PROJECT_ROOT or not parent.is_relative_to(search_path):
-                break
-            if (parent / "__init__.py").exists():
-                is_inside_package = True
-                break
-        if is_inside_package:
-            continue
-
+    for full_path in candidate_py:
         try:
             from core.splash import update_splash_status
             update_splash_status(f"Loading: {full_path.stem}")
         except Exception:
             pass
 
-        # Calculate relative path from PROJECT_ROOT to use as module name for proper relative imports
         try:
             try:
                 rel_path = full_path.relative_to(PROJECT_ROOT)
@@ -414,54 +490,51 @@ def get_available_modules(base_path: str = "modules", force_reload: bool = False
         except ValueError:
             continue
 
+        source: Optional[str] = None
+        tree: Optional[ast.Module] = None
+
         # First, use static analysis to detect ALL missing imports (unless validation is skipped)
         if not skip_validation:
-            missing_imports = _check_imports_statically(str(full_path))
+            missing_imports, source, tree = _check_imports_statically_with_ast(
+                str(full_path),
+                use_cache=use_cache,
+                source=source,
+                tree=tree,
+            )
 
             if missing_imports:
-                # Retry: force-add this module's directory tree to sys.path and invalidate cache.
-                # Skip subdirectories that are packages themselves (contain __init__.py) to prevent pollution.
-                module_dir_path = full_path.parent
-                dirs_to_add = [str(module_dir_path)]
-                for sub in module_dir_path.iterdir():
-                    if sub.is_dir() and sub.name != "__pycache__" and not (sub / "__init__.py").exists():
-                        dirs_to_add.append(str(sub))
-                for d in dirs_to_add:
-                    if d not in sys.path:
-                        sys.path.insert(0, d)
-                # Invalidate cache entries for the missing packages so they get rechecked
-                for pkg in missing_imports:
-                    _import_check_cache.pop(pkg, None)
-                    # Also try to invalidate by import name (get_package_name may have mapped it)
-                    for cached_name, cached_val in list(_import_check_cache.items()):
-                        if not cached_val and get_package_name(cached_name) in missing_imports:
-                            _import_check_cache.pop(cached_name, None)
-
-                missing_imports_retry = _check_imports_statically(str(full_path))
-                if missing_imports_retry:
-                    from core.paths import is_compiled
-                    if is_compiled():
-                        logger.info(
-                            f"Module '{module_name}' ignored (incompatible: missing dependencies in compiled mode: "
-                            f"{', '.join(missing_imports_retry)})"
-                        )
-                    else:
-                        if module_folder not in missing_deps_detected:
-                            missing_deps_detected[module_folder] = []
-                        missing_deps_detected[module_folder].extend(missing_imports_retry)
-                        logger.warning(f"Module '{module_name}' has missing packages: {', '.join(missing_imports_retry)}")
-                        logger.debug(f"Skipping module '{module_name}' due to missing dependencies (after retry with local paths)")
-                    continue
+                from core.paths import is_compiled
+                if is_compiled():
+                    logger.info(
+                        f"Module '{module_name}' ignored (incompatible: missing dependencies in compiled mode: "
+                        f"{', '.join(missing_imports)})"
+                    )
                 else:
-                    logger.info(f"Module '{module_name}' resolved missing packages after adding local paths to sys.path")
+                    if module_folder not in missing_deps_detected:
+                        missing_deps_detected[module_folder] = []
+                    for pkg in missing_imports:
+                        if pkg not in missing_deps_detected[module_folder]:
+                            missing_deps_detected[module_folder].append(pkg)
+                    logger.warning(f"Module '{module_name}' has missing packages: {', '.join(missing_imports)}")
+                continue
 
         if not preload:
-            metadata = _get_module_metadata_statically(str(full_path))
+            metadata = _get_module_metadata_statically(
+                str(full_path),
+                use_cache=use_cache,
+                source=source,
+                tree=tree,
+            )
             if not metadata:
                 continue
 
             if validator:
-                report = validator.validate_module(str(full_path))
+                report = validator.validate_module(
+                    str(full_path),
+                    use_cache=use_cache,
+                    source=source,
+                    tree=tree,
+                )
                 if report.has_issues:
                     module_validation_manager.validation_issues[str(full_path)] = report
                 if not report.is_valid:
@@ -474,17 +547,21 @@ def get_available_modules(base_path: str = "modules", force_reload: bool = False
                 file_path=str(full_path),
                 class_name=metadata["class_name"],
                 description=metadata["description"],
-                doc=metadata["doc"]
+                doc=metadata["doc"],
             )
             module_registry[module_name] = lazy_proxy
             continue
+
+        # Fast skip for non-module helper files before executing them when cached
+        if use_cache:
+            cached_entry = health_check_cache.get_file_entry(full_path)
+            if cached_entry is not None and cached_entry.get("has_exported_class") is False:
+                continue
 
         try:
             module_dir = str(full_path.parent)
             if module_dir not in sys.path:
                 sys.path.insert(0, module_dir)
-
-            # Local libraries are now importable because their parent directory is in sys.path
 
             # Ensure parent packages are loaded first to avoid circular import issues on relative imports
             parts = module_name.split(".")
@@ -510,7 +587,6 @@ def get_available_modules(base_path: str = "modules", force_reload: bool = False
                 raise
 
         except ImportError as e:
-            # Fallback: extract missing package from runtime error
             missing_package = _extract_missing_package(str(e))
             if missing_package:
                 from core.paths import is_compiled
@@ -521,28 +597,25 @@ def get_available_modules(base_path: str = "modules", force_reload: bool = False
                 else:
                     if module_folder not in missing_deps_detected:
                         missing_deps_detected[module_folder] = []
-                    missing_deps_detected[module_folder].append(missing_package)
+                    if missing_package not in missing_deps_detected[module_folder]:
+                        missing_deps_detected[module_folder].append(missing_package)
                     logger.warning(f"Module '{module_name}' failed to load: missing package '{missing_package}'")
             else:
                 logger.error(f"Failed to load module {module_name}: {e}")
-                from core.module_validation_manager import ValidationReport, module_validation_manager
-                rep = module_validation_manager.validation_issues.get(str(full_path))
-                if rep is None:
-                    rep = ValidationReport(module_path=str(full_path), is_valid=False)
-                    module_validation_manager.validation_issues[str(full_path)] = rep
-                rep.add_error(f"ImportError during load: {e}", category="runtime")
+                if not skip_validation:
+                    from core.module_validation_manager import ValidationReport, module_validation_manager
+                    rep = module_validation_manager.validation_issues.get(str(full_path))
+                    if rep is None:
+                        rep = ValidationReport(module_path=str(full_path), is_valid=False)
+                        module_validation_manager.validation_issues[str(full_path)] = rep
+                    rep.add_error(f"ImportError during load: {e}", category="runtime")
             if not skip_validation:
                 continue
-            # When skip_validation is on, fall through to still try registering if EXPORTED_CLASS exists
             logger.warning(f"skip_import_validation is ON: attempting to register '{module_name}' despite ImportError")
             try:
-                # Re-attempt with local path reinforcement
                 module_dir = str(full_path.parent)
                 if module_dir not in sys.path:
                     sys.path.insert(0, module_dir)
-                for sub in full_path.parent.iterdir():
-                    if sub.is_dir() and sub.name != "__pycache__" and not (sub / "__init__.py").exists() and str(sub) not in sys.path:
-                        sys.path.insert(0, str(sub))
                 spec = importlib.util.spec_from_file_location(module_name, str(full_path))
                 if spec is None or spec.loader is None:
                     continue
@@ -556,41 +629,258 @@ def get_available_modules(base_path: str = "modules", force_reload: bool = False
                 continue
         except Exception as e:
             logger.error(f"Failed to load module {module_name}: {e}")
-            from core.module_validation_manager import ValidationReport, module_validation_manager
-            rep = module_validation_manager.validation_issues.get(str(full_path))
-            if rep is None:
-                rep = ValidationReport(module_path=str(full_path), is_valid=False)
-                module_validation_manager.validation_issues[str(full_path)] = rep
-            rep.add_error(f"Runtime loading exception: {e}", category="runtime")
+            if not skip_validation:
+                from core.module_validation_manager import ValidationReport, module_validation_manager
+                rep = module_validation_manager.validation_issues.get(str(full_path))
+                if rep is None:
+                    rep = ValidationReport(module_path=str(full_path), is_valid=False)
+                    module_validation_manager.validation_issues[str(full_path)] = rep
+                rep.add_error(f"Runtime loading exception: {e}", category="runtime")
             continue
 
         # Only validate and register if module has EXPORTED_CLASS
         if hasattr(mod, "EXPORTED_CLASS"):
-            # Validate module AFTER confirming it's an actual module entry point
             if validator:
-                report = validator.validate_module(str(full_path))
+                report = validator.validate_module(
+                    str(full_path),
+                    use_cache=use_cache,
+                    source=source,
+                    tree=tree,
+                )
                 if report.has_issues:
-                    # Store validation issues (errors and/or warnings)
                     module_validation_manager.validation_issues[str(full_path)] = report
                 if not report.is_valid:
                     logger.warning(f"Module '{module_name}' failed validation and will not be loaded")
                     continue
-            
-            # Module passed validation (or validation disabled), add to registry
+            else:
+                health_check_cache.update_file_entry(full_path, has_exported_class=True)
+
             cls = mod.EXPORTED_CLASS
             cls._source_file = str(full_path)
             module_registry[module_name] = cls
-    
+        else:
+            health_check_cache.update_file_entry(full_path, has_exported_class=False)
+
     # Report detected missing dependencies
     from core.paths import is_compiled
-    if missing_deps_detected and not is_compiled():
+    if not skip_validation and missing_deps_detected and not is_compiled():
         logger.info(f"Detected {len(missing_deps_detected)} module(s) with missing dependencies")
         _report_missing_dependencies(missing_deps_detected)
-    
+
+    health_check_cache.save()
     logger.success(f"Loaded {len(module_registry)} modules successfully")
 
     _AVAILABLE_MODULES_CACHE = module_registry
     return module_registry
+
+
+def scan_modules_health(
+    base_path: str = "modules",
+    use_cache: bool = True,
+    progress_callback: Optional[Callable[[str, int, int, int, int], None]] = None,
+) -> Dict[str, Any]:
+    """
+    Perform a complete health check (dependencies, static imports, and AST/callback validation)
+    across all modules, regardless of `skip_import_validation` in config.json.
+
+    Does NOT re-execute `exec_module` on already-loaded modules, making it fast and safe
+    to run from a background thread with real-time UI progress updates.
+
+    Args:
+        base_path: Directory containing modules.
+        use_cache: If True, reuses cached results from `.cache/health_check_cache.json`
+                   for unmodified files. If False, clears and rebuilds the cache.
+        progress_callback: Optional callable(current_label, step_idx, total_steps, scanned_count, cached_count).
+
+    Returns:
+        Dictionary with scan statistics: `total_files`, `scanned`, `cached`, `elapsed_ms`.
+    """
+    global _AVAILABLE_MODULES_CACHE
+    t0 = time.perf_counter()
+
+    from core.dependency_manager import dependency_manager
+    from core.module_validation_manager import module_validation_manager
+    from core.paths import is_compiled
+
+    if not use_cache:
+        health_check_cache.clear()
+        _import_check_cache.clear()
+
+    dependency_manager.missing_deps.clear()
+    module_validation_manager.validation_issues.clear()
+
+    if not Path(base_path).is_absolute():
+        search_path = PROJECT_ROOT / base_path
+    else:
+        search_path = Path(base_path)
+
+    if not search_path.exists():
+        return {"total_files": 0, "scanned": 0, "cached": 0, "elapsed_ms": 0.0}
+
+    candidate_py, req_files = _discover_module_files(search_path)
+    compiled = is_compiled()
+
+    total_steps = (len(req_files) if not compiled else 0) + len(candidate_py)
+    current_step = 0
+    scanned_total = 0
+    cached_total = 0
+
+    # Step 1: Check all requirements.txt files
+    if not compiled and req_files:
+        def _req_progress(item_name: str, idx: int, tot: int, from_cache: bool) -> None:
+            nonlocal current_step, scanned_total, cached_total
+            current_step += 1
+            if from_cache:
+                cached_total += 1
+            else:
+                scanned_total += 1
+            if progress_callback:
+                progress_callback(f"Dependencies: {item_name}", current_step, total_steps, scanned_total, cached_total)
+
+        dependency_manager.check_all_modules(
+            str(search_path),
+            clear_existing=False,
+            use_cache=use_cache,
+            req_files=req_files,
+            progress_callback=_req_progress,
+        )
+
+    # Step 2: Check static imports and validate all candidate .py files
+    missing_deps_detected: Dict[str, List[str]] = {}
+    validator = module_validation_manager.validator
+
+    for full_path in candidate_py:
+        current_step += 1
+        try:
+            try:
+                rel_path = full_path.relative_to(PROJECT_ROOT)
+            except ValueError:
+                rel_path = full_path.relative_to(search_path)
+            module_name = ".".join(rel_path.with_suffix("").parts)
+            module_folder = full_path.parent.name
+        except ValueError:
+            continue
+
+        file_was_cached = False
+        entry = health_check_cache.get_file_entry(full_path) if use_cache else None
+        env_fp = health_check_cache.get_env_fingerprint()
+        val_fp = health_check_cache.get_validator_fingerprint()
+
+        imports_from_cache = (
+            entry is not None
+            and entry.get("env_fingerprint") == env_fp
+            and isinstance(entry.get("missing_imports"), list)
+        )
+
+        # Fast-path: complete cache hit for this file (0 extra stat() or dict lookups)
+        if imports_from_cache and entry is not None:
+            missing_imports = list(entry["missing_imports"])
+            if missing_imports and not compiled:
+                if module_folder not in missing_deps_detected:
+                    missing_deps_detected[module_folder] = []
+                for pkg in missing_imports:
+                    if pkg not in missing_deps_detected[module_folder]:
+                        missing_deps_detected[module_folder].append(pkg)
+
+            if entry.get("has_exported_class") is False:
+                file_was_cached = True
+            elif (
+                isinstance(entry.get("metadata"), dict)
+                and entry.get("validator_fingerprint") == val_fp
+                and isinstance(entry.get("validation_report"), dict)
+            ):
+                from core.module_validation_manager import ValidationReport
+                metadata = entry["metadata"]
+                report = ValidationReport.from_dict(str(full_path), entry["validation_report"], from_cache=True)
+                file_was_cached = True
+                if report.has_issues:
+                    module_validation_manager.validation_issues[str(full_path)] = report
+                if _AVAILABLE_MODULES_CACHE is not None and report.is_valid and not missing_imports:
+                    if module_name not in _AVAILABLE_MODULES_CACHE:
+                        _AVAILABLE_MODULES_CACHE[module_name] = LazyModuleProxy(
+                            module_name=module_name,
+                            file_path=str(full_path),
+                            class_name=metadata["class_name"],
+                            description=metadata["description"],
+                            doc=metadata["doc"],
+                        )
+
+        if not file_was_cached:
+            source: Optional[str] = None
+            tree: Optional[ast.Module] = None
+
+            missing_imports, source, tree = _check_imports_statically_with_ast(
+                str(full_path),
+                use_cache=use_cache,
+                source=source,
+                tree=tree,
+            )
+
+            if missing_imports and not compiled:
+                if module_folder not in missing_deps_detected:
+                    missing_deps_detected[module_folder] = []
+                for pkg in missing_imports:
+                    if pkg not in missing_deps_detected[module_folder]:
+                        missing_deps_detected[module_folder].append(pkg)
+
+            metadata = _get_module_metadata_statically(
+                str(full_path),
+                use_cache=use_cache,
+                source=source,
+                tree=tree,
+            )
+
+            if metadata:
+                report = validator.validate_module(
+                    str(full_path),
+                    use_cache=use_cache,
+                    source=source,
+                    tree=tree,
+                )
+                if report.has_issues:
+                    module_validation_manager.validation_issues[str(full_path)] = report
+
+                if _AVAILABLE_MODULES_CACHE is not None and report.is_valid and not missing_imports:
+                    if module_name not in _AVAILABLE_MODULES_CACHE:
+                        _AVAILABLE_MODULES_CACHE[module_name] = LazyModuleProxy(
+                            module_name=module_name,
+                            file_path=str(full_path),
+                            class_name=metadata["class_name"],
+                            description=metadata["description"],
+                            doc=metadata["doc"],
+                        )
+
+        if file_was_cached:
+            cached_total += 1
+        else:
+            scanned_total += 1
+
+        if progress_callback:
+            tag_str = "cached" if file_was_cached else "scanned"
+            progress_callback(
+                f"Module: {full_path.name} ({tag_str})",
+                current_step,
+                total_steps,
+                scanned_total,
+                cached_total,
+            )
+
+    if missing_deps_detected and not compiled:
+        _report_missing_dependencies(missing_deps_detected)
+
+    health_check_cache.save()
+    elapsed_ms = (time.perf_counter() - t0) * 1000.0
+    logger.info(
+        f"Health check completed in {elapsed_ms:.1f} ms "
+        f"(total={total_steps}, scanned={scanned_total}, cached={cached_total})"
+    )
+    return {
+        "total_files": total_steps,
+        "scanned": scanned_total,
+        "cached": cached_total,
+        "elapsed_ms": elapsed_ms,
+    }
+
 
 def _extract_missing_package(error_msg: str) -> Optional[str]:
     """
@@ -612,21 +902,70 @@ def _extract_missing_package(error_msg: str) -> Optional[str]:
 _import_check_cache: Dict[str, bool] = {}
 
 
-def _check_imports_statically(file_path: str) -> List[str]:
-    """
-    Use AST to extract all imports from a file and check which are missing.
-    Results are cached per package to avoid redundant __import__() calls.
+def _is_module_importable(module_name: str) -> bool:
+    """Fast check if a top-level module name is importable without executing heavy packages."""
+    if module_name in _import_check_cache:
+        return _import_check_cache[module_name]
 
-    Args:
-        file_path: Path to the Python file to analyze.
+    if module_name in sys.modules or module_name in sys.builtin_module_names:
+        _import_check_cache[module_name] = True
+        return True
 
-    Returns:
-        List of missing package names.
+    try:
+        exists = importlib.util.find_spec(module_name) is not None
+        if exists:
+            _import_check_cache[module_name] = True
+            return True
+    except Exception:
+        pass
+
+    # Fallback: check if mapped package distribution is installed in metadata
+    pkg_name = get_package_name(module_name)
+    installed_dists = health_check_cache.get_installed_packages()
+    if normalize_pkg_name(pkg_name) in installed_dists or normalize_pkg_name(module_name) in installed_dists:
+        _import_check_cache[module_name] = True
+        return True
+
+    _import_check_cache[module_name] = False
+    return False
+
+
+def _check_imports_statically_with_ast(
+    file_path: str,
+    use_cache: bool = True,
+    source: Optional[str] = None,
+    tree: Optional[ast.Module] = None,
+) -> Tuple[List[str], Optional[str], Optional[ast.Module]]:
     """
+    Check all imports in `file_path`, reusing or returning `(source, tree)` and leveraging
+    `health_check_cache` when unmodified.
+    """
+    entry = health_check_cache.get_file_entry(file_path) if use_cache else None
+    env_fp = health_check_cache.get_env_fingerprint()
+
+    if (
+        entry is not None
+        and entry.get("env_fingerprint") == env_fp
+        and isinstance(entry.get("missing_imports"), list)
+    ):
+        return list(entry["missing_imports"]), source, tree
+
+    imports: Optional[List[str]] = None
+    if entry is not None and isinstance(entry.get("imports"), list):
+        imports = entry["imports"]
+    else:
+        try:
+            if tree is None:
+                if source is None:
+                    with open(file_path, "r", encoding="utf-8") as f:
+                        source = f.read()
+                tree = ast.parse(source, filename=file_path)
+            imports = sorted(extract_imports_from_tree(tree, file_path, exclude_local=True))
+        except Exception as e:
+            logger.debug(f"Could not parse {file_path} for import extraction: {e}")
+            imports = []
+
     missing: List[str] = []
-
-    imports = extract_imports(file_path, exclude_local=True)
-
     for module_name in imports:
         if sys.platform != "win32" and module_name in (
             "win32clipboard",
@@ -638,22 +977,32 @@ def _check_imports_statically(file_path: str) -> List[str]:
         ):
             continue
 
-        if module_name not in _import_check_cache:
-            try:
-                exists = importlib.util.find_spec(module_name) is not None
-                _import_check_cache[module_name] = exists
-            except Exception:
-                try:
-                    __import__(module_name)
-                    _import_check_cache[module_name] = True
-                except ImportError:
-                    _import_check_cache[module_name] = False
-
-        if not _import_check_cache[module_name]:
+        if not _is_module_importable(module_name):
             pkg_name = get_package_name(module_name)
             if pkg_name not in missing:
                 missing.append(pkg_name)
 
+    health_check_cache.update_file_entry(
+        file_path,
+        imports=imports,
+        missing_imports=missing,
+    )
+    return missing, source, tree
+
+
+def _check_imports_statically(file_path: str, use_cache: bool = True) -> List[str]:
+    """
+    Use AST to extract all imports from a file and check which are missing.
+    Results are cached per file and per package.
+
+    Args:
+        file_path: Path to the Python file to analyze.
+        use_cache: Whether to use the persistent health check cache.
+
+    Returns:
+        List of missing package names.
+    """
+    missing, _, _ = _check_imports_statically_with_ast(file_path, use_cache=use_cache)
     return missing
 
 
@@ -671,9 +1020,11 @@ def _report_missing_dependencies(missing_deps: Dict[str, List[str]]) -> None:
 
         for module, packages in missing_deps.items():
             if module in dependency_manager.missing_deps:
-                dependency_manager.missing_deps[module].extend(packages)
+                for p in packages:
+                    if p not in dependency_manager.missing_deps[module]:
+                        dependency_manager.missing_deps[module].append(p)
             else:
-                dependency_manager.missing_deps[module] = packages
+                dependency_manager.missing_deps[module] = list(packages)
 
         logger.info(
             f"Detected {sum(len(p) for p in missing_deps.values())} missing dependencies "
@@ -952,8 +1303,23 @@ def load_from_dict(
         params = dict(wdata.get("params", {}))
         merge_target_uuid = params.pop("merged_into", None)
 
-        pos = list(wdata.get("pos", (10, 10)))
-        win_size = list(wdata.get("size", [-1, -1]))
+        # Fallback to params if pos, size or visible are nested in params
+        raw_pos = wdata.get("pos", params.pop("pos", (10, 10)))
+        pos = list(raw_pos)
+
+        raw_size = wdata.get("size", None)
+        if raw_size is None:
+            raw_w = params.pop("win_width", -1)
+            raw_h = params.pop("win_height", -1)
+            raw_size = [raw_w, raw_h]
+        win_size = list(raw_size)
+
+        vis = wdata.get("visible", params.pop("visible", True))
+
+        # Discard duplicate standard kwargs from params to prevent 'got multiple values for keyword argument'
+        for k in ("win_width", "win_height", "pos", "size", "visible", "uuid"):
+            params.pop(k, None)
+
         is_relative = is_global_relative or wdata.get("is_relative", False)
         
         if is_relative:
@@ -976,7 +1342,7 @@ def load_from_dict(
                 pos=tuple(pos),
                 win_width=int(win_size[0]),
                 win_height=int(win_size[1]),
-                visible=wdata.get("visible", True),
+                visible=vis,
                 **params,
             )
             win.is_relative = is_relative
@@ -1068,7 +1434,16 @@ def load_from_dict(
         if src and tgt:
             src.merge_into(tgt)
     
-    for conn in data.get("connections", []):
+    raw_conns = list(data.get("connections", []))
+    if not raw_conns and "links" in data:
+        for lk in data.get("links", []):
+            raw_conns.append({
+                "from": lk.get("from", lk.get("source")),
+                "to": lk.get("to", lk.get("target")),
+                "output": lk.get("output", 0),
+            })
+
+    for conn in raw_conns:
         src = instances.get(conn["from"])
         tgt_entry = conn.get("to")
         output_key = conn.get("output")
