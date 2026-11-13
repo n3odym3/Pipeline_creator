@@ -36,9 +36,9 @@ def create_windows() -> None:
 
 ---
 
-## Loading a Programmatic Layout
+## Loading a Programmatic Pipeline
 
-To run your programmatic layout in the application, import and run it during startup. For example, in the initialization phase (e.g. inside `main_win` or `main.py` when preparing the UI):
+To run your programmatic pipeline in the application, import and run it during startup. For example, in the initialization phase (e.g. inside `main_win` or `main.py` when preparing the UI):
 
 ```python
 from template_and_doc import manual_layout

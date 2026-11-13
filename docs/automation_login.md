@@ -44,10 +44,10 @@ show_login_dialog(
 To automatically load a specific pipeline layout (.json) at launch:
 
 1. Open `config.json`.
-2. Set `"default_pipeline"` under `"Paths"` to the relative path of your flow layout file:
+2. Set `"default_pipeline"` under `"Paths"` to the relative path of your pipeline file:
    ```json
    "Paths": {
-       "default_pipeline": "layouts/my_default_pipeline.json"
+       "default_pipeline": "pipelines/my_default_pipeline.json"
    }
    ```
 
@@ -87,7 +87,7 @@ An automation script is a JSON object with a `name` and a list of `steps`. Each 
     "name": "My Startup Script",
     "steps": [
         { "action": "set_workspace", "path": "C:/data/my_project" },
-        { "action": "load_pipeline", "path": "layouts/default_pipeline.json" },
+        { "action": "load_pipeline", "path": "pipelines/default_pipeline.json" },
         { "action": "fullscreen",    "enabled": true },
         { "action": "wait",          "seconds": 1.5 },
         { "action": "trigger",       "module_type": "MyCameraModule", "method": "start_acquisition" }
@@ -118,7 +118,7 @@ Sets the working directory. All relative paths in subsequent steps are resolved 
 Loads a pipeline JSON file and reconstructs its node graph.
 
 ```json
-{ "action": "load_pipeline", "path": "layouts/my_pipeline.json" }
+{ "action": "load_pipeline", "path": "pipelines/my_pipeline.json" }
 ```
 
 | Parameter | Type | Description |

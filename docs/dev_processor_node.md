@@ -48,56 +48,62 @@ Convention: suffix the filename with `_proc` to indicate it is a background work
 
 ## Minimal Template
 
+This template corresponds to `template_and_doc/processor_template.py`:
+
 ```python
 from __future__ import annotations
+
+import time
 from typing import Any, Dict, Optional
+
 from core.processing_base import ProcessingBase
 
 
-class MyProcessor(ProcessingBase):
+class Processor_Template(ProcessingBase):
     """
-    Background worker that processes data in an isolated process.
-    Override _process_data() with your computation logic.
+    A template for building multiprocessing background worker processes.
     """
 
-    def __init__(
-        self,
-        params: Optional[Dict[str, Any]] = None,
-        *,
-        buffer_size: int = 10,
-        drop_policy: str = "drop_oldest",
-        daemon: bool = True,
-    ) -> None:
-        super().__init__(
-            params=params,
-            buffer_size=buffer_size,
-            drop_policy=drop_policy,
-            daemon=daemon,
-        )
+    # 1. Process Configuration (Class defaults - can also be overridden via kwargs)
+    buffer_size = 10
+    drop_policy = "drop_new"  # Options: 'drop_new', 'drop_oldest', or 'block'
+    daemon = True
+
+    def __init__(self, params: Optional[Dict[str, Any]] = None, **kwargs: Any) -> None:
+        """
+        Initialize the processor process.
+
+        Args:
+            params: Optional initial parameters dictionary passed to the worker.
+            **kwargs: Extra configuration options forwarded to ProcessingBase.
+        """
+        super().__init__(params=params, **kwargs)
 
     def _process_data(self, data: Any, params: Dict[str, Any]) -> Any:
         """
-        Executed inside the isolated worker process.
+        Actual data processing logic executed in the isolated worker process.
 
         WARNING: This method runs in a different process.
         - Do NOT access DPG (dpg.*) from here.
         - Do NOT modify shared module state directly.
-        - Only communicate via the return value (sent to _out_queue).
+        - Only communicate via the return value (sent to out_queue).
 
         Args:
-            data:   Input data packet (submitted from the UI process).
-            params: Snapshot of current parameters (from update_params()).
+            data: The incoming data packet from the submission queue.
+            params: Dictionary containing current parameters/configuration.
 
         Returns:
-            Any result to deliver back to the UI process via _out_queue.
-            Return None to discard the result.
+            The processed result to be pushed to the out_queue.
         """
-        multiplier = params.get("multiplier", 1.0)
+        # Simulated workload
+        time.sleep(1.0)
 
+        # Example processing using data and params:
+        factor = params.get("multiplier", 1)
         if isinstance(data, (int, float)):
-            return {"status": "ok", "value": data * multiplier}
+            return data * factor
 
-        return {"status": "skipped"}
+        return True
 ```
 
 ---
@@ -107,7 +113,7 @@ class MyProcessor(ProcessingBase):
 ### Starting and Stopping
 
 ```python
-processor = MyProcessor(params={"multiplier": 2.0})
+processor = Processor_Template(params={"multiplier": 2.0})
 processor.start()    # Launch the background process
 # ... later ...
 processor.stop()     # Terminate gracefully
@@ -116,26 +122,52 @@ processor.stop()     # Terminate gracefully
 ### Submitting Data
 
 ```python
-processor.submit(my_data)
+success = processor.submit(my_data)
 ```
 
-Data is placed into the `_in_queue`. If the queue is full, behavior depends on the `drop_policy`:
+`submit()` attempts to enqueue data for processing and returns `True` if accepted, or `False` if dropped/rejected. Behavior on saturation depends on the `drop_policy`:
 
-| Policy | Behavior |
-|---|---|
-| `"drop_new"` | Discard the new packet (keep processing old ones) |
-| `"drop_oldest"` | Remove the oldest queued packet, insert the new one |
-| `"block"` | Wait until space is available (may stall the UI thread) |
+| Policy | Behavior | Implementation Details |
+|---|---|---|
+| `"drop_new"` *(default)* | Discard newly arriving item | Fast producer-side check; leaves existing queue intact. |
+| `"drop_oldest"` | Discard oldest item ("latest wins") | Managed on the **worker side** via a dedicated receiver thread. The main process never unpickles discarded frames. |
+| `"block"` | Block until space is available | Blocks the calling thread until an input slot is free. |
+
+You can dynamically change the drop policy at runtime without restarting the process:
+```python
+processor.set_drop_policy("drop_oldest")
+```
+
+### Transparent Shared-Memory Transport
+
+When working with heavy numerical payloads (such as large NumPy images, depth maps, or raw matrices), `ProcessingBase` automatically passes them through reusable **shared memory pools** (`ShmPool` via `core/shm_transport.py`) instead of serializing them through standard IPC pipes.
+
+- **Zero-Copy**: Massive arrays bypass Python `pickle`, avoiding GC pressure and frame copy delays.
+- **Transparent**: Subclasses send and return ordinary NumPy arrays without special encoding code.
+- **Tunables (Class Attributes)**:
+  - `use_shared_memory: bool = True`
+  - `shm_threshold_bytes: int = 64 * 1024` (Arrays smaller than 64 KB use the fast pickle path)
+  - `shm_max_pool_bytes: int = 512 * 1024 * 1024` (Cap per direction before fallback)
 
 ### Polling Results
 
 ```python
-result = processor.poll_result()
-if result is not None:
-    # Handle result from the worker process
+result = processor.poll_result(timeout=None)
 ```
 
-Call `poll_result()` in your UI node's update loop or a DPG callback to retrieve processed data.
+- When `timeout=None` or `<= 0`: Non-blocking call returning immediately (`None` if queue is empty).
+- When `timeout > 0`: Blocks up to `timeout` seconds, releasing the Python GIL to avoid busy-wait spinlocks.
+- `processor.get()` and `processor.get_results()` are aliases of `poll_result()`.
+
+### Diagnostics & Monitoring
+
+`ProcessingBase` provides built-in metrics used by the system profiler and Flow Metrics Viewer:
+
+- `processor.is_ready() -> bool`: Returns `True` if the worker is alive and queues are not full.
+- `processor.has_data() -> bool`: Returns `True` if a processed result is waiting in the output queue.
+- `processor.queue_size() -> int`: Returns the total number of pending items across IPC queue and worker buffer.
+- `processor.drop_count() -> int`: Total number of frames discarded by the worker under `drop_oldest`.
+- `processor.clear()`: Safely drains and releases all pending items in queues.
 
 ### Updating Parameters
 
@@ -153,7 +185,7 @@ The recommended pattern is a **Hybrid module**: a `WindowBase` subclass that own
 
 ```python
 from __future__ import annotations
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Tuple, Optional
 import dearpygui.dearpygui as dpg
 from core.window_base import WindowBase
 from core.input_output_types import IOTypes
@@ -165,28 +197,20 @@ class MyHybridNode(WindowBase):
     A UI node with an embedded background processor.
     """
 
-    # 1. Declarative geometry and window defaults
-    label: str = "My Processor Node"
-    win_width: int = 300
-    win_height: int = 150
+    def __init__(self, label="My Processor Node", ..., multiplier: float = 1.0) -> None:
+        super().__init__(label=label, ...)
 
-    # 2. Port specifications and persistent attributes
-    accepted_input_types: List[Any] = [IOTypes.NUMBER]
-    outputs: Dict[str, Any] = {"OUTPUT": IOTypes.NUMBER}
-    persistent_fields: List[str] = ["label", "multiplier"]
-
-    # 3. Custom attributes
-    multiplier: float = 1.0
-
-    def __init__(self, multiplier: float = 1.0, **kwargs: Any) -> None:
-        super().__init__(**kwargs)
+        self.persistent_fields = ["label", "multiplier"]
+        self.accepted_input_types = [IOTypes.NUMBER]
+        self.outputs = {"OUTPUT": IOTypes.NUMBER}
+        self.connections = {k: [] for k in self.outputs}
         self.multiplier = multiplier
 
         # Create and start the background worker
         self._processor = MyProcessor(params={"multiplier": self.multiplier})
         self._processor.start()
 
-        # ── DPG window built using concise self.window() context manager
+        # ── DPG window using the self.window() context manager
         with self.window():
             dpg.add_text("Multiplier:")
             dpg.add_slider_float(

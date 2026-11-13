@@ -17,8 +17,8 @@ Pipeline Creator provides a build script, `make_executable.py` that automates pa
 At the top of `make_executable.py` you can control the compilation behavior using the following variables:
 
 ```python
-# Path to a specific layout JSON, or None to compile everything
-MAIN_PIPELINE = "layouts/Webcam.json"  
+# Path to a specific pipeline JSON, or None to compile everything
+MAIN_PIPELINE = "pipelines/Webcam.json"  
 
 # Output destination directory for Nuitka
 OUTPUT_DIR = "C:/Users/demo/Desktop/Pipeline_creator" 
@@ -34,8 +34,8 @@ To compile all modules and their dependencies:
 ### 2. Targeted Build (Compile Specific Pipeline)
 To compile a lightweight bundle for a specific, final application:
 
-- Set `MAIN_PIPELINE = "layouts/YourLayout.json"`.
-- The build script parses the JSON layout file to find *only* the modules referenced in that pipeline.
+- Set `MAIN_PIPELINE = "pipelines/YourPipeline.json"`.
+- The build script parses the JSON pipeline file to find *only* the modules referenced in that pipeline.
 - It dynamically computes the imports and dependency libraries of *just those modules* and excludes unused packages.
 - During the final stage, only the used module subfolders are copied to the `main.dist/modules/` directory.
 - **Best for**: Shipping a locked, lightweight final product to end users.

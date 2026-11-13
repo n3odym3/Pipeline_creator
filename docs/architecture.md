@@ -73,7 +73,7 @@ Pipeline Creator adapts layouts and font sizes dynamically when running on scree
 
 ### Percentage-Based Geometry
 
-Window positions and sizes are saved as **screen percentages** rather than pixel values. This makes layouts portable across different resolutions:
+Window positions and sizes are saved as **screen percentages** rather than pixel values. This makes pipelines portable across different resolutions:
 
 **pos_pct** = (**pos_px** / **viewport_size**) × 100.0
 
@@ -182,7 +182,7 @@ graph BT
     class NodeHighlightMixin,NodePopupMixin,NodeCallbacksMixin,NodeSerializationMixin mixin;
 ```
 
-* **NodePopupMixin**: Builds the right-click module selection menu and manages the fuzzy search list.
-* **NodeCallbacksMixin**: Processes link creation, link deletion, double-clicks, and handles warning modals when mismatching type connections are attempted.
-* **NodeHighlightMixin**: Governs highlighting downstream nodes, dimming unconnected modules, and drawing dashed *virtual links* between wireless Link In / Link Out channels.
-* **NodeSerializationMixin**: Exports active configurations to file and handles regenerating the graph upon launch.
+* **NodePopupMixin**: Builds the right-click module selection menu and manages the fuzzy search list (including built-in Link In, Link Out, and Gate nodes).
+* **NodeCallbacksMixin**: Processes link creation, link deletion, double-clicks, single-input constraints for Gate nodes, dynamic IOType deduction, and warning modals for incompatible connections.
+* **NodeHighlightMixin**: Governs highlighting downstream nodes, dimming unconnected modules, drawing dashed *virtual links* between wireless Link channels, and respecting Gate pass-through states during downstream traversal.
+* **NodeSerializationMixin**: Exports active configurations and built-in nodes (Link In, Link Out, Gate) to file and handles regenerating the graph and rewiring connections upon launch.

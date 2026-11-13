@@ -1,6 +1,6 @@
 # <u>Configuration Reference</u>
 
-All application settings are stored in `config/config.json`. This file is loaded at startup and can be edited manually.
+All application settings are stored in `config/config.json`. This file is loaded at startup, can be edited manually, or modified visually via the built-in configuration editor (**Tools → Config Editor**).
 
 
 ## <u>Full Schema</u>
@@ -10,7 +10,8 @@ All application settings are stored in `config/config.json`. This file is loaded
     "General": {
         "app_name": "Pipeline creator",
         "ui_scale_multiplier": 0.75,
-        "preload_modules": true
+        "preload_modules": true,
+        "skip_import_validation": false
     },
     "Splash": {
         "enabled": true,
@@ -28,7 +29,8 @@ All application settings are stored in `config/config.json`. This file is loaded
     "UI": {
         "theme_name": "DEFAULT",
         "colorblind_type": "none",
-        "mascot": true
+        "mascot": true,
+        "enable_highlight": true
     },
     "Debug": {
         "enabled": true,
@@ -38,14 +40,15 @@ All application settings are stored in `config/config.json`. This file is loaded
     "Window": {
         "vsync": true,
         "minimize_to_tray": false,
+        "tray_offscreen": true,
         "show_console": true
     },
     "Paths": {
         "working_directory": "experiments",
         "default_pipeline": null,
-        "default_automation_script": null,
+        "default_automation_script": "",
         "show_loader_on_startup": true,
-        "default_pipeline_folder": "layouts",
+        "default_pipeline_folder": "pipelines",
         "default_scripts_folder": "scripts"
     },
     "Cameras": {
@@ -55,9 +58,24 @@ All application settings are stored in `config/config.json`. This file is loaded
         "Alvium": {
             "rotation": 90
         }
+    },
+    "Viewers": {
+        "image_viewer": {
+            "texture_mode": "raw",
+            "preserve_aspect_ratio": false
+        },
+        "video_viewer": {
+            "texture_mode": "static",
+            "preserve_aspect_ratio": false
+        }
+    },
+    "SequenceProcessor": {
+        "end_seq_cmd": "R0G0B0W0IR1000"
     }
 }
 ```
+
+---
 
 ## <u>Section Reference</u>
 
@@ -65,93 +83,131 @@ All application settings are stored in `config/config.json`. This file is loaded
 
 | Key | Type | Default | Description |
 |---|---|---|---|
-| `app_name` | `str` | `"Pipeline Creator"` | The title displayed in the viewport title bar |
-| `ui_scale_multiplier` | `float` | `1.0` | Global multiplier applied on top of DPI auto-scaling. Use `0.75` to reduce UI size on all screens. |
-| `preload_modules` | `bool` | `true` | If `true`, pre-imports all library files for all modules on startup (fast module instantiation but slower app launch). If `false` (lazy mode), imports are deferred until module instantiation (fast app launch but slower first creation of a module). |
+| `app_name` | `str` | `"Pipeline creator"` | Title displayed in the OS viewport title bar. |
+| `ui_scale_multiplier` | `float` | `0.75` | Global scale multiplier applied on top of DPI auto-scaling. Adjust to enlarge or shrink UI elements across displays. |
+| `preload_modules` | `bool` | `true` | If `true`, preloads and caches all module classes at startup (instant instantiation, slightly longer initial startup). If `false`, modules load on first instantiation. |
+| `skip_import_validation` | `bool` | `false` | If `true`, skips startup module import health checks for faster boot. Manual health checks from **Tools → Health Check** remain available. |
 
 ### Splash
 
-Controls the animated splash screen shown while the application loads.
+Controls the animated splash screen shown while the application initializes.
 
 | Key | Type | Default | Description |
 |---|---|---|---|
-| `enabled` | `bool` | `true` | Show the splash screen on startup |
-| `image` | `str` | — | Relative path to the splash image (PNG) |
-| `size` | `int` | `400` | Size of the splash window in pixels |
-| `thickness` | `int` | `2` | Border thickness of the splash ring animation |
+| `enabled` | `bool` | `true` | Show or hide the splash screen on startup. |
+| `image` | `str` | `"ressources/tutorial_assets/tutorial/Tutorial3.png"` | Relative path to the splash image file. |
+| `size` | `int` | `400` | Width and height of the splash window in pixels. |
+| `thickness` | `int` | `2` | Border thickness of the animated splash progress ring. |
 
 ### Icon
 
 | Key | Type | Default | Description |
 |---|---|---|---|
-| `path` | `str` | `"ressources/icon.ico"` | Path to the application icon file (`.ico`) |
+| `path` | `str` | `"ressources/icon.ico"` | Relative path to the application window icon (`.ico`). |
 
 ### Login
 
-Controls the login/profile dialog shown at startup.
+Controls the login and profile selection prompt at startup.
 
 | Key | Type | Default | Description |
 |---|---|---|---|
-| `enabled` | `bool` | `false` | If `true`, show the login dialog at startup before the main window appears |
-| `default_mode` | `str` | `"user"` | Pre-selected privilege mode in the dialog. Options: `"user"`, `"advanced"`, `"dev"` |
+| `enabled` | `bool` | `false` | If `true`, requests profile selection before opening the main window. |
+| `default_mode` | `str` | `"dev"` | Pre-selected privilege mode: `"user"`, `"advanced"`, or `"dev"`. |
 
 !!! tip "Deploying to operators"
-    Set `enabled: true` and `default_mode: "user"` to force a login on every launch. Users will only see controls appropriate to their selected mode.
+    Set `enabled: true` and `default_mode: "user"` when deploying machines to operators. Non-developer accounts only see simplified, operator-safe controls.
 
 ### UI
 
 | Key | Type | Default | Description |
 |---|---|---|---|
-| `theme_name` | `str` | `"DEFAULT"` | Name of the active color palette (must match a dict name in `theme_colors.py`) |
-| `colorblind_type` | `str` | `"none"` | Colorblind adjustment: `"none"`, `"deuteranopia"`, `"protanopia"`, `"tritanopia"` |
-| `mascot` | `bool` | `true` | Show the application mascot graphic |
+| `theme_name` | `str` | `"DEFAULT"` | Name of the active color palette (must match a dictionary in `config/theme_colors.py`). |
+| `colorblind_type` | `str` | `"none"` | Colorblind correction palette: `"none"`, `"universal"`, `"protanopia"`, `"deuteranopia"`, `"tritanopia"`. |
+| `mascot` | `bool` | `true` | Toggle display of the assistant mascot graphic in the main viewport. |
+| `enable_highlight` | `bool` | `true` | Default activation state for downstream connection wire highlighting in the Node Editor. |
 
 ### Debug
 
 | Key | Type | Default | Description |
 |---|---|---|---|
-| `enabled` | `bool` | `false` | Enable extended debug logging |
-| `log_level` | `str` | `"INFO"` | Loguru log level. Options: `"TRACE"`, `"DEBUG"`, `"INFO"`, `"WARNING"`, `"ERROR"` |
-| `log_mkdocs` | `bool` | `false` | If `true`, redirect standard output and error streams of the MkDocs server subprocess to the main logger using log levels `DEBUG` and `WARNING`. |
+| `enabled` | `bool` | `true` | Enable global debug flags and extended logging. |
+| `log_level` | `str` | `"TRACE"` | Minimum log severity level (`"TRACE"`, `"DEBUG"`, `"INFO"`, `"WARNING"`, `"ERROR"`, `"CRITICAL"`). |
+| `log_mkdocs` | `bool` | `false` | Redirect stdout/stderr from the embedded MkDocs server subprocess into the main log stream. |
 
 ### Window
 
 | Key | Type | Default | Description |
 |---|---|---|---|
-| `vsync` | `bool` | `true` | Enable vertical sync in the DPG render loop (prevents tearing) |
-| `minimize_to_tray` | `bool` | `false` | If `true`, a "Minimize to Tray" menu item appears in Tools |
-| `show_console` | `bool` | `true` | If `false`, hides the terminal/console window at runtime for compiled executables |
+| `vsync` | `bool` | `true` | Enable vertical sync in the DearPyGui rendering loop to prevent tearing. |
+| `minimize_to_tray` | `bool` | `false` | Minimize the application to the system tray instead of the OS taskbar. |
+| `tray_offscreen` | `bool` | `true` | Move the window offscreen before minimizing to tray to eliminate visual flickering. |
+| `show_console` | `bool` | `true` | Show or hide the background terminal console on Windows. |
 
 ### Paths
 
 | Key | Type | Default | Description |
 |---|---|---|---|
-| `working_directory` | `str` | `"experiments"` | Default working directory set on startup (relative to project root) |
-| `default_pipeline` | `str \| null` | `null` | Path to a `.json` flow file to load automatically at startup |
-| `default_automation_script` | `str \| null` | `null` | Path to an automation `.json` script to run automatically at startup |
-
-!!! note "Auto-loading a pipeline"
-    Set `default_pipeline` to a relative path (e.g. `"layouts/my_flow.json"`) and Pipeline Creator will reconstruct that graph every time it starts, bypassing the need to manually load it.
+| `working_directory` | `str` | `"experiments"` | Default root folder for loading and saving data, pipelines, and export files. |
+| `default_pipeline` | `str \| null` | `null` | Path to a pipeline JSON file to load automatically on application launch. |
+| `default_automation_script` | `str \| null` | `""` | Path to an automation JSON script to execute automatically on launch. |
+| `show_loader_on_startup` | `bool` | `true` | Show an interactive dialog at startup to choose a pipeline or script if none is specified. |
+| `default_pipeline_folder` | `str` | `"pipelines"` | Default directory for saving and browsing pipeline flow files. |
+| `default_scripts_folder` | `str` | `"scripts"` | Default directory for saving and browsing automation scripts. |
 
 ### Cameras
 
-This section is a good example showing that you can append other module-specific settings here. These settings are read directly by individual camera hardware modules.
+Module-specific hardware configuration for industrial cameras:
 
 | Key | Type | Default | Description |
 |---|---|---|---|
-| `IDS.rotation` | `int` | `90` | Image rotation angle in degrees (e.g., `0`, `90`, `180`, `270`) for IDS camera hardware modules. |
-| `Alvium.rotation` | `int` | `90` | Image rotation angle in degrees (e.g., `0`, `90`, `180`, `270`) for Allied Vision Alvium camera hardware modules. |
+| `IDS.rotation` | `int` | `90` | Video feed rotation angle in degrees (`0`, `90`, `180`, `270`) for IDS camera modules. |
+| `Alvium.rotation` | `int` | `90` | Video feed rotation angle in degrees (`0`, `90`, `180`, `270`) for Allied Vision Alvium camera modules. |
 
+### Viewers
+
+Configuration for high-throughput image and video rendering modules:
+
+| Key | Type | Default | Description |
+|---|---|---|---|
+| `image_viewer.texture_mode` | `str` | `"raw"` | Texture upload mode: `"raw"` (direct GPU streaming for high-FPS feeds) or `"static"` (zero PCIe transfer when idle). |
+| `image_viewer.preserve_aspect_ratio` | `bool` | `false` | Preserve image aspect ratio (`true`) or stretch pixels to fill the viewport (`false`). |
+| `video_viewer.texture_mode` | `str` | `"static"` | Texture upload mode for video playback: `"raw"` or `"static"`. |
+| `video_viewer.preserve_aspect_ratio` | `bool` | `false` | Preserve video aspect ratio (`true`) or stretch to canvas (`false`). |
+
+### SequenceProcessor
+
+Settings for automated sequence execution and optical triggers:
+
+| Key | Type | Default | Description |
+|---|---|---|---|
+| `end_seq_cmd` | `str \| list` | `"R0G0B0W0IR1000"` | Command string or list of commands dispatched automatically to hardware upon sequence completion. |
+
+---
+
+## <u>Visual Configuration Editor</u>
+
+All parameters in `config.json` can be inspected and edited through a dedicated visual window:
+- Open **Tools → Config Editor** from the top menu bar.
+- Descriptions, sliders, dropdown selectors, and file/folder browsers are automatically rendered based on metadata annotations in `config/config_anotation.json`.
+- Changes are applied immediately and written to `config/config.json` upon clicking **Save**.
+
+---
 
 ## <u>Accessing Config in Code</u>
 
-Use the `config` singleton to read values safely anywhere in the codebase:
+Use the `config` singleton (`core.config_manager.config`) anywhere across the codebase:
 
 ```python
-from config.config import config
+from core.config_manager import config
 
+# Direct dictionary access
 app_name = config.get("General", {}).get("app_name", "Pipeline Creator")
-log_level = config.get("Debug", {}).get("log_level", "INFO")
-```
 
-The loader applies fallback defaults if a key is missing, so it is safe to call `.get()` with a default value.
+# Deeply nested helper access with fallback defaults
+scale = config.get_nested("General", "ui_scale_multiplier", default=1.0)
+rotation = config.get_nested("Cameras", "IDS", "rotation", default=0)
+
+# Modify and persist changes programmatically
+config["UI"]["theme_name"] = "OCEAN_DARK"
+config.save()
+```

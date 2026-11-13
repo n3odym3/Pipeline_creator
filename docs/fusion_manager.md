@@ -7,7 +7,7 @@ When working with many active modules, floating windows can clutter the workspac
 ## Key Features
 
 - 📁 **Tabbed Container**: Dock multiple windows into a single tabbed panel.
-- ⚙️ **Quick Layout Rebuilding**: Save and re-apply docked arrangements.
+- ⚙️ **Quick Pipeline Rebuilding**: Save and re-apply docked arrangements.
 - 🔄 **Dynamic Docking/Undocking**: Drag tab headers or use the manager interface to dock/undock panels on the fly.
 - 🖥️ **Workspace Integration**: Docked layouts are persisted when saving the workspace.
 
