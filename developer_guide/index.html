@@ -540,6 +540,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../timing_benchmarks_and_safety/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Timing & Benchmarks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../tutorial_manager/" class="md-nav__link">
         
   
@@ -1323,10 +1351,38 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#3-declare-_persistent_fields" class="md-nav__link">
+  <a href="#3-declare-persistent_fields" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Declare _persistent_fields
+        3. Declare persistent_fields
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Declare persistent_fields">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-it-serializes-in-the-flow-json" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How It Serializes in the Flow JSON
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-implement-close-for-cleanup-hardware-safety" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Implement close() for Cleanup &amp; Hardware Safety
       
     </span>
   </a>
@@ -1334,32 +1390,38 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#4-implement-close-for-cleanup" class="md-nav__link">
+  <a href="#5-receive-data-via-input_cb-validate-data-structures" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Implement close() for Cleanup
+        5. Receive Data via input_cb() &amp; Validate Data Structures
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Receive Data via input_cb() &amp; Validate Data Structures">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#important-validate-underlying-data-structures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important: Validate Underlying Data Structures
       
     </span>
   </a>
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#5-receive-data-via-input_cb" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. Receive Data via input_cb()
-      
-    </span>
-  </a>
+      </ul>
+    </nav>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#6-send-data-downstream" class="md-nav__link">
+  <a href="#6-send-data-downstream-via-trigger_cb" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. Send Data Downstream
+        6. Send Data Downstream via trigger_cb()
       
     </span>
   </a>
@@ -1440,6 +1502,17 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#stress-testing-benchmarking-your-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stress Testing &amp; Benchmarking Your Module
+      
+    </span>
+  </a>
   
 </li>
       
@@ -1758,8 +1831,8 @@
 <td>Integrate step-by-step guides and workflow hints</td>
 </tr>
 <tr>
-<td><a href="../dev_programmatic/">Programmatic Layout</a></td>
-<td>Construct layouts and connect modules programmatically via code</td>
+<td><a href="../dev_programmatic/">Programmatic Pipeline</a></td>
+<td>Construct pipelines and connect modules programmatically via code</td>
 </tr>
 <tr>
 <td><a href="../dev_compile/">Compile Program</a></td>
@@ -1779,133 +1852,295 @@
 </code></pre></div>
 <p><code>self.UUID</code> is set automatically by <code>WindowBase.__init__()</code>.</p>
 <h3 id="2-implement-update_permission">2. Implement <code>update_permission()</code><a class="headerlink" href="#2-implement-update_permission" title="Permanent link">&para;</a></h3>
-<p>This method is called automatically when the user switches privilege modes. Use it to hide or disable controls:</p>
+<p>This method is called automatically whenever the user switches privilege modes in the application. Pipeline Creator defines three standard user modes via <code>core.app_state.app_state.mode</code>:</p>
+<ul>
+<li><code>"user"</code>: Operator mode. Restrict sensitive settings, lock calibration sliders, prevent window closure (<code>no_close=True</code>), and hide developer buttons.</li>
+<li><code>"advanced"</code>: Power user / technician mode. Expose tuning parameters, offsets, and calibration controls.</li>
+<li><code>"dev"</code>: Full developer access. Reveal raw debug buttons, internal inspectors, manual override triggers, and terminal output.</li>
+</ul>
+<p><code>update_permission()</code> allows you to dynamically adjust the operational freedom and complexity of your interface to match the user's role:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">update_permission</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="kn">from</span><span class="w"> </span><span class="nn">core.app_state</span><span class="w"> </span><span class="kn">import</span> <span class="n">app_state</span>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="n">is_user</span> <span class="o">=</span> <span class="p">(</span><span class="n">app_state</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;user&quot;</span><span class="p">)</span>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="k">if</span> <span class="n">dpg</span><span class="o">.</span><span class="n">does_item_exist</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">slider_tag</span><span class="p">):</span>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>        <span class="n">dpg</span><span class="o">.</span><span class="n">configure_item</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">slider_tag</span><span class="p">,</span> <span class="n">enabled</span><span class="o">=</span><span class="ow">not</span> <span class="n">is_user</span><span class="p">)</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">is_user</span> <span class="o">=</span> <span class="p">(</span><span class="n">app_state</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;user&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="n">is_dev</span> <span class="o">=</span> <span class="p">(</span><span class="n">app_state</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;dev&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="c1"># 1. Prevent accidental window closure in operator mode</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="k">if</span> <span class="n">dpg</span><span class="o">.</span><span class="n">does_item_exist</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">winID</span><span class="p">):</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>        <span class="n">dpg</span><span class="o">.</span><span class="n">configure_item</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">winID</span><span class="p">,</span> <span class="n">no_close</span><span class="o">=</span><span class="n">is_user</span><span class="p">)</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    <span class="c1"># 2. Lock or enable sensitive calibration controls</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>    <span class="k">if</span> <span class="n">dpg</span><span class="o">.</span><span class="n">does_item_exist</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calib_slider_tag</span><span class="p">):</span>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>        <span class="n">dpg</span><span class="o">.</span><span class="n">configure_item</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calib_slider_tag</span><span class="p">,</span> <span class="n">enabled</span><span class="o">=</span><span class="ow">not</span> <span class="n">is_user</span><span class="p">)</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>    <span class="c1"># 3. Show or hide internal debugging panels</span>
+<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>    <span class="k">if</span> <span class="n">dpg</span><span class="o">.</span><span class="n">does_item_exist</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">debug_group_tag</span><span class="p">):</span>
+<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>        <span class="p">(</span><span class="n">dpg</span><span class="o">.</span><span class="n">show_item</span> <span class="k">if</span> <span class="n">is_dev</span> <span class="k">else</span> <span class="n">dpg</span><span class="o">.</span><span class="n">hide_item</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">debug_group_tag</span><span class="p">)</span>
+<a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>
+<a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a>    <span class="c1"># 4. Enforce safe default values when dropping to user mode</span>
+<a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a>    <span class="k">if</span> <span class="n">is_user</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;power_limit&quot;</span><span class="p">):</span>
+<a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">power_limit</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">power_limit</span><span class="p">,</span> <span class="mf">50.0</span><span class="p">)</span>
 </code></pre></div>
-<h3 id="3-declare-_persistent_fields">3. Declare <code>_persistent_fields</code><a class="headerlink" href="#3-declare-_persistent_fields" title="Permanent link">&para;</a></h3>
-<p>Fields listed in <code>_persistent_fields</code> are automatically serialized into the flow JSON when the workspace is saved:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="bp">self</span><span class="o">.</span><span class="n">_persistent_fields</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">,</span> <span class="s2">&quot;threshold_val&quot;</span><span class="p">,</span> <span class="s2">&quot;default_path&quot;</span><span class="p">]</span>
+<h3 id="3-declare-persistent_fields">3. Declare <code>persistent_fields</code><a class="headerlink" href="#3-declare-persistent_fields" title="Permanent link">&para;</a></h3>
+<p>Fields listed in <code>persistent_fields</code> are automatically serialized into the flow JSON when the workspace is saved, and restored when the pipeline is reloaded.</p>
+<p>Each string in the list must match an exact attribute name on <code>self</code> (<code>self.attribute_name</code>):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">MyFilterWin</span><span class="p">(</span><span class="n">WindowBase</span><span class="p">):</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;My Filter&quot;</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="c1"># Declare class-level defaults</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="n">threshold_val</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">42.5</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span class="n">default_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;C:/data/records&quot;</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span class="n">enable_filter</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>        <span class="c1"># Attributes to serialize when saving the pipeline</span>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">persistent_fields</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">,</span> <span class="s2">&quot;threshold_val&quot;</span><span class="p">,</span> <span class="s2">&quot;default_path&quot;</span><span class="p">,</span> <span class="s2">&quot;enable_filter&quot;</span><span class="p">]</span>
 </code></pre></div>
-<p>The values are restored when the workspace is reloaded.</p>
-<h3 id="4-implement-close-for-cleanup">4. Implement <code>close()</code> for Cleanup<a class="headerlink" href="#4-implement-close-for-cleanup" title="Permanent link">&para;</a></h3>
-<p>If your module spawns threads, background processes, or opens files, implement <code>close()</code>:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_processor&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_processor</span><span class="p">:</span>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_processor</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
-<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>   <span class="c1"># Always call super</span>
+<h4 id="how-it-serializes-in-the-flow-json">How It Serializes in the Flow JSON<a class="headerlink" href="#how-it-serializes-in-the-flow-json" title="Permanent link">&para;</a></h4>
+<p>When the user saves the pipeline, <code>WindowBase.to_dict()</code> extracts every attribute listed in <code>self.persistent_fields</code> and places them into the <code>"params"</code> block of the module:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="p">{</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">    </span><span class="nt">&quot;module&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;my_category.my_filter_win&quot;</span><span class="p">,</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="nt">&quot;class_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;MyFilterWin&quot;</span><span class="p">,</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">    </span><span class="nt">&quot;uuid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;7a3f81e2-b94d-4819-a1b2-c0e812d34567&quot;</span><span class="p">,</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">    </span><span class="nt">&quot;pos&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">140</span><span class="p">,</span><span class="w"> </span><span class="mi">90</span><span class="p">],</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">    </span><span class="nt">&quot;size&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">420</span><span class="p">,</span><span class="w"> </span><span class="mi">280</span><span class="p">],</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">    </span><span class="nt">&quot;visible&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">    </span><span class="nt">&quot;params&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">        </span><span class="nt">&quot;label&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;My Filter&quot;</span><span class="p">,</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="w">        </span><span class="nt">&quot;threshold_val&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">42.5</span><span class="p">,</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="w">        </span><span class="nt">&quot;default_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;C:/data/records&quot;</span><span class="p">,</span>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="w">        </span><span class="nt">&quot;enable_filter&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span class="p">}</span>
 </code></pre></div>
-<p>The registry calls <code>close()</code> on all modules during application shutdown.</p>
-<h3 id="5-receive-data-via-input_cb">5. Receive Data via <code>input_cb()</code><a class="headerlink" href="#5-receive-data-via-input_cb" title="Permanent link">&para;</a></h3>
-<p>When an upstream node sends data through a wire connection, <code>input_cb</code> is called:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">input_cb</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    <span class="n">data</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">args</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
-<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>    <span class="n">data_type</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;data_type&quot;</span><span class="p">)</span>
-<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="c1"># Process incoming data...</span>
+<p>When reloaded, <code>WindowBase</code> passes <code>"params"</code> as keyword arguments to <code>__init__(**params)</code> and automatically restores their values onto <code>self</code>.</p>
+<h3 id="4-implement-close-for-cleanup-hardware-safety">4. Implement <code>close()</code> for Cleanup &amp; Hardware Safety<a class="headerlink" href="#4-implement-close-for-cleanup-hardware-safety" title="Permanent link">&para;</a></h3>
+<p>The <code>close()</code> method is called automatically in three scenarios:</p>
+<ol>
+<li><strong>Application Exit</strong>: When the program is closed.</li>
+<li><strong>Node Deletion</strong>: When the user deletes the module or node from the canvas.</li>
+<li><strong>Module Error / Crash</strong>: When an unhandled error triggers a safe teardown.</li>
+</ol>
+<p>In your implementation:</p>
+<ul>
+<li><strong>Stop and join background threads or worker processes</strong> to prevent hanging or orphaned Python processes.</li>
+<li><strong>Send final safety shutdown commands to connected external devices</strong>: If your module controls hardware (e.g. lasers, illumination LEDs, heating elements, high-voltage stages, motors, or serial/network sockets), always emit an explicit turn-off or safe-state command during <code>close()</code> so the physical device is not left running unattended.</li>
+<li><strong>Always call <code>super().close()</code></strong> to clean up DearPyGui tags and unregister from the module registry.</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    <span class="c1"># 1. Hardware safety shutdown</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_serial_device&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_serial_device</span><span class="p">:</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>        <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">_serial_device</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;SHUTDOWN_HEATER</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">_serial_device</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s2">] Error shutting down hardware: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>    <span class="c1"># 2. Stop multiprocessing worker or background threads</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_processor&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_processor</span><span class="p">:</span>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_processor</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>
+<a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>    <span class="c1"># 3. Always finalize through super()</span>
+<a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a>    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 </code></pre></div>
-<h3 id="6-send-data-downstream">6. Send Data Downstream<a class="headerlink" href="#6-send-data-downstream" title="Permanent link">&para;</a></h3>
-<p>To push data to connected downstream nodes:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">core.module_registry</span><span class="w"> </span><span class="kn">import</span> <span class="n">MODULES_REGISTRY</span>
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">_emit_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>    <span class="k">for</span> <span class="n">downstream_uuid</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">connections</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;OUTPUT_NAME&quot;</span><span class="p">,</span> <span class="p">[]):</span>
-<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>        <span class="n">target</span> <span class="o">=</span> <span class="n">MODULES_REGISTRY</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">downstream_uuid</span><span class="p">)</span>
-<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>        <span class="k">if</span> <span class="n">target</span><span class="p">:</span>
-<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>            <span class="n">target</span><span class="o">.</span><span class="n">input_cb</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">result</span><span class="p">,</span> <span class="n">data_type</span><span class="o">=</span><span class="n">IOTypes</span><span class="o">.</span><span class="n">NUMBER</span><span class="p">)</span>
+<h3 id="5-receive-data-via-input_cb-validate-data-structures">5. Receive Data via <code>input_cb()</code> &amp; Validate Data Structures<a class="headerlink" href="#5-receive-data-via-input_cb-validate-data-structures" title="Permanent link">&para;</a></h3>
+<p>When an upstream module sends data through a connection wire, your node's <code>input_cb</code> is executed.</p>
+<p>Incoming payloads can arrive by position (<code>args[0]</code>) or by keyword argument (<code>kwargs.get("data")</code>). Always unpack both safely:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">input_cb</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>    <span class="n">data</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="s2">&quot;data&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="k">else</span> <span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">args</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>    <span class="n">data_type</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;data_type&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>    <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>        <span class="k">return</span>
+</code></pre></div>
+<h4 id="important-validate-underlying-data-structures">Important: Validate Underlying Data Structures<a class="headerlink" href="#important-validate-underlying-data-structures" title="Permanent link">&para;</a></h4>
+<p>While <code>IOTypes</code> (e.g. <code>IOTypes.FRAME</code>, <code>IOTypes.SAMPLE</code>, <code>IOTypes.DATALIST</code>) identifies the semantic data contract, the underlying Python or NumPy structures can vary:</p>
+<ul>
+<li><strong>Image Frames</strong>: A <code>FRAME</code> can be 2D Grayscale <code>(H, W)</code>, 3D BGR <code>(H, W, 3)</code>, or 4D BGRA <code>(H, W, 4)</code>. The data type may be <code>np.uint8</code> (standard 8-bit), <code>np.uint16</code> (12/16-bit HDR), or <code>np.float32</code>. Furthermore, upstream camera modules often wrap frames in an accessory tuple <code>(frame, source_name)</code>.</li>
+<li><strong>Numerical Arrays</strong>: Samples or vector lists may vary in length, shape, or dimension.</li>
+</ul>
+<p>Always check and validate incoming dimensions before processing:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">input_cb</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>    <span class="n">data</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="s2">&quot;data&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="k">else</span> <span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">args</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>    <span class="n">data_type</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;data_type&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>        <span class="k">return</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>    <span class="c1"># 1. Unpack accessory envelope if present</span>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>    <span class="n">source_name</span> <span class="o">=</span> <span class="kc">None</span>
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">2</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>        <span class="n">frame</span><span class="p">,</span> <span class="n">source_name</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+<a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>        <span class="n">frame</span> <span class="o">=</span> <span class="n">data</span>
+<a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>    <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a>        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s2">] Expected numpy array, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a>        <span class="k">return</span>
+<a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a>
+<a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a>    <span class="c1"># 2. Check and validate matrix structure</span>
+<a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a>    <span class="k">if</span> <span class="n">frame</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+<a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a>        <span class="c1"># Grayscale (H, W) -&gt; Convert to 3-channel if required by your algorithm</span>
+<a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a>        <span class="n">frame</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">cvtColor</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">COLOR_GRAY2BGR</span><span class="p">)</span>
+<a id="__codelineno-8-21" name="__codelineno-8-21" href="#__codelineno-8-21"></a>    <span class="k">elif</span> <span class="n">frame</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+<a id="__codelineno-8-22" name="__codelineno-8-22" href="#__codelineno-8-22"></a>        <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">channels</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">shape</span>
+<a id="__codelineno-8-23" name="__codelineno-8-23" href="#__codelineno-8-23"></a>        <span class="k">if</span> <span class="n">channels</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+<a id="__codelineno-8-24" name="__codelineno-8-24" href="#__codelineno-8-24"></a>            <span class="n">frame</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">cvtColor</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">COLOR_BGRA2BGR</span><span class="p">)</span>
+<a id="__codelineno-8-25" name="__codelineno-8-25" href="#__codelineno-8-25"></a>    <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-8-26" name="__codelineno-8-26" href="#__codelineno-8-26"></a>        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s2">] Incompatible frame shape: </span><span class="si">{</span><span class="n">frame</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-8-27" name="__codelineno-8-27" href="#__codelineno-8-27"></a>        <span class="k">return</span>
+<a id="__codelineno-8-28" name="__codelineno-8-28" href="#__codelineno-8-28"></a>
+<a id="__codelineno-8-29" name="__codelineno-8-29" href="#__codelineno-8-29"></a>    <span class="c1"># 3. Proceed with processing</span>
+<a id="__codelineno-8-30" name="__codelineno-8-30" href="#__codelineno-8-30"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">process_frame</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="6-send-data-downstream-via-trigger_cb">6. Send Data Downstream via <code>trigger_cb()</code><a class="headerlink" href="#6-send-data-downstream-via-trigger_cb" title="Permanent link">&para;</a></h3>
+<p>In <code>WindowBase</code>, all output terminals declared in <code>self.outputs</code> are mapped to a connection dictionary <code>self.connections = {terminal_name: [downstream_module, ...]}</code>. When a user connects a wire on the canvas from output <code>terminal_name</code> of Node A to Node B, Node B is added to Node A's <code>self.connections[terminal_name]</code>.</p>
+<p>To emit data to all connected downstream modules:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">MyProducerWin</span><span class="p">(</span><span class="n">WindowBase</span><span class="p">):</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>    <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;Measurement Producer&quot;</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>    <span class="c1"># Declare available output terminals and their IOTypes</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>    <span class="n">outputs</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>        <span class="s2">&quot;Value&quot;</span><span class="p">:</span> <span class="n">IOTypes</span><span class="o">.</span><span class="n">NUMBER</span><span class="p">,</span>
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>        <span class="s2">&quot;Filtered&quot;</span><span class="p">:</span> <span class="n">IOTypes</span><span class="o">.</span><span class="n">FRAME</span><span class="p">,</span>
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>    <span class="p">}</span>
+<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>
+<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">emit_measurement</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>        <span class="c1"># Check if any modules are connected before doing heavy formatting</span>
+<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a>        <span class="n">targets</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connections</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Value&quot;</span><span class="p">,</span> <span class="p">[])</span>
+<a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">targets</span><span class="p">:</span>
+<a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a>            <span class="k">return</span>  <span class="c1"># No downstream receivers: skip computation</span>
+<a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a>
+<a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a>        <span class="n">dtype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Value&quot;</span><span class="p">)</span>
+<a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a>        <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="n">targets</span><span class="p">:</span>
+<a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a>            <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-9-19" name="__codelineno-9-19" href="#__codelineno-9-19"></a>                <span class="c1"># Downstream nodes receive the payload in input_cb</span>
+<a id="__codelineno-9-20" name="__codelineno-9-20" href="#__codelineno-9-20"></a>                <span class="n">module</span><span class="o">.</span><span class="n">input_cb</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">value</span><span class="p">,</span> <span class="n">data_type</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+<a id="__codelineno-9-21" name="__codelineno-9-21" href="#__codelineno-9-21"></a>            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-9-22" name="__codelineno-9-22" href="#__codelineno-9-22"></a>                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s2">] Error sending to </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;label&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;module&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="7-zero-wire-broadcasting-link-bus">7. Zero-Wire Broadcasting (Link Bus)<a class="headerlink" href="#7-zero-wire-broadcasting-link-bus" title="Permanent link">&para;</a></h3>
-<p>For optional, loose coupling without physical wires:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">core.link_bus</span><span class="w"> </span><span class="kn">import</span> <span class="n">link_bus</span>
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="c1"># Publishing</span>
-<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="n">link_bus</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="s2">&quot;my_channel&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">my_result</span><span class="p">)</span>
-<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>
-<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="c1"># Subscribing (typically in __init__)</span>
-<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="n">link_bus</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="s2">&quot;my_channel&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_on_data_received</span><span class="p">)</span>
-<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>
-<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="c1"># Unsubscribing (in close())</span>
-<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="n">link_bus</span><span class="o">.</span><span class="n">unsubscribe</span><span class="p">(</span><span class="s2">&quot;my_channel&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_on_data_received</span><span class="p">)</span>
+<p>While terminal wires are ideal for direct pipelined dataflow, drawing physical wires across the canvas for global notifications, emergency shutdowns, or cross-module synchronization can clutter the workspace.</p>
+<p>Pipeline Creator provides <strong><code>link_bus</code></strong> (<code>from core.link_bus import link_bus</code>), a lightweight global Publish/Subscribe (Pub/Sub) event broker:</p>
+<ul>
+<li><strong>When to Use</strong>: Global emergency stop commands, master run/pause triggers, parameter synchronization across multiple windows, or event broadcasting.</li>
+<li><strong>Publishing</strong>: Any module can broadcast a message to a topic string.</li>
+<li><strong>Subscribing</strong>: Modules subscribe by passing a callback function.</li>
+<li><strong>Unsubscribing</strong>: <strong>Crucial!</strong> Always unsubscribe in <code>close()</code> to prevent memory leaks and zombie callback invocations on destroyed windows.</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">core.link_bus</span><span class="w"> </span><span class="kn">import</span> <span class="n">link_bus</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="k">class</span><span class="w"> </span><span class="nc">MyControllerWin</span><span class="p">(</span><span class="n">WindowBase</span><span class="p">):</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>    <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;Global Controller&quot;</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>
+<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>        <span class="c1"># Subscribe to a global topic channel</span>
+<a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>        <span class="n">link_bus</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="s2">&quot;system/emergency_stop&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_on_emergency_stop</span><span class="p">)</span>
+<a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a>
+<a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_on_emergency_stop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a>        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s2">] Emergency stop received!&quot;</span><span class="p">)</span>
+<a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">stop_all_hardware</span><span class="p">()</span>
+<a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a>
+<a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">broadcast_preset_change</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">preset_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-10-17" name="__codelineno-10-17" href="#__codelineno-10-17"></a>        <span class="c1"># Publish event to all listening modules across the application</span>
+<a id="__codelineno-10-18" name="__codelineno-10-18" href="#__codelineno-10-18"></a>        <span class="n">link_bus</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="s2">&quot;presets/active_preset&quot;</span><span class="p">,</span> <span class="n">preset</span><span class="o">=</span><span class="n">preset_name</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">UUID</span><span class="p">)</span>
+<a id="__codelineno-10-19" name="__codelineno-10-19" href="#__codelineno-10-19"></a>
+<a id="__codelineno-10-20" name="__codelineno-10-20" href="#__codelineno-10-20"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-10-21" name="__codelineno-10-21" href="#__codelineno-10-21"></a>        <span class="c1"># ALWAYS unsubscribe when the module is closed or destroyed</span>
+<a id="__codelineno-10-22" name="__codelineno-10-22" href="#__codelineno-10-22"></a>        <span class="n">link_bus</span><span class="o">.</span><span class="n">unsubscribe</span><span class="p">(</span><span class="s2">&quot;system/emergency_stop&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_on_emergency_stop</span><span class="p">)</span>
+<a id="__codelineno-10-23" name="__codelineno-10-23" href="#__codelineno-10-23"></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 </code></pre></div>
 <hr />
 <h2 id="iotypes-reference">IOTypes Reference<a class="headerlink" href="#iotypes-reference" title="Permanent link">&para;</a></h2>
 <p>All terminal connections use typed <code>IOTypes</code>. Declare what types your node accepts and emits:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">core.input_output_types</span><span class="w"> </span><span class="kn">import</span> <span class="n">IOTypes</span>
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
-<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="c1"># In __init__:</span>
-<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="bp">self</span><span class="o">.</span><span class="n">accepted_input_types</span> <span class="o">=</span> <span class="p">[</span><span class="n">IOTypes</span><span class="o">.</span><span class="n">NUMBER</span><span class="p">,</span> <span class="n">IOTypes</span><span class="o">.</span><span class="n">FRAME</span><span class="p">]</span>
-<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="bp">self</span><span class="o">.</span><span class="n">outputs</span> <span class="o">=</span> <span class="p">{</span>
-<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>    <span class="s2">&quot;RESULT&quot;</span><span class="p">:</span> <span class="n">IOTypes</span><span class="o">.</span><span class="n">NUMBER</span><span class="p">,</span>
-<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>    <span class="s2">&quot;PREVIEW&quot;</span><span class="p">:</span> <span class="n">IOTypes</span><span class="o">.</span><span class="n">FRAME</span><span class="p">,</span>
-<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="p">}</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">core.input_output_types</span><span class="w"> </span><span class="kn">import</span> <span class="n">IOTypes</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="c1"># In __init__:</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="bp">self</span><span class="o">.</span><span class="n">accepted_input_types</span> <span class="o">=</span> <span class="p">[</span><span class="n">IOTypes</span><span class="o">.</span><span class="n">NUMBER</span><span class="p">,</span> <span class="n">IOTypes</span><span class="o">.</span><span class="n">FRAME</span><span class="p">]</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="bp">self</span><span class="o">.</span><span class="n">outputs</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>    <span class="s2">&quot;RESULT&quot;</span><span class="p">:</span> <span class="n">IOTypes</span><span class="o">.</span><span class="n">NUMBER</span><span class="p">,</span>
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>    <span class="s2">&quot;PREVIEW&quot;</span><span class="p">:</span> <span class="n">IOTypes</span><span class="o">.</span><span class="n">FRAME</span><span class="p">,</span>
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="p">}</span>
 </code></pre></div>
 <p>Here are a few common examples of available I/O types:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># General Types</span>
-<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="n">TRIGGER</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;trigger&quot;</span><span class="p">,</span> <span class="s2">&quot;str or None&quot;</span><span class="p">,</span> <span class="s2">&quot;Trigger event with or without attached data&quot;</span><span class="p">)</span>
-<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="n">TEXT</span>    <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;text&quot;</span><span class="p">,</span> <span class="s2">&quot;str&quot;</span><span class="p">,</span> <span class="s2">&quot;Standard string-based messaging&quot;</span><span class="p">)</span>
-<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="n">NUMBER</span>  <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;number&quot;</span><span class="p">,</span> <span class="s2">&quot;int|float&quot;</span><span class="p">,</span> <span class="s2">&quot;Numerical value for calculations or thresholds&quot;</span><span class="p">)</span>
-<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>
-<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="c1"># Visual / Processing Types</span>
-<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="n">FRAME</span>   <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;frame&quot;</span><span class="p">,</span> <span class="s2">&quot;np.ndarray or tuple(np.ndarray, str)&quot;</span><span class="p">,</span> <span class="s2">&quot;8-bit image frame. Can be (frame, name).&quot;</span><span class="p">)</span>
-<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>
-<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span class="c1"># Data / Control Types</span>
-<a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a><span class="n">CMD_DICT</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;cmd_dict&quot;</span><span class="p">,</span> <span class="s2">&quot;dict&quot;</span><span class="p">,</span> <span class="s2">&quot;Action command encapsulated in a dictionary&quot;</span><span class="p">)</span>
-<a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a><span class="n">ANY</span>      <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;any&quot;</span><span class="p">,</span> <span class="s2">&quot;Any&quot;</span><span class="p">,</span> <span class="s2">&quot;Generic data type for flexible connections&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># General Types</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="n">TRIGGER</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;trigger&quot;</span><span class="p">,</span> <span class="s2">&quot;str or None&quot;</span><span class="p">,</span> <span class="s2">&quot;Trigger event with or without attached data&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="n">TEXT</span>    <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;text&quot;</span><span class="p">,</span> <span class="s2">&quot;str&quot;</span><span class="p">,</span> <span class="s2">&quot;Standard string-based messaging&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="n">NUMBER</span>  <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;number&quot;</span><span class="p">,</span> <span class="s2">&quot;int|float&quot;</span><span class="p">,</span> <span class="s2">&quot;Numerical value for calculations or thresholds&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="c1"># Visual / Processing Types</span>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="n">FRAME</span>   <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;frame&quot;</span><span class="p">,</span> <span class="s2">&quot;np.ndarray or tuple(np.ndarray, str)&quot;</span><span class="p">,</span> <span class="s2">&quot;8-bit image frame. Can be (frame, name).&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>
+<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a><span class="c1"># Data / Control Types</span>
+<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a><span class="n">CMD_DICT</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;cmd_dict&quot;</span><span class="p">,</span> <span class="s2">&quot;dict&quot;</span><span class="p">,</span> <span class="s2">&quot;Action command encapsulated in a dictionary&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a><span class="n">ANY</span>      <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;any&quot;</span><span class="p">,</span> <span class="s2">&quot;Any&quot;</span><span class="p">,</span> <span class="s2">&quot;Generic data type for flexible connections&quot;</span><span class="p">)</span>
 </code></pre></div>
 <p>For the complete list of types, refer directly to the source file <code>core/input_output_types.py</code>.</p>
 <hr />
 <h2 id="template-files">Template Files<a class="headerlink" href="#template-files" title="Permanent link">&para;</a></h2>
 <p>Ready-to-copy starter templates are available in the <code>template_and_doc/</code> folder:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>template_and_doc/
-<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>├── demo_window_module.py       ← Full WindowBase template with comments
-<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>└── demo_processing_module.py   ← Full ProcessingBase template with comments
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>template_and_doc/
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>├── module_template.py       ← Clean WindowBase UI module template (using self.window())
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>├── processor_template.py    ← Background multiprocessing worker template (ProcessingBase)
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>└── viewport_template.py     ← Parallel DearPyGui viewport in an isolated OS window
 </code></pre></div>
-<p>Use these as your starting point when creating a new module.</p>
+<p>Use these clean templates as your starting point when creating a new module.</p>
 <hr />
 <h2 id="logging">Logging<a class="headerlink" href="#logging" title="Permanent link">&para;</a></h2>
-<p>Pipeline Creator uses <strong><code>loguru</code></strong> as its logging framework. Standardized logs are printed to the console, saved to log files in the <code>/logs</code> directory, and automatically captured by the in-app Log Viewer.</p>
+<p>Pipeline Creator uses <a href="https://github.com/Delgan/loguru">loguru</a> as its structured logging framework. Standardized logs are formatted and printed to the terminal console, automatically written to rolling timestamped log files in the <code>/logs</code> directory, and captured live by the in-app <strong>Log Manager</strong> (<code>Log Viewer</code> window, accessible via <strong>Tools → Log Viewer</strong>), which allows operators and developers to monitor and filter events in real time by severity level.</p>
 <h3 id="how-to-import-and-log">How to Import and Log<a class="headerlink" href="#how-to-import-and-log" title="Permanent link">&para;</a></h3>
 <p>To log events from your custom modules, import <code>logger</code> from <code>loguru</code> and call the method corresponding to the desired severity level:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">loguru</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
-<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>
-<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="c1"># TRACE: Very granular diagnostic information</span>
-<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="n">logger</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="s2">&quot;Entering low-level computation loop&quot;</span><span class="p">)</span>
-<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>
-<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="c1"># DEBUG: Helpful developer information</span>
-<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Applying filter matrix with size 3x3&quot;</span><span class="p">)</span>
-<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>
-<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a><span class="c1"># INFO: General operational messages</span>
-<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Camera connection initialized successfully&quot;</span><span class="p">)</span>
-<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a>
-<a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a><span class="c1"># SUCCESS: Successful milestones</span>
-<a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a><span class="n">logger</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="s2">&quot;CSV file successfully exported to data/output.csv&quot;</span><span class="p">)</span>
-<a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a>
-<a id="__codelineno-12-15" name="__codelineno-12-15" href="#__codelineno-12-15"></a><span class="c1"># WARNING: Potential issues or recovery scenarios</span>
-<a id="__codelineno-12-16" name="__codelineno-12-16" href="#__codelineno-12-16"></a><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Network connection latency is higher than expected&quot;</span><span class="p">)</span>
-<a id="__codelineno-12-17" name="__codelineno-12-17" href="#__codelineno-12-17"></a>
-<a id="__codelineno-12-18" name="__codelineno-12-18" href="#__codelineno-12-18"></a><span class="c1"># ERROR: Recoverable failures</span>
-<a id="__codelineno-12-19" name="__codelineno-12-19" href="#__codelineno-12-19"></a><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Failed to read frame from sensor, retrying...&quot;</span><span class="p">)</span>
-<a id="__codelineno-12-20" name="__codelineno-12-20" href="#__codelineno-12-20"></a>
-<a id="__codelineno-12-21" name="__codelineno-12-21" href="#__codelineno-12-21"></a><span class="c1"># CRITICAL: Fatal crashes or system instability</span>
-<a id="__codelineno-12-22" name="__codelineno-12-22" href="#__codelineno-12-22"></a><span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="s2">&quot;Failed to bind to communication socket. Shutting down.&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">loguru</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="c1"># TRACE: Very granular diagnostic information</span>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="n">logger</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="s2">&quot;Entering low-level computation loop&quot;</span><span class="p">)</span>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="c1"># DEBUG: Helpful developer information</span>
+<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Applying filter matrix with size 3x3&quot;</span><span class="p">)</span>
+<a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a>
+<a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a><span class="c1"># INFO: General operational messages</span>
+<a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Camera connection initialized successfully&quot;</span><span class="p">)</span>
+<a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a>
+<a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a><span class="c1"># SUCCESS: Successful milestones</span>
+<a id="__codelineno-14-13" name="__codelineno-14-13" href="#__codelineno-14-13"></a><span class="n">logger</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="s2">&quot;CSV file successfully exported to data/output.csv&quot;</span><span class="p">)</span>
+<a id="__codelineno-14-14" name="__codelineno-14-14" href="#__codelineno-14-14"></a>
+<a id="__codelineno-14-15" name="__codelineno-14-15" href="#__codelineno-14-15"></a><span class="c1"># WARNING: Potential issues or recovery scenarios</span>
+<a id="__codelineno-14-16" name="__codelineno-14-16" href="#__codelineno-14-16"></a><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Network connection latency is higher than expected&quot;</span><span class="p">)</span>
+<a id="__codelineno-14-17" name="__codelineno-14-17" href="#__codelineno-14-17"></a>
+<a id="__codelineno-14-18" name="__codelineno-14-18" href="#__codelineno-14-18"></a><span class="c1"># ERROR: Recoverable failures</span>
+<a id="__codelineno-14-19" name="__codelineno-14-19" href="#__codelineno-14-19"></a><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Failed to read frame from sensor, retrying...&quot;</span><span class="p">)</span>
+<a id="__codelineno-14-20" name="__codelineno-14-20" href="#__codelineno-14-20"></a>
+<a id="__codelineno-14-21" name="__codelineno-14-21" href="#__codelineno-14-21"></a><span class="c1"># CRITICAL: Fatal crashes or system instability</span>
+<a id="__codelineno-14-22" name="__codelineno-14-22" href="#__codelineno-14-22"></a><span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="s2">&quot;Failed to bind to communication socket. Shutting down.&quot;</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="logging-exceptions">Logging Exceptions<a class="headerlink" href="#logging-exceptions" title="Permanent link">&para;</a></h3>
 <p><code>loguru</code> has excellent support for logging exceptions with full stack traces using <code>logger.exception()</code>:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="k">try</span><span class="p">:</span>
-<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;data.csv&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>        <span class="n">content</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
-<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="k">except</span> <span class="ne">FileNotFoundError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>    <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Failed to load required CSV file:&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;data.csv&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>        <span class="n">content</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="k">except</span> <span class="ne">FileNotFoundError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>    <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Failed to load required CSV file:&quot;</span><span class="p">)</span>
 </code></pre></div>
+<hr />
+<h2 id="stress-testing-benchmarking-your-module">Stress Testing &amp; Benchmarking Your Module<a class="headerlink" href="#stress-testing-benchmarking-your-module" title="Permanent link">&para;</a></h2>
+<p>To verify your custom module's stability, maximum throughput, queue overflow behavior, and memory footprint under heavy loads, Pipeline Creator includes a comprehensive suite of <strong>Benchmark modules</strong> located in <code>modules/benchmark/</code>.</p>
+<p>Always test your module before deploying it into production pipelines:</p>
+<ul>
+<li><strong>As a Producer (Stress-test your module's inputs)</strong>: Connect a Benchmark Producer (<code>Video Benchmark</code>, <code>Sample Benchmark</code>, <code>Vector Benchmark</code>, <code>CMD Benchmark</code>) to your module's input terminals. You can blast data at configurable frequencies (1–1000 Hz or uncapped CPU speed), testing variable payload sizes, HDR bit depths (8/12/16-bit), or waveform patterns. This allows you to evaluate your node's saturation limits, verify that your queue <code>drop_policy</code> (<code>drop_oldest</code>, <code>drop_new</code>, <code>block</code>) behaves as expected, and ensure memory remains stable.</li>
+<li><strong>As a Consumer (Stress-test your module's outputs)</strong>: Connect your module's outputs to a Benchmark Processor (<code>Image Processor Benchmark</code>, <code>Sample Processor Benchmark</code>, <code>Hardware Simulator</code>). These mock sinks execute parameterized workloads (from zero-compute pass-through to heavy CPU/GPU matrix burns) to observe how downstream backpressure and queue delays affect your node.</li>
+<li><strong>In-Canvas Speedometer &amp; Profiling</strong>: Pair your tests with the <a href="../timing_benchmarks_and_safety/#in-flow-propagation-tester-speedometer-node">Propagation Tester</a>, <a href="../timing_benchmarks_and_safety/#flow-metrics-viewer">Flow Metrics Viewer</a>, and in-canvas <a href="../timing_benchmarks_and_safety/#node-editor-in-canvas-profiling">Node Profiling</a> to measure precise transmission times (Delta-t) and queue states in real time.</li>
+</ul>
+<p>For full details on the available benchmark modules and testing architecture, see <a href="../timing_benchmarks_and_safety/#module-stress-testing-benchmark-suite">Module Stress Testing &amp; Benchmark Suite</a>.</p>
 <hr />
 <h2 id="creating-documentation">Creating Documentation<a class="headerlink" href="#creating-documentation" title="Permanent link">&para;</a></h2>
 <p>Pipeline Creator features an auto-discovery system for module documentation. When you write documentation for your custom modules, it is automatically discovered, copied, and integrated into the sidebar navigation layout when the documentation server is launched.</p>
 <h3 id="how-to-add-documentation-to-a-module">How to Add Documentation to a Module<a class="headerlink" href="#how-to-add-documentation-to-a-module" title="Permanent link">&para;</a></h3>
-<p>To write documentation for your custom module:
-1. Create a <code>README.md</code> file in standard Markdown format directly inside the module's subdirectory (e.g., <code>modules/my_category/my_module/README.md</code>).
-2. Launch or restart the local documentation server from the application menu (<strong>Help</strong> -&gt; <strong>Documentation</strong> -&gt; <strong>Start Server</strong>).</p>
+<p>To write documentation for your custom module:</p>
+<ol>
+<li>Create a <code>README.md</code> file in standard Markdown format directly inside the module's subdirectory (e.g., <code>modules/my_category/my_module/README.md</code>).</li>
+<li>Launch or restart the local documentation server from the application menu (<strong>Help</strong> -&gt; <strong>Documentation</strong> -&gt; <strong>Start Server</strong>).</li>
+</ol>
 <p>The documentation manager dynamically scans the <code>/modules</code> folder hierarchy, duplicates <code>README.md</code> contents into the wiki workspace, and rebuilds the navigation links under the <strong>Modules Documentation</strong> category to match your folder hierarchy.</p>
 
 

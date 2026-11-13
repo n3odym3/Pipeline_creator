@@ -540,6 +540,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../timing_benchmarks_and_safety/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Timing & Benchmarks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../tutorial_manager/" class="md-nav__link">
         
   
@@ -1755,7 +1783,7 @@
 <h2 id="display-scaling-display_scalingpy"><u>Display Scaling (<code>display_scaling.py</code>)</u><a class="headerlink" href="#display-scaling-display_scalingpy" title="Permanent link">&para;</a></h2>
 <p>Pipeline Creator adapts layouts and font sizes dynamically when running on screens with different DPI ratings or when the window is moved to a different monitor.</p>
 <h3 id="percentage-based-geometry">Percentage-Based Geometry<a class="headerlink" href="#percentage-based-geometry" title="Permanent link">&para;</a></h3>
-<p>Window positions and sizes are saved as <strong>screen percentages</strong> rather than pixel values. This makes layouts portable across different resolutions:</p>
+<p>Window positions and sizes are saved as <strong>screen percentages</strong> rather than pixel values. This makes pipelines portable across different resolutions:</p>
 <p><strong>pos_pct</strong> = (<strong>pos_px</strong> / <strong>viewport_size</strong>) × 100.0</p>
 <p>On load, percentages are re-multiplied by the current viewport size to recover pixel positions.</p>
 <h3 id="multi-monitor-adaptation">Multi-Monitor Adaptation<a class="headerlink" href="#multi-monitor-adaptation" title="Permanent link">&para;</a></h3>
@@ -1856,10 +1884,10 @@
     classDef mixin fill:#1a4d4d,stroke:#33b2b2,stroke-width:2px;
     class NodeHighlightMixin,NodePopupMixin,NodeCallbacksMixin,NodeSerializationMixin mixin;</code></pre>
 <ul>
-<li><strong>NodePopupMixin</strong>: Builds the right-click module selection menu and manages the fuzzy search list.</li>
-<li><strong>NodeCallbacksMixin</strong>: Processes link creation, link deletion, double-clicks, and handles warning modals when mismatching type connections are attempted.</li>
-<li><strong>NodeHighlightMixin</strong>: Governs highlighting downstream nodes, dimming unconnected modules, and drawing dashed <em>virtual links</em> between wireless Link In / Link Out channels.</li>
-<li><strong>NodeSerializationMixin</strong>: Exports active configurations to file and handles regenerating the graph upon launch.</li>
+<li><strong>NodePopupMixin</strong>: Builds the right-click module selection menu and manages the fuzzy search list (including built-in Link In, Link Out, and Gate nodes).</li>
+<li><strong>NodeCallbacksMixin</strong>: Processes link creation, link deletion, double-clicks, single-input constraints for Gate nodes, dynamic IOType deduction, and warning modals for incompatible connections.</li>
+<li><strong>NodeHighlightMixin</strong>: Governs highlighting downstream nodes, dimming unconnected modules, drawing dashed <em>virtual links</em> between wireless Link channels, and respecting Gate pass-through states during downstream traversal.</li>
+<li><strong>NodeSerializationMixin</strong>: Exports active configurations and built-in nodes (Link In, Link Out, Gate) to file and handles regenerating the graph and rewiring connections upon launch.</li>
 </ul>
 
 

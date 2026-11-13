@@ -582,16 +582,55 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#saving-loading-flows" class="md-nav__link">
+  <a href="#built-in-nodes-gate-conditional-flow-router" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Saving &amp; Loading Flows
+        Built-in Nodes: Gate (Conditional Flow Router)
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Saving &amp; Loading Flows">
+    <nav class="md-nav" aria-label="Built-in Nodes: Gate (Conditional Flow Router)">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#key-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Rules
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#edit-module-ui-module-item-inspector" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Edit Module UI (Module Item Inspector)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Edit Module UI (Module Item Inspector)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#key-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Features
+      
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#node-editor-menu-bar" class="md-nav__link">
@@ -621,13 +660,30 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#views" class="md-nav__link">
+  <a href="#views-dynamic-flow-routing" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Views
+        Views &amp; Dynamic Flow Routing
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Views &amp; Dynamic Flow Routing">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dynamic-flow-routing-via-views" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dynamic Flow Routing via Views
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -655,6 +711,34 @@
     
   
     Fusion Manager
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../timing_benchmarks_and_safety/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Timing & Benchmarks
   
 
     
@@ -1614,7 +1698,7 @@
 </tr>
 <tr>
 <td><strong>Context menu</strong></td>
-<td><code>Right clic</code> on a node pops up a context menu thaht allows to display the module tutorial, rename the node, send to pinned modules or delete the node/module.</td>
+<td>Right-click on a node to open actions: <strong>Edit Module</strong> (customize UI element visibility and layout), display module tutorial, rename the node, send to pinned modules, or delete the node/module.</td>
 </tr>
 </tbody>
 </table>
@@ -1622,12 +1706,29 @@
 <p><img alt="Incompatible IOTYPES" src="../media/Incompat_iotypes.png" /></p>
 <h2 id="highlighting-dimming"><u>Highlighting &amp; Dimming</u><a class="headerlink" href="#highlighting-dimming" title="Permanent link">&para;</a></h2>
 <p>When you select a node, Pipeline Creator highlights its <strong>downstream graph</strong> to make the data flow visible.</p>
-<p>The highlighting mode is configurable via <strong>Node Editor → Highlight</strong> menu:
-| Mode | Effect |
-|---|---|
-| <strong>Show All</strong> | Highlights the complete downstream chain |
-| <strong>Closest</strong> | Highlights only directly connected nodes |
-| <strong>None</strong> | Disables highlighting |</p>
+<p>The highlighting mode is configurable via <strong>Node Editor → Highlight</strong> menu:</p>
+<table>
+<thead>
+<tr>
+<th>Mode</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Show All</strong></td>
+<td>Highlights the complete downstream chain</td>
+</tr>
+<tr>
+<td><strong>Closest</strong></td>
+<td>Highlights only directly connected nodes</td>
+</tr>
+<tr>
+<td><strong>None</strong></td>
+<td>Disables highlighting</td>
+</tr>
+</tbody>
+</table>
 <p><img alt="Highlighting" src="../media/Show_closest_or_all.png" /></p>
 <p>Nodes that have <em>no</em> connections are <strong>dimmed</strong> to indicate they are inactive.</p>
 <hr />
@@ -1649,56 +1750,164 @@ Clicking on a <strong>Link Out</strong> node automatically draws and highlights 
 <p>To avoid run-time errors, it is recommended to first prototype your flow using physical wires (which validates the data types), and then replace those wires with Link In/Out nodes to clean up the canvas.</p>
 </div>
 <hr />
-<h2 id="saving-loading-flows"><u>Saving &amp; Loading Flows</u><a class="headerlink" href="#saving-loading-flows" title="Permanent link">&para;</a></h2>
+<h2 id="built-in-nodes-gate-conditional-flow-router"><u>Built-in Nodes: Gate (Conditional Flow Router)</u><a class="headerlink" href="#built-in-nodes-gate-conditional-flow-router" title="Permanent link">&para;</a></h2>
+<p>The <strong>Gate</strong> node acts as a switchable valve in your dataflow pipeline. It enables or stops data propagation along a branch without deleting or rewiring connections.</p>
+<p><img alt="Gate Nodes" src="../media/Node_gates.png" /></p>
+<h3 id="key-rules">Key Rules<a class="headerlink" href="#key-rules" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Single Input, Multiple Outputs</strong>: The <code>In</code> terminal accepts only 1 incoming connection to prevent collisions. The <code>Out</code> terminal supports multiple connections (fan-out).</li>
+<li><strong>Dynamic IOType</strong>: The gate starts as <code>IOTypes.ANY</code> and automatically adapts to match connected wires. Hover over <code>In</code> or <code>Out</code> to see the current type.</li>
+<li><strong>Pass-Through Toggle</strong>: Toggle the <strong>Pass</strong> checkbox directly on the node (or right-click → <em>Toggle Pass-through</em>). When enabled, data passes through; when disabled, data is dropped.</li>
+<li><strong>Canvas Highlighting</strong>: In highlight mode, open gates let wire highlights pass through to downstream nodes. Closed gates block highlight propagation.</li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Gate States in Views</p>
+<p>Gate pass-through states (<code>ON</code> / <code>OFF</code>) are automatically preserved when exporting a View and restored upon loading. See <a href="#views-dynamic-flow-routing">Views &amp; Dynamic Flow Routing</a>.</p>
+</div>
+<hr />
+<h2 id="edit-module-ui-module-item-inspector"><u>Edit Module UI (Module Item Inspector)</u><a class="headerlink" href="#edit-module-ui-module-item-inspector" title="Permanent link">&para;</a></h2>
+<p>The <strong>Module Item Inspector</strong> allows you to inspect, declutter, and customize the user interface of any module window by selectively hiding widgets (buttons, plots, inputs).</p>
+<p>Open it by right-clicking any node on the canvas and selecting <strong>Edit Module</strong>.</p>
+<p><img alt="Module Item Inspector" src="../media/Module_item_inpector.png" /></p>
+<h3 id="key-features">Key Features<a class="headerlink" href="#key-features" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Widget Hierarchy Tree</strong>: Displays the full UI arborescence of the module. Toggle the checkbox next to any item to show or hide it.</li>
+<li><strong>Live Hover Highlighting</strong>: Hovering over an item in the tree draws a bounding overlay around that widget on the live window.</li>
+<li><strong>Interactive Pick Mode</strong>: Click <strong>Pick Element</strong>, hover over any widget on the module window, and click to automatically locate and highlight it in the tree.</li>
+<li><strong>Search &amp; Reset</strong>: Filter widgets by tag/label using the search bar, or click <strong>Show All Elements</strong> to restore full visibility.</li>
+<li><strong>View &amp; Flow Persistence</strong>: Hidden widget states (<code>hidden_items</code>) are automatically preserved when exporting Views or saving pipeline JSON files, and restored upon loading.</li>
+</ul>
+<hr />
 <h3 id="node-editor-menu-bar"><u>Node Editor Menu Bar</u><a class="headerlink" href="#node-editor-menu-bar" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
 <th>Menu</th>
 <th>Item</th>
+<th>Shortcut</th>
 <th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><strong>Load</strong></td>
-<td>Flow…</td>
-<td>Open a <code>.json</code> workspace file (replaces current graph)</td>
+<td>Pipeline…</td>
+<td></td>
+<td>Load a full workspace from a JSON file (replaces current canvas)</td>
 </tr>
 <tr>
 <td><strong>Load</strong></td>
-<td>Reload Last Flow</td>
-<td>Quickly reload the last opened file</td>
+<td>Sub-pipeline…</td>
+<td></td>
+<td>Append nodes and connections from a file without clearing current canvas</td>
 </tr>
 <tr>
 <td><strong>Load</strong></td>
-<td>Subflow…</td>
-<td><em>Append</em> nodes from a file without clearing existing ones</td>
+<td>Reload Last Sub-pipeline</td>
+<td></td>
+<td>Quickly reload the last appended sub-pipeline file</td>
 </tr>
 <tr>
 <td><strong>Load</strong></td>
-<td>From Clipboard</td>
-<td>Paste a JSON flow copied from another session</td>
+<td>From Clipboard…</td>
+<td></td>
+<td>Paste a serialized pipeline copied from the clipboard</td>
 </tr>
 <tr>
 <td><strong>Save</strong></td>
-<td>Flow to File…</td>
+<td>Edit / Update Pipeline…</td>
+<td></td>
+<td>Surgically update node positions and connections in an existing JSON without altering views or metadata</td>
+</tr>
+<tr>
+<td><strong>Save</strong></td>
+<td>Pipeline to File…</td>
+<td></td>
 <td>Export the entire workspace to a <code>.json</code> file</td>
 </tr>
 <tr>
 <td><strong>Save</strong></td>
-<td>Flow to Clipboard</td>
-<td>Copy the serialized workspace to the clipboard</td>
+<td>Pipeline to Clipboard</td>
+<td></td>
+<td>Copy the serialized workspace JSON to the clipboard</td>
+</tr>
+<tr>
+<td><strong>Save</strong></td>
+<td>Current View to Pipeline…</td>
+<td></td>
+<td>Save current window positions and gate states into the pipeline</td>
 </tr>
 <tr>
 <td><strong>Clear</strong></td>
-<td>Clear All Nodes</td>
-<td>Delete every node and link</td>
+<td>Delete Selected</td>
+<td><code>Del</code></td>
+<td>Delete selected nodes and links</td>
 </tr>
 <tr>
 <td><strong>Clear</strong></td>
 <td>Clear Selection</td>
-<td>Delete only selected nodes</td>
+<td><code>Esc</code></td>
+<td>Deselect all currently selected nodes and links</td>
+</tr>
+<tr>
+<td><strong>Clear</strong></td>
+<td>Clear All Nodes</td>
+<td></td>
+<td>Delete every node and link from the editor</td>
+</tr>
+<tr>
+<td><strong>Views</strong></td>
+<td><em>(Saved Views)</em></td>
+<td></td>
+<td>Dynamically lists saved views to switch window layouts and Gate states in one click</td>
+</tr>
+<tr>
+<td><strong>Highlight</strong></td>
+<td>Show All / Closest / Selection / None</td>
+<td></td>
+<td>Select downstream highlight propagation mode</td>
+</tr>
+<tr>
+<td><strong>Profiling</strong></td>
+<td>Profiling (Checkbox)</td>
+<td></td>
+<td>Toggle real-time performance tracking (zero overhead when disabled)</td>
+</tr>
+<tr>
+<td><strong>Profiling</strong></td>
+<td>Show Heartbeat</td>
+<td></td>
+<td>Pulse-color active nodes and links dynamically during live dataflow</td>
+</tr>
+<tr>
+<td><strong>Profiling</strong></td>
+<td>Pulse on Continuous Streams</td>
+<td></td>
+<td>Animate heartbeat pulses on high-frequency streaming connections</td>
+</tr>
+<tr>
+<td><strong>Profiling</strong></td>
+<td>Show Virtual Links</td>
+<td></td>
+<td>Display activity across virtual <code>Link Out</code> → <code>Link In</code> channels</td>
+</tr>
+<tr>
+<td><strong>Profiling</strong></td>
+<td>Heartbeat Hold Duration</td>
+<td></td>
+<td>Set pulse duration (<code>Fast 150ms</code>, <code>Normal 240ms</code>, <code>Slow 450ms</code>)</td>
+</tr>
+<tr>
+<td><strong>Profiling</strong></td>
+<td>Reset All Node Metrics</td>
+<td></td>
+<td>Reset all accumulated execution timestamps and statistics</td>
+</tr>
+<tr>
+<td><strong>Profiling</strong></td>
+<td>Close All Reports</td>
+<td></td>
+<td>Close all open floating node performance telemetry report windows</td>
 </tr>
 </tbody>
 </table>
@@ -1724,8 +1933,25 @@ Clicking on a <strong>Link Out</strong> node automatically draws and highlights 
 <a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="w">            </span><span class="nt">&quot;output&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;CSV_DATA&quot;</span><span class="p">,</span>
 <a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="w">            </span><span class="nt">&quot;to&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;50c3d9a4-2e91-4c17-910a-3cb7217fd8b2&quot;</span>
 <a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="w">        </span><span class="p">}</span>
-<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="w">    </span><span class="p">]</span>
-<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a><span class="p">}</span>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="w">    </span><span class="p">],</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a><span class="w">    </span><span class="nt">&quot;link_nodes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a><span class="w">        </span><span class="p">{</span>
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a><span class="w">            </span><span class="nt">&quot;kind&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;gate&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a><span class="w">            </span><span class="nt">&quot;uuid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;7a8b9c0d-1234-5678-9abc-def012345678&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a><span class="w">            </span><span class="nt">&quot;label&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Gate_Branch_B&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a><span class="w">            </span><span class="nt">&quot;is_open&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a><span class="w">            </span><span class="nt">&quot;io_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;FRAME&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a><span class="w">            </span><span class="nt">&quot;node_pos&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">250</span><span class="p">,</span><span class="w"> </span><span class="mi">180</span><span class="p">],</span>
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a><span class="w">            </span><span class="nt">&quot;connections&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a><span class="w">                </span><span class="nt">&quot;Out&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;target-module-uuid&quot;</span><span class="p">]</span>
+<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a><span class="w">            </span><span class="p">},</span>
+<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a><span class="w">            </span><span class="nt">&quot;incoming&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a><span class="w">                </span><span class="nt">&quot;source_uuid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;source-module-uuid&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a><span class="w">                </span><span class="nt">&quot;output_key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Frame&quot;</span>
+<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a><span class="w">            </span><span class="p">}</span>
+<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a><span class="w">        </span><span class="p">}</span>
+<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a><span class="w">    </span><span class="p">]</span>
+<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a><span class="p">}</span>
 </code></pre></div>
 <table>
 <thead>
@@ -1749,21 +1975,44 @@ Clicking on a <strong>Link Out</strong> node automatically draws and highlights 
 </tr>
 <tr>
 <td><code>params</code></td>
-<td>Saved values from the module's <code>_persistent_fields</code> list</td>
+<td>Saved values from the module's <code>persistent_fields</code> list</td>
 </tr>
 <tr>
 <td><code>connections</code></td>
 <td>Wires between output terminals and destination nodes</td>
 </tr>
+<tr>
+<td><code>link_nodes</code></td>
+<td>Built-in Link In, Link Out, and Gate nodes (including their pass-through states and channels)</td>
+</tr>
 </tbody>
 </table>
 <hr />
-<h2 id="views"><u>Views</u><a class="headerlink" href="#views" title="Permanent link">&para;</a></h2>
-<p><strong>Views</strong> are named window layout presets (position + size for each module) that can be saved and applied per privilege mode.</p>
+<h2 id="views-dynamic-flow-routing"><u>Views &amp; Dynamic Flow Routing</u><a class="headerlink" href="#views-dynamic-flow-routing" title="Permanent link">&para;</a></h2>
+<p><strong>Views</strong> are named presets that save both <strong>window layouts</strong> (position, size, visibility of each module window) and <strong>Gate pass-through states</strong> (<code>is_open</code>).</p>
+<h3 id="dynamic-flow-routing-via-views">Dynamic Flow Routing via Views<a class="headerlink" href="#dynamic-flow-routing-via-views" title="Permanent link">&para;</a></h3>
+<p>Because Views store Gate states, you can dynamically alter the active routing of your pipeline simply by switching Views!</p>
+<pre class="mermaid"><code>graph TD
+    subgraph "Flow Architecture"
+        Source["Camera Module A"] --&gt; G1{"Gate 1"}
+        Source --&gt; G2{"Gate 2"}
+        G1 --&gt; ProcessB["Real-time Filter Module B"]
+        G2 --&gt; ProcessC["High-res Saver Module C"]
+    end
+
+    subgraph "In View A: Live Preview"
+        G1_A["Gate 1: OPEN"] ==&gt; ProcessB
+        G2_A["Gate 2: BLOCKED"] -.-&gt; ProcessC
+    end
+
+    subgraph "In View B: Recording Mode"
+        G1_B["Gate 1: BLOCKED"] -.-&gt; ProcessB
+        G2_B["Gate 2: OPEN"] ==&gt; ProcessC
+    end</code></pre>
 <ul>
-<li><strong>Export View</strong>: <code>Main Window → Workspace → Export View…</code></li>
-<li><strong>Apply View</strong>: <code>apply_view(mode_name)</code> is called automatically on login/mode change.</li>
-<li>Views allow you to have a "User layout" (simplified) and a "Dev layout" (all panels visible) saved independently.</li>
+<li><strong>Export View</strong>: Save current window layout and live Gate states into a named preset via <code>Main Window → Views → Export View…</code> or from the <strong>Pipeline Editor</strong>.</li>
+<li><strong>Apply View</strong>: Switching views via the <strong>Views</strong> menu or programmatically via <code>apply_named_view("ViewName")</code> applies window positioning and toggles all Gates to their saved state.</li>
+<li><strong>Pipeline Editor</strong>: Under the <strong>Views</strong> tab, expand the <strong>Gates in this View</strong> section to individually toggle which gates are pass-through for the selected view.</li>
 </ul>
 
 

@@ -1,0 +1,2014 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Complete documentation for Pipeline Creator — a modular node-based GUI toolkit for machine control and data analysis pipelines.">
+      
+      
+        <meta name="author" content="Pipeline Creator Team">
+      
+      
+      
+        <link rel="prev" href="../fusion_manager/">
+      
+      
+        <link rel="next" href="../tutorial_manager/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/favicon.ico">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Timing & Benchmarks - Pipeline Creator Wiki</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#flow-metrics-pipeline-benchmarking" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Pipeline Creator Wiki" class="md-header__button md-logo" aria-label="Pipeline Creator Wiki" data-md-component="logo">
+      
+  <img src="../assets/Icon.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Pipeline Creator Wiki
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Timing & Benchmarks
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../main_window/" class="md-tabs__link">
+          
+  
+  
+  User Guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../modules/Basic/HelloWorld_win/" class="md-tabs__link">
+          
+  
+  
+  Modules Documentation
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../architecture/" class="md-tabs__link">
+          
+  
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../developer_guide/" class="md-tabs__link">
+          
+  
+  
+  Developer Guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../reference/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  API Reference
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Pipeline Creator Wiki" class="md-nav__button md-logo" aria-label="Pipeline Creator Wiki" data-md-component="logo">
+      
+  <img src="../assets/Icon.png" alt="logo">
+
+    </a>
+    Pipeline Creator Wiki
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../main_window/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Main Window
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../node_editor_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Node Editor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fusion_manager/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fusion Manager
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Timing & Benchmarks
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Timing & Benchmarks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#flow-metrics-viewer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Flow Metrics Viewer
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Flow Metrics Viewer">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#global-resource-banner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Global Resource Banner
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#controls-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Controls &amp; Options
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flow-states-visual-legend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Flow States &amp; Visual Legend
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#metrics-table-columns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Metrics Table Columns
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#node-editor-in-canvas-profiling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Node Editor In-Canvas Profiling
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Node Editor In-Canvas Profiling">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#real-time-flow-heartbeat" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-Time Flow &amp; Heartbeat
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#node-quick-telemetry-popup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Node Quick Telemetry Popup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#full-telemetry-reports" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Full Telemetry Reports
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-flow-propagation-tester-speedometer-node" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In-Flow Propagation Tester (Speedometer Node)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="In-Flow Propagation Tester (Speedometer Node)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How It Works
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#readouts-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Readouts &amp; Metrics
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#module-stress-testing-benchmark-suite" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Module Stress Testing &amp; Benchmark Suite
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Module Stress Testing &amp; Benchmark Suite">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dual-role-testing-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dual-Role Testing Architecture
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#available-benchmark-modules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Available Benchmark Modules
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial_manager/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorial Manager
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../module_manager/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Module Manager
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../automation_login/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Automation & Login
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../config_reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modules Documentation
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Modules Documentation
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_1" id="__nav_3_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Basic
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Basic
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/Basic/HelloWorld_win/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HelloWorld_win
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/Basic/cmd_sender_win/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    cmd_sender_win
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/Basic/csv_reader_win/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    csv_reader_win
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/Basic/test_sample_win/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    test_sample_win
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/Basic/text_viewer_win/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    text_viewer_win
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plot
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Plot
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/Plot/lineplot_win/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    lineplot_win
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/Plot/sample_container_win/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    sample_container_win
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview & Boot Sequence
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../core_vs_dynamic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core vs Dynamic Modules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Developer Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../developer_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview & Standards
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dev_ui_node/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Creating a UI Node
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dev_processor_node/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Creating a Processor Node
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dev_theme/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Creating a Theme
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dev_tutorial/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Managing Tutorials
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dev_programmatic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Programmatic Layout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dev_compile/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Compile Program
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="flow-metrics-pipeline-benchmarking"><u>Flow Metrics &amp; Pipeline Benchmarking</u><a class="headerlink" href="#flow-metrics-pipeline-benchmarking" title="Permanent link">&para;</a></h1>
+<p>As pipeline topologies grow in complexity, diagnosing latency spikes, camera frame drops, or throughput degradation across multiple processes can become challenging. Pipeline Creator integrates dedicated diagnostics and benchmark tools designed to provide complete observability over data transmission, queue occupancy, and execution performance without degrading user interface responsiveness.</p>
+<hr />
+<h2 id="flow-metrics-viewer"><u>Flow Metrics Viewer</u><a class="headerlink" href="#flow-metrics-viewer" title="Permanent link">&para;</a></h2>
+<p>The <strong>Flow Metrics Viewer</strong> serves as an application-wide diagnostics and process manager. It provides a live, centralized overview of all instantiated modules, background worker processes, and connection links.</p>
+<p>By continuously observing message frequencies, callback execution latencies, and queue fill levels across the graph, it allows operators to immediately pinpoint processing bottlenecks. Because telemetry relies on non-intrusive timestamp sampling and shared memory counters, the viewer runs with minimal footprint and can remain open during live production or data acquisition without degrading framerates.</p>
+<p>Open it from the top menu bar via <strong>Tools → Flow Metrics</strong>.</p>
+<p><img alt="Flow Metrics" src="../media/Flow_metrics.png" /></p>
+<h3 id="global-resource-banner">Global Resource Banner<a class="headerlink" href="#global-resource-banner" title="Permanent link">&para;</a></h3>
+<p>The top bar displays live aggregate performance counters across the entire application:</p>
+<ul>
+<li><strong>UI FPS</strong>: Rendering framerate of the DearPyGui interface.</li>
+<li><strong>CPU %</strong>: Total normalized CPU consumption (0–100% across all CPU cores) combining the main UI process and all worker processes.</li>
+<li><strong>RAM MB</strong>: Total Resident Set Size (RSS) memory footprint in megabytes.</li>
+<li><strong>Modules</strong>: Total number of active module instances instantiated on the canvas.</li>
+<li><strong>Active Links</strong>: Total number of active wire connections between modules.</li>
+<li><strong>Worker Processes</strong>: Number of background worker processes spawned and running.</li>
+</ul>
+<hr />
+<h3 id="controls-options">Controls &amp; Options<a class="headerlink" href="#controls-options" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Refresh (s)</strong>: Adjust the telemetry polling interval between <code>0.1s</code> and <code>2.0s</code> (default: <code>0.5s</code>).</li>
+<li><strong>Instrument input_cb</strong>: Checkbox to toggle lightweight timing probes on module callbacks. When enabled, it calculates incoming message frequencies (Hz) and execution duration (ms).</li>
+<li><strong>Export Snapshot (JSON)</strong>: Saves a complete timestamped diagnostic report containing all module metrics, queue fill levels, and system stats to <code>logs/benchmarks/flow_metrics_&lt;timestamp&gt;.json</code>.</li>
+</ul>
+<hr />
+<h3 id="flow-states-visual-legend">Flow States &amp; Visual Legend<a class="headerlink" href="#flow-states-visual-legend" title="Permanent link">&para;</a></h3>
+<p>Each row in the table is color-coded to immediately identify pipeline health and bottlenecks:</p>
+<table>
+<thead>
+<tr>
+<th>State</th>
+<th>Color</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>READY / FLOWING</strong></td>
+<td>Green</td>
+<td>Normal operation. The module is responsive, queues are healthy, and downstream consumers accept data.</td>
+</tr>
+<tr>
+<td><strong>BUSY / QUEUE FILL</strong></td>
+<td>Yellow</td>
+<td>High load. The worker is computing or the input queue is more than 50% full.</td>
+</tr>
+<tr>
+<td><strong>WAITING / SATURATED</strong></td>
+<td>Red</td>
+<td>Congestion / Bottleneck. A downstream consumer is blocking (<code>HOLD</code>), the input queue is full, or the worker has stopped.</td>
+</tr>
+<tr>
+<td><strong>UI-THREAD / STANDBY</strong></td>
+<td>Cyan</td>
+<td>Lightweight module executing directly on the main UI thread without a background worker process.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="metrics-table-columns">Metrics Table Columns<a class="headerlink" href="#metrics-table-columns" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>UUID</strong></td>
+<td>Shortened unique identifier of the module instance.</td>
+</tr>
+<tr>
+<td><strong>Module Label (Class)</strong></td>
+<td>User-defined label of the node followed by its underlying Python class name.</td>
+</tr>
+<tr>
+<td><strong>Flow State</strong></td>
+<td>Live status indicator (<code>READY</code>, <code>BUSY</code>, <code>WAITING (HOLD)</code>, <code>UI-THREAD</code>, <code>IDLE</code>).</td>
+</tr>
+<tr>
+<td><strong>Links Out</strong></td>
+<td>Number of outgoing connections. Displays a <code>(HOLD)</code> warning if downstream backpressure is blocking transmission.</td>
+</tr>
+<tr>
+<td><strong>In Rate (Hz)</strong></td>
+<td>Instantaneous incoming message rate calculated over a 2.5-second sliding window.</td>
+</tr>
+<tr>
+<td><strong>input_cb (ms)</strong></td>
+<td>Callback execution latency, showing the mean and 95th percentile (<code>mean / P95 ms</code>).</td>
+</tr>
+<tr>
+<td><strong>Worker Status</strong></td>
+<td>Process state and operating system PID (<code>Running (PID: ...)</code>, <code>Stopped</code>, or <code>UI-Thread</code>).</td>
+</tr>
+<tr>
+<td><strong>In Queue</strong></td>
+<td>Current backlog of items versus total capacity (<code>current / max</code>, e.g. <code>2 / 10</code>).</td>
+</tr>
+<tr>
+<td><strong>Drop Policy</strong></td>
+<td>Active queue overflow policy: <code>drop_new</code> (discard incoming), <code>drop_oldest</code> (latest wins), or <code>block</code>.</td>
+</tr>
+<tr>
+<td><strong>Telemetry / Drops</strong></td>
+<td>Cumulative call count, dropped frame counter, and custom module telemetry metrics.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="node-editor-in-canvas-profiling"><u>Node Editor In-Canvas Profiling</u><a class="headerlink" href="#node-editor-in-canvas-profiling" title="Permanent link">&para;</a></h2>
+<p>In addition to the global Flow Metrics Viewer, the <strong>Node Editor</strong> includes an embedded profiling tool that provides immediate visual feedback directly on the canvas. When enabled, it reveals live pipeline activity, pulses active data streams, and highlights where queues or connections are saturated.</p>
+<p>Activate it in the Node Editor menu bar by checking the <strong>Profiling</strong> checkbox (1).
+<img alt="Node Editor Profiling" src="../media/Node_profiling.png" /></p>
+<h3 id="real-time-flow-heartbeat">Real-Time Flow &amp; Heartbeat<a class="headerlink" href="#real-time-flow-heartbeat" title="Permanent link">&para;</a></h3>
+<p>Once profiling mode is active, active nodes and connection wires pulse dynamically as data packets travel through the graph. This visual "heartbeat" makes it easy to distinguish between flowing pipelines, idle branches, and congested links at a glance. Blocked/Saturated modules (1-4) are colored in red. </p>
+<h3 id="node-quick-telemetry-popup">Node Quick Telemetry Popup<a class="headerlink" href="#node-quick-telemetry-popup" title="Permanent link">&para;</a></h3>
+<p>Right-clicking any node while in profiling mode displays a real-time status summary for that specific module:</p>
+<p><img alt="Node Profiling Quick Status" src="../media/Node_profiling_status.png" /></p>
+<p>This quick popup shows:</p>
+<ul>
+<li><strong>Instant Processing Times</strong>: Mean execution time of <code>input_cb</code> and processing frequency (Hz).</li>
+<li><strong>Targeted Output Inspection</strong>: Observe latency and throughput metrics for individual output terminals or across the module as a whole.</li>
+<li><strong>Queue Status</strong>: Instantaneous view of input queue fill levels and backpressure state.</li>
+</ul>
+<h3 id="full-telemetry-reports">Full Telemetry Reports<a class="headerlink" href="#full-telemetry-reports" title="Permanent link">&para;</a></h3>
+<p>Clicking <strong>View Full Report</strong> from the right-click popup opens a dedicated, floating performance report window for that node:</p>
+<p><img alt="Performance Report" src="../media/Flow_perf_report.png" /></p>
+<ul>
+<li><strong>Interactive Multi-Axis Live Plot</strong>: Select which metrics to visualize simultaneously (rates in Hz, callback turnaround in ms, memory RSS/peak MB, queue fill percentage) across primary and secondary right Y-axes with interactive pan, wheel zoom, and cursor annotations.</li>
+<li><strong>Detailed Summary Table</strong>: Access comprehensive percentiles (mean, P95, max), execution latencies, invocation counts, memory allocation, and queue drop counts.</li>
+<li><strong>Per-Port Routing Table</strong>: Inspect individual output port rates, turnaround times, and downstream receiver availability status (<code>OK</code> vs <code>HOLD</code>).</li>
+<li><strong>Telemetry Export</strong>: Export the live telemetry session to CSV or JSON for post-run analysis.</li>
+</ul>
+<div class="admonition tip">
+<p class="admonition-title">Simultaneous Multi-Module Diagnostics &amp; Stress Testing</p>
+<p>You can open multiple telemetry report windows simultaneously across different nodes in your pipeline. By comparing live metrics side-by-side during runtime, you can observe exact inter-module interactions and precisely determine where, when, and how bottlenecks form.</p>
+<p>This capability is particularly valuable when performing benchmarks or stress-testing custom nodes under sustained high-frequency loads. For dedicated stress test and synthetic workload generators, see <a href="#module-stress-testing-benchmark-suite">Module Stress Testing &amp; Benchmark Suite</a>.</p>
+</div>
+<hr />
+<h2 id="in-flow-propagation-tester-speedometer-node"><u>In-Flow Propagation Tester (Speedometer Node)</u><a class="headerlink" href="#in-flow-propagation-tester-speedometer-node" title="Permanent link">&para;</a></h2>
+<p>For an ultra-lightweight way to monitor pipeline speed and latency without opening separate report windows, you can insert <strong>Propagation Tester</strong> nodes directly onto the canvas. </p>
+<p>The Propagation Tester acts as an inline "speedometer gauge" that connects between any two points in the graph to measure the precise transit duration (Delta-t) of data packets across a sub-graph, pipeline hop, or module chain.</p>
+<p>Add it via the canvas right-click context menu: <strong>Right Click Canvas → Add Node → Propagation Tester</strong>.</p>
+<p><img alt="Propagation Tester" src="../media/Propagation_tester.png" /></p>
+<h3 id="how-it-works">How It Works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h3>
+<p>The node provides two specialized input pins:</p>
+<ul>
+<li><strong>Start (A)</strong>: Connect to the output of the upstream sender (e.g. Module A). The timestamp is captured immediately as data leaves Module A.</li>
+<li><strong>Stop (B)</strong>: Connect to the output of the downstream receiver or final processing node (e.g. Module B). The timestamp is captured upon completion, computing the elapsed propagation duration (Delta-t).</li>
+</ul>
+<p>Because both pins act as transparent observation probes with zero backpressure (<code>is_ready()</code> permanently <code>True</code>), the Propagation Tester does not alter or delay the measured pipeline.</p>
+<h3 id="readouts-metrics">Readouts &amp; Metrics<a class="headerlink" href="#readouts-metrics" title="Permanent link">&para;</a></h3>
+<p>The node body updates live directly on the canvas:</p>
+<ul>
+<li><strong>Instantaneous &amp; Average Delta-t</strong>: Digital readout formatted with microsecond precision (<code>mean</code>, <code>last</code>, <code>P95</code>, <code>min</code>, <code>max</code>, <code>std</code>).</li>
+<li><strong>Inflow &amp; Outflow Rates</strong>: Instantaneous frequencies (Hz) measured at Pin A and Pin B.</li>
+<li><strong>Packet Counters &amp; Drops</strong>: Monitored count of matched pulses, unmatched events, and dropped frames.</li>
+<li><strong>Detailed Tooltip</strong>: Hovering over the node displays a complete latency breakdown and variance statistics.</li>
+<li><strong>Reset Button</strong>: Clears the sliding history window and counter registers at any moment during acquisition.</li>
+</ul>
+<hr />
+<h2 id="module-stress-testing-benchmark-suite"><u>Module Stress Testing &amp; Benchmark Suite</u><a class="headerlink" href="#module-stress-testing-benchmark-suite" title="Permanent link">&para;</a></h2>
+<p>To help developers stress-test module stability, queue overflow behavior, and throughput boundaries, and to help users benchmark their hardware capabilities when running demanding pipelines, Pipeline Creator includes a dedicated suite of synthetic <strong>Benchmark modules</strong> located in <code>modules/benchmark/</code>.</p>
+<p>These tools allow you to generate variable, high-rate streams across all major <code>IOTypes</code>, as well as mock processing sinks capable of executing parameterized CPU or GPU workloads.</p>
+<h3 id="dual-role-testing-architecture">Dual-Role Testing Architecture<a class="headerlink" href="#dual-role-testing-architecture" title="Permanent link">&para;</a></h3>
+<p>The benchmark tools serve two primary operational roles:</p>
+<ol>
+<li><strong>Producer Testing (Stress-testing your module's inputs)</strong>:</li>
+</ol>
+<p>Wire a benchmark producer directly into your custom module. You can configure payload sizes (e.g. 720p/1080p/4K frames, sample lengths from 16 to 100,000+ points, vector densities up to 65,536 elements) and stream emission rates (controlled 1–1000 Hz or uncapped CPU throughput).</p>
+<p>This allows you to:
+   - Identify the exact saturation point and maximum throughput of your module.
+   - Verify that your queue <code>drop_policy</code> (<code>drop_oldest</code>, <code>drop_new</code>, <code>block</code>) triggers correctly under sustained overload.
+   - Confirm that your module safely handles diverse data formats (e.g. 8-bit, 12-bit HDR, 16-bit HDR, masks, and accessory tuples).</p>
+<ol>
+<li><strong>Sink Testing (Stress-testing your module's outputs)</strong>:</li>
+</ol>
+<p>Wire your custom module's outputs into a benchmark processor sink. The mock processor consumes incoming data while applying configurable processing workloads—from zero-compute pass-through (measuring pure IPC serialization latency) up to intensive CPU matrix burns or GPU acceleration.</p>
+<p>This allows you to:</p>
+<ul>
+<li>Observe how downstream backpressure (<code>HOLD</code>) impacts your upstream worker processes.</li>
+<li>
+<p>Measure at what processing delay downstream queues begin to fill and drop items.</p>
+</li>
+<li>
+<p><strong>End-to-End Hardware Benchmarking</strong>:</p>
+</li>
+</ul>
+<p>Connect benchmark producers and processor sinks together in various topologies (linear chains, fan-out branches, circular feedback loops) to evaluate your machine's CPU core scaling, OpenCL GPU compute, RAM bandwidth, and shared memory IPC limits.</p>
+<hr />
+<h3 id="available-benchmark-modules">Available Benchmark Modules<a class="headerlink" href="#available-benchmark-modules" title="Permanent link">&para;</a></h3>
+<p>The suite comprises specialized generator and consumer modules:</p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Role</th>
+<th>Supported IOTypes</th>
+<th>Key Capabilities</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Video Benchmark</strong> (<code>video_benchmark_win.py</code>)</td>
+<td>Producer</td>
+<td><code>FRAME</code>, <code>FRAME12</code>, <code>FRAME16</code>, <code>MASK</code>, <code>FRAME_MASK_PAIR</code></td>
+<td>Zero-allocation synthetic camera generator. Configurable resolutions (up to 4K), 8/12/16-bit depths, color spaces, noise patterns, and rates up to 500+ FPS or uncapped.</td>
+</tr>
+<tr>
+<td><strong>Image Processor Benchmark</strong> (<code>image_processor_benchmark_win.py</code>)</td>
+<td>Processor / Sink</td>
+<td><code>FRAME</code>, <code>FRAME12</code>, <code>FRAME16</code>, <code>MASK</code>, <code>FRAME_MASK_PAIR</code>, <code>ANY</code></td>
+<td>Multiprocessing worker stress-tester. Features configurable algorithms (Pass-Through, Invert, Blur, Sobel, Canny, Bilateral, CPU matrix burn) with CPU vs OpenCL GPU hardware acceleration.</td>
+</tr>
+<tr>
+<td><strong>Sample Benchmark</strong> (<code>sample_benchmark_win.py</code>)</td>
+<td>Producer</td>
+<td><code>SAMPLE</code>, <code>NUMBER</code>, <code>DATALIST</code></td>
+<td>High-frequency numerical sample generator. Pre-rendered waveforms (Sine, Chirp, Square, Noise, Random Walk), 16 to 100,000+ points, controlled 1–1000 Hz or uncapped.</td>
+</tr>
+<tr>
+<td><strong>Sample Processor Benchmark</strong> (<code>sample_processor_benchmark_win.py</code>)</td>
+<td>Processor / Sink</td>
+<td><code>SAMPLE</code>, <code>NUMBER</code>, <code>DATALIST</code>, <code>ANY</code></td>
+<td>Multiprocessing numerical processing sink. Configurable simulated compute delay, queue capacity, and mathematical transformations.</td>
+</tr>
+<tr>
+<td><strong>Vector Benchmark</strong> (<code>vector_benchmark_win.py</code>)</td>
+<td>Producer</td>
+<td><code>VECTORS</code>, <code>SAMPLE</code></td>
+<td>High-density vector field generator. Emits angular distributions (Spotlight, Bimodal, Pendulum, Vortex) with 16 to 65,536+ vectors per frame, burst mode, and batch mode.</td>
+</tr>
+<tr>
+<td><strong>CMD Benchmark</strong> (<code>cmd_benchmark_win.py</code>)</td>
+<td>Producer / Tester</td>
+<td><code>CMD_DICT</code>, <code>TRIGGER</code>, <code>NUMBER</code>, <code>TEXT</code></td>
+<td>Command and control packet generator. Tests latency, response turnaround, and command sequencing.</td>
+</tr>
+<tr>
+<td><strong>Hardware Simulator</strong> (<code>hardware_simulator_win.py</code>)</td>
+<td>Simulator / Sink</td>
+<td><code>TRIGGER</code>, <code>TEXT</code>, <code>ANY</code></td>
+<td>Simulates physical hardware device delays, communication timeouts, and intermittent failures for robust error-handling validation.</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "content.code.copy", "toc.integrate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

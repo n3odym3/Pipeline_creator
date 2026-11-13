@@ -607,6 +607,34 @@
   
   
     <li class="md-nav__item">
+      <a href="timing_benchmarks_and_safety/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Timing & Benchmarks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="tutorial_manager/" class="md-nav__link">
         
   
@@ -1500,18 +1528,19 @@
 
 <h1 id="pipeline-creator">Pipeline Creator<a class="headerlink" href="#pipeline-creator" title="Permanent link">&para;</a></h1>
 <p><strong>Pipeline Creator</strong> is a modular, node-based graphical interface toolkit built on top of <strong>DearPyGui (DPG)</strong>. It provides a visual canvas where interconnected <strong>nodes</strong> are wired together to form automated data processing and machine control pipelines.</p>
-<p>Pipeline Creator simplifies the development of complex graphical interfaces by transforming them into reusable, drag-and-drop node modules. Instead of writing boilerplate code for layouts, windows, and connections, you can visually construct your application on a dynamic canvas. Heavy computations run in background processes, keeping the user interface extremely responsive and stable at high frame rates.</p>
+<p>Pipeline Creator simplifies the development of complex graphical interfaces by transforming them into reusable, drag-and-drop node modules. Instead of writing boilerplate code for pipelines, windows, and connections, you can visually construct your application on a dynamic canvas. Heavy computations run in background processes, keeping the user interface extremely responsive and stable at high frame rates.</p>
 <hr />
 <h2 id="key-capabilities">Key Capabilities<a class="headerlink" href="#key-capabilities" title="Permanent link">&para;</a></h2>
 <ul>
-<li>🧩 <strong>Modular Canvas Interface</strong>: Drag, drop, and arrange modules as floating windows or dock them together for a clean, custom workspace layout.</li>
-<li>🔗 <strong>Visual Node Connections</strong>: Draw and wire inputs/outputs of different nodes to map out data flows and control sequences dynamically.</li>
-<li>📡 <strong>Link Bus (Zero-Wire Routing)</strong>: Route data globally between modules without cluttered visual connection lines.</li>
-<li>⚙️ <strong>Process Isolation</strong>: Run heavy computation nodes in background processes, ensuring the UI remains highly responsive.</li>
-<li>🔒 <strong>Role-Based Privilege Modes</strong>: Toggle between <code>User</code>, <code>Advanced</code>, and <code>Dev</code> modes to adjust the UI complexity based on the operator's role.</li>
-<li>💾 <strong>Save &amp; Restore Workspaces</strong>: Save your entire workspace layout, configurations, and connections to portable JSON files for instant recovery.</li>
-<li>🤖 <strong>Startup Automation</strong>: Execute startup scripts to auto-load layouts, log in, and trigger module actions automatically.</li>
-<li>🏫 <strong>Tutorial Manager</strong>: Launch interactive, step-by-step tutorials.</li>
+<li><strong>Modular Canvas Interface</strong>: Drag, drop, and arrange modules as floating windows or dock them together for a clean, custom workspace layout.</li>
+<li><strong>Visual Node Connections</strong>: Draw and wire inputs/outputs of different nodes to map out data flows and control sequences dynamically.</li>
+<li><strong>Link Bus (Zero-Wire Routing)</strong>: Route data globally between modules without cluttered visual connection lines.</li>
+<li><strong>Process Isolation</strong>: Run heavy computation nodes in background processes, ensuring the UI remains highly responsive.</li>
+<li><strong>Role-Based Privilege Modes</strong>: Toggle between <code>User</code>, <code>Advanced</code>, and <code>Dev</code> modes to adjust the UI complexity based on the operator's role.</li>
+<li><strong>Save &amp; Restore Workspaces</strong>: Save your entire workspace layout, configurations, and connections to portable JSON files for instant recovery.</li>
+<li><strong>Startup Automation</strong>: Execute startup scripts to auto-load pipelines, log in, and trigger module actions automatically.</li>
+<li><strong>Tutorial Manager</strong>: Launch interactive, step-by-step tutorials.</li>
+<li><strong>Profiling &amp; Benchmarking</strong>: Measure propagation latency between nodes, inspect pipeline flow rates, and profile execution performance.</li>
 </ul>
 <hr />
 <h2 id="navigation">Navigation<a class="headerlink" href="#navigation" title="Permanent link">&para;</a></h2>
@@ -1534,6 +1563,10 @@
 <tr>
 <td>📁 <a href="fusion_manager/">Fusion Manager</a></td>
 <td>Window docking, tab layouts, workspace organization</td>
+</tr>
+<tr>
+<td>⏱️ <a href="timing_benchmarks_and_safety/">Timing &amp; Benchmarks</a></td>
+<td>Latency measurement, flow metrics, profiling, and queue safety</td>
 </tr>
 <tr>
 <td>🏛️ <a href="architecture/">Architecture</a></td>
