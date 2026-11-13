@@ -1,17 +1,22 @@
 # CMD Sender Module
 
-Allows you to construct a custom dictionary and send it to downstream control nodes.
+Allows you to construct a custom dictionary interactively and send it to downstream control nodes.
 
 ---
 
 ## Technical Specifications
 
-- **Inputs**: None.
-- **Outputs**: `Out` (Type: `CMD_DICT`)
+- **Inputs**: 
+  - `TRIGGER`: Triggers immediate sending of the configured dictionary.
+- **Outputs**:
+  - `Dict` (Type: `CMD_DICT`): The constructed key-value dictionary.
+  - `TXT` (Type: `TEXT`): String representation of the dictionary.
 
 ---
 
 ## Usage
 
 - Add keys and string values to the dictionary via the interactive key-value table.
-- Click the **Send Command** button to serialize the dictionary and dispatch it down the connection line.
+- Click **Add Key** to insert a new row, and **Delete** to remove a row.
+- Click the **Send** button to dispatch the dictionary downstream.
+- Any upstream `TRIGGER` event will also trigger emission.
