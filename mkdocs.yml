@@ -61,6 +61,7 @@ nav:
       - Main Window: main_window.md
       - Node Editor: node_editor_guide.md
       - Fusion Manager: fusion_manager.md
+      - Timing & Benchmarks: timing_benchmarks_and_safety.md
       - Tutorial Manager: tutorial_manager.md
       - Module Manager: module_manager.md
       - Automation & Login: automation_login.md
