@@ -29,7 +29,7 @@
         "log_mkdocs": false
     },
     "Window": {
-        "vsync": true,
+        "vsync": false,
         "minimize_to_tray": false,
         "tray_offscreen": false,
         "show_console": true
@@ -45,7 +45,7 @@
     "Viewers": {
         "video_viewer": {
             "texture_mode": "raw",
-            "preserve_aspect_ratio": true
+            "preserve_aspect_ratio": false
         }
     }
 }

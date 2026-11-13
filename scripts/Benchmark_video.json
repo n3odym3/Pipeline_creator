@@ -1,0 +1,13 @@
+{
+    "name": "Benchmatk_video",
+    "steps": [
+        {
+            "action": "fullscreen",
+            "enabled": true
+        },
+        {
+            "action": "load_pipeline",
+            "path": "/pipelines/Benchmark_video.json"
+        }
+    ]
+}

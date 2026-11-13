@@ -1,0 +1,871 @@
+{
+  "schema_version": 1,
+  "validator_fingerprint": "7356c01ab141b3d6",
+  "files": {
+    "modules/Basic/cmd_sender_win.py": {
+      "mtime_ns": 1793957264000000000,
+      "size": 7897,
+      "imports": [
+        "__future__",
+        "config",
+        "core",
+        "dearpygui",
+        "loguru",
+        "typing"
+      ],
+      "missing_imports": [],
+      "env_fingerprint": "46fa17633f50d1d6",
+      "has_exported_class": true,
+      "validation_report": {
+        "is_valid": true,
+        "module_kind": "WindowBase",
+        "issues": [
+          {
+            "level": "INFO",
+            "message": "Found EXPORTED_CLASS = CMDSender_win",
+            "line": null,
+            "suggestion": null,
+            "category": "structure"
+          },
+          {
+            "level": "INFO",
+            "message": "Inherits directly from WindowBase",
+            "line": 13,
+            "suggestion": null,
+            "category": "inheritance"
+          }
+        ]
+      },
+      "validator_fingerprint": "7356c01ab141b3d6",
+      "ancestor_files": {},
+      "metadata": {
+        "class_name": "CMDSender_win",
+        "description": "Dict Sender",
+        "doc": "A modular window that allows the user to build a dictionary interactively\nand send it downstream on trigger."
+      }
+    },
+    "modules/Basic/csv_reader_win.py": {
+      "mtime_ns": 1793957391000000000,
+      "size": 5712,
+      "imports": [
+        "__future__",
+        "config",
+        "core",
+        "csv",
+        "dearpygui",
+        "loguru",
+        "os",
+        "typing",
+        "uuid"
+      ],
+      "missing_imports": [],
+      "env_fingerprint": "46fa17633f50d1d6",
+      "has_exported_class": true,
+      "validation_report": {
+        "is_valid": true,
+        "module_kind": "WindowBase",
+        "issues": [
+          {
+            "level": "INFO",
+            "message": "Found EXPORTED_CLASS = CSVReader_win",
+            "line": null,
+            "suggestion": null,
+            "category": "structure"
+          },
+          {
+            "level": "INFO",
+            "message": "Inherits directly from WindowBase",
+            "line": 17,
+            "suggestion": null,
+            "category": "inheritance"
+          }
+        ]
+      },
+      "validator_fingerprint": "7356c01ab141b3d6",
+      "ancestor_files": {},
+      "metadata": {
+        "class_name": "CSVReader_win",
+        "description": "CSV Reader",
+        "doc": "CSV Reader module that loads CSV files and emits a SAMPLE dict for each column."
+      }
+    },
+    "modules/Basic/Hello_world_win.py": {
+      "mtime_ns": 1793957578000000000,
+      "size": 2707,
+      "imports": [
+        "__future__",
+        "config",
+        "core",
+        "dearpygui",
+        "loguru",
+        "typing"
+      ],
+      "missing_imports": [],
+      "env_fingerprint": "46fa17633f50d1d6",
+      "has_exported_class": true,
+      "validation_report": {
+        "is_valid": true,
+        "module_kind": "WindowBase",
+        "issues": [
+          {
+            "level": "INFO",
+            "message": "Found EXPORTED_CLASS = HelloWorld_win",
+            "line": null,
+            "suggestion": null,
+            "category": "structure"
+          },
+          {
+            "level": "INFO",
+            "message": "Inherits directly from WindowBase",
+            "line": 13,
+            "suggestion": null,
+            "category": "inheritance"
+          }
+        ]
+      },
+      "validator_fingerprint": "7356c01ab141b3d6",
+      "ancestor_files": {},
+      "metadata": {
+        "class_name": "HelloWorld_win",
+        "description": "Hello World",
+        "doc": "A simple DearPyGui window containing a button that acts as a trigger source."
+      }
+    },
+    "modules/Basic/test_sample_win.py": {
+      "mtime_ns": 1793958062000000000,
+      "size": 14409,
+      "imports": [
+        "__future__",
+        "config",
+        "core",
+        "dearpygui",
+        "loguru",
+        "numpy",
+        "typing"
+      ],
+      "missing_imports": [],
+      "env_fingerprint": "46fa17633f50d1d6",
+      "has_exported_class": true,
+      "validation_report": {
+        "is_valid": true,
+        "module_kind": "WindowBase",
+        "issues": [
+          {
+            "level": "INFO",
+            "message": "Found EXPORTED_CLASS = TestSample_win",
+            "line": null,
+            "suggestion": null,
+            "category": "structure"
+          },
+          {
+            "level": "INFO",
+            "message": "Inherits directly from WindowBase",
+            "line": 14,
+            "suggestion": null,
+            "category": "inheritance"
+          }
+        ]
+      },
+      "validator_fingerprint": "7356c01ab141b3d6",
+      "ancestor_files": {},
+      "metadata": {
+        "class_name": "TestSample_win",
+        "description": "Test Sample",
+        "doc": "Test sample generator supporting multiple waveforms (Sine, Cosine, Square,\nSawtooth, Triangle, Sigmoid, Gaussian Peak, Random) with tunable points,\namplitude, frequency, offset, and Gaussian noise."
+      }
+    },
+    "modules/Basic/text_viewer_win.py": {
+      "mtime_ns": 1793958118000000000,
+      "size": 5831,
+      "imports": [
+        "__future__",
+        "config",
+        "core",
+        "dearpygui",
+        "json",
+        "loguru",
+        "typing"
+      ],
+      "missing_imports": [],
+      "env_fingerprint": "46fa17633f50d1d6",
+      "has_exported_class": true,
+      "validation_report": {
+        "is_valid": true,
+        "module_kind": "WindowBase",
+        "issues": [
+          {
+            "level": "INFO",
+            "message": "Found EXPORTED_CLASS = Text_viewer_win",
+            "line": null,
+            "suggestion": null,
+            "category": "structure"
+          },
+          {
+            "level": "INFO",
+            "message": "Inherits directly from WindowBase",
+            "line": 14,
+            "suggestion": null,
+            "category": "inheritance"
+          }
+        ]
+      },
+      "validator_fingerprint": "7356c01ab141b3d6",
+      "ancestor_files": {},
+      "metadata": {
+        "class_name": "Text_viewer_win",
+        "description": "Text viewer",
+        "doc": "A DearPyGui window for inspecting incoming text, command dictionaries, or triggers\nin a scrollable read-only multiline viewer with copy, clear, and append modes."
+      }
+    },
+    "modules/Benchmark/cmd_benchmark_win.py": {
+      "mtime_ns": 1794483787000000000,
+      "size": 28575,
+      "imports": [
+        "__future__",
+        "collections",
+        "config",
+        "core",
+        "dearpygui",
+        "json",
+        "loguru",
+        "math",
+        "threading",
+        "time",
+        "typing"
+      ],
+      "missing_imports": [],
+      "env_fingerprint": "46fa17633f50d1d6",
+      "has_exported_class": true,
+      "validation_report": {
+        "is_valid": true,
+        "module_kind": "WindowBase",
+        "issues": [
+          {
+            "level": "INFO",
+            "message": "Found EXPORTED_CLASS = CmdBenchmark_win",
+            "line": null,
+            "suggestion": null,
+            "category": "structure"
+          },
+          {
+            "level": "INFO",
+            "message": "Inherits directly from WindowBase",
+            "line": 44,
+            "suggestion": null,
+            "category": "inheritance"
+          }
+        ]
+      },
+      "validator_fingerprint": "7356c01ab141b3d6",
+      "ancestor_files": {},
+      "metadata": {
+        "class_name": "CmdBenchmark_win",
+        "description": "Command Benchmark",
+        "doc": "High-Throughput Synthetic Command Generator & RPC Stress-Tester.\n\nDispatches structured command dictionaries (CMD_DICT) with dynamic\nparameter sweeps, burst blasters, and latency probes."
+      }
+    },
+    "modules/Benchmark/hardware_simulator_win.py": {
+      "mtime_ns": 1794486023000000000,
+      "size": 29187,
+      "imports": [
+        "__future__",
+        "collections",
+        "config",
+        "core",
+        "dearpygui",
+        "json",
+        "loguru",
+        "math",
+        "numpy",
+        "queue",
+        "random",
+        "threading",
+        "time",
+        "typing"
+      ],
+      "missing_imports": [],
+      "env_fingerprint": "46fa17633f50d1d6",
+      "has_exported_class": true,
+      "validation_report": {
+        "is_valid": true,
+        "module_kind": "WindowBase",
+        "issues": [
+          {
+            "level": "INFO",
+            "message": "Found EXPORTED_CLASS = HardwareSimulator_win",
+            "line": null,
+            "suggestion": null,
+            "category": "structure"
+          },
+          {
+            "level": "INFO",
+            "message": "Inherits directly from WindowBase",
+            "line": 38,
+            "suggestion": null,
+            "category": "inheritance"
+          }
+        ]
+      },
+      "validator_fingerprint": "7356c01ab141b3d6",
+      "ancestor_files": {},
+      "metadata": {
+        "class_name": "HardwareSimulator_win",
+        "description": "Hardware Simulator",
+        "doc": "Simulated Hardware Instrument with Realistic Latency, Backpressure & ACKs.\n\nActs as a downstream device sink and actuator, introducing realistic\nhardware execution delays to test pipeline flow control and queue saturation."
+      }
+    },
+    "modules/Benchmark/image_processor_benchmark_win.py": {
+      "mtime_ns": 1794477167000000000,
+      "size": 45675,
+      "imports": [
+        "__future__",
+        "collections",
+        "config",
+        "core",
+        "cv2",
+        "dearpygui",
+        "loguru",
+        "numpy",
+        "threading",
+        "time",
+        "typing"
+      ],
+      "missing_imports": [],
+      "env_fingerprint": "46fa17633f50d1d6",
+      "has_exported_class": true,
+      "validation_report": {
+        "is_valid": true,
+        "module_kind": "WindowBase",
+        "issues": [
+          {
+            "level": "INFO",
+            "message": "Found EXPORTED_CLASS = ImageProcessorBenchmark_win",
+            "line": null,
+            "suggestion": null,
+            "category": "structure"
+          },
+          {
+            "level": "INFO",
+            "message": "Inherits directly from WindowBase",
+            "line": 340,
+            "suggestion": null,
+            "category": "inheritance"
+          }
+        ]
+      },
+      "validator_fingerprint": "7356c01ab141b3d6",
+      "ancestor_files": {},
+      "metadata": {
+        "class_name": "ImageProcessorBenchmark_win",
+        "description": "Image Processor Benchmark",
+        "doc": "High-Performance Image Processor Benchmark & Queue Stress-Tester.\n\nFeatures:\n  - Multiprocessing execution via ProcessingBase (zero UI blocking)\n  - Extensive suite of algorithms spanning light, medium, heavy, and extreme workloads\n  - Hardware OpenCL acceleration toggle (UMat) for real-time CPU vs GPU benchmarking\n  - Bounded multiprocessing queue with configurable capacity (buffer_size) and drop policies\n  - Universal IOType support: FRAME, FRAME12, FRAME16, MASK, FRAME_MASK_PAIR\n  - Live telemetry: In/Out FPS, worker execution time (ms), queue fill %, and drop counters\n  - Full integration with FlowMetricsViewer (discovered automatically via self.proc)"
+      }
+    },
+    "modules/Benchmark/sample_benchmark_win.py": {
+      "mtime_ns": 1794483820000000000,
+      "size": 31452,
+      "imports": [
+        "__future__",
+        "collections",
+        "config",
+        "core",
+        "dearpygui",
+        "loguru",
+        "math",
+        "numpy",
+        "os",
+        "threading",
+        "time",
+        "typing"
+      ],
+      "missing_imports": [],
+      "env_fingerprint": "46fa17633f50d1d6",
+      "has_exported_class": true,
+      "validation_report": {
+        "is_valid": true,
+        "module_kind": "WindowBase",
+        "issues": [
+          {
+            "level": "INFO",
+            "message": "Found EXPORTED_CLASS = SampleBenchmark_win",
+            "line": null,
+            "suggestion": null,
+            "category": "structure"
+          },
+          {
+            "level": "INFO",
+            "message": "Inherits directly from WindowBase",
+            "line": 35,
+            "suggestion": null,
+            "category": "inheritance"
+          }
+        ]
+      },
+      "validator_fingerprint": "7356c01ab141b3d6",
+      "ancestor_files": {},
+      "metadata": {
+        "class_name": "SampleBenchmark_win",
+        "description": "Sample Benchmark",
+        "doc": "High-Performance Synthetic Sample Generator & Stress-Tester.\n\nBlasts structured numerical samples (x, y coordinates) to Sample Container\nor Line Plot windows with zero per-sample allocation overhead."
+      }
+    },
+    "modules/Benchmark/sample_processor_benchmark_win.py": {
+      "mtime_ns": 1794484938000000000,
+      "size": 37679,
+      "imports": [
+        "__future__",
+        "collections",
+        "config",
+        "core",
+        "dearpygui",
+        "loguru",
+        "math",
+        "numpy",
+        "scipy",
+        "threading",
+        "time",
+        "typing"
+      ],
+      "missing_imports": [],
+      "env_fingerprint": "46fa17633f50d1d6",
+      "has_exported_class": true,
+      "validation_report": {
+        "is_valid": true,
+        "module_kind": "WindowBase",
+        "issues": [
+          {
+            "level": "INFO",
+            "message": "Found EXPORTED_CLASS = SampleProcessorBenchmark_win",
+            "line": null,
+            "suggestion": null,
+            "category": "structure"
+          },
+          {
+            "level": "INFO",
+            "message": "Inherits directly from WindowBase",
+            "line": 280,
+            "suggestion": null,
+            "category": "inheritance"
+          }
+        ]
+      },
+      "validator_fingerprint": "7356c01ab141b3d6",
+      "ancestor_files": {},
+      "metadata": {
+        "class_name": "SampleProcessorBenchmark_win",
+        "description": "Sample Processor Benchmark",
+        "doc": "Multiprocessing Sample Processor Benchmark & Stress-Tester.\n\nProcesses incoming 1D numerical signals through configurable mathematical\nfilters and transformations, validating system backpressure, queue saturation,\nand downstream rendering pipeline responsiveness."
+      }
+    },
+    "modules/Benchmark/vector_benchmark_win.py": {
+      "mtime_ns": 1794481878000000000,
+      "size": 38824,
+      "imports": [
+        "__future__",
+        "collections",
+        "config",
+        "core",
+        "dearpygui",
+        "loguru",
+        "math",
+        "numpy",
+        "threading",
+        "time",
+        "typing"
+      ],
+      "missing_imports": [],
+      "env_fingerprint": "46fa17633f50d1d6",
+      "has_exported_class": true,
+      "validation_report": {
+        "is_valid": true,
+        "module_kind": "WindowBase",
+        "issues": [
+          {
+            "level": "INFO",
+            "message": "Found EXPORTED_CLASS = VectorBenchmark_win",
+            "line": null,
+            "suggestion": null,
+            "category": "structure"
+          },
+          {
+            "level": "INFO",
+            "message": "Inherits directly from WindowBase",
+            "line": 48,
+            "suggestion": null,
+            "category": "inheritance"
+          }
+        ]
+      },
+      "validator_fingerprint": "7356c01ab141b3d6",
+      "ancestor_files": {},
+      "metadata": {
+        "class_name": "VectorBenchmark_win",
+        "description": "Vector Benchmark",
+        "doc": "High-Performance Synthetic Vector Field Generator & Polar Stress-Tester.\n\nBlasts structured vector fields (angles in [0, 2pi), magnitudes, frame indices)\nto Polar Plot, Polar Spectrogram, or Sample Container windows."
+      }
+    },
+    "modules/Benchmark/video_benchmark_win.py": {
+      "mtime_ns": 1794483817000000000,
+      "size": 41331,
+      "imports": [
+        "__future__",
+        "collections",
+        "config",
+        "core",
+        "cv2",
+        "dearpygui",
+        "loguru",
+        "math",
+        "numpy",
+        "threading",
+        "time",
+        "typing"
+      ],
+      "missing_imports": [],
+      "env_fingerprint": "46fa17633f50d1d6",
+      "has_exported_class": true,
+      "validation_report": {
+        "is_valid": true,
+        "module_kind": "WindowBase",
+        "issues": [
+          {
+            "level": "INFO",
+            "message": "Found EXPORTED_CLASS = VideoBenchmark_win",
+            "line": null,
+            "suggestion": null,
+            "category": "structure"
+          },
+          {
+            "level": "INFO",
+            "message": "Inherits directly from WindowBase",
+            "line": 32,
+            "suggestion": null,
+            "category": "inheritance"
+          }
+        ]
+      },
+      "validator_fingerprint": "7356c01ab141b3d6",
+      "ancestor_files": {},
+      "metadata": {
+        "class_name": "VideoBenchmark_win",
+        "description": "Video Benchmark",
+        "doc": "High-Performance Video Benchmark & Stream Mockup.\n\nEmits pre-rendered synthetic video frames across configurable resolutions,\nbit-depths (8-bit, 12-bit HDR, 16-bit HDR, Masks, Frame-Mask pairs),\ncolor spaces, and framerates (up to 500+ FPS or uncapped maximum throughput)\nwith zero per-frame heap allocations."
+      }
+    },
+    "modules/Parallel_viewport/plot_viewer/parallel_plot_win.py": {
+      "mtime_ns": 1792954957000000000,
+      "size": 11481,
+      "imports": [
+        "core",
+        "dearpygui",
+        "loguru",
+        "threading",
+        "time"
+      ],
+      "missing_imports": [],
+      "env_fingerprint": "46fa17633f50d1d6",
+      "has_exported_class": true,
+      "validation_report": {
+        "is_valid": true,
+        "module_kind": "WindowBase",
+        "issues": [
+          {
+            "level": "INFO",
+            "message": "Found EXPORTED_CLASS = Parallel_plot_win",
+            "line": null,
+            "suggestion": null,
+            "category": "structure"
+          },
+          {
+            "level": "INFO",
+            "message": "Inherits directly from WindowBase",
+            "line": 13,
+            "suggestion": null,
+            "category": "inheritance"
+          }
+        ]
+      },
+      "validator_fingerprint": "7356c01ab141b3d6",
+      "ancestor_files": {},
+      "metadata": {
+        "class_name": "Parallel_plot_win",
+        "description": "Parallel Plot",
+        "doc": "Parallel Plot - Displays plots in a separate OS window.\nUses multiprocessing with PlotViewportProcess for independent plotting."
+      }
+    },
+    "modules/Parallel_viewport/plot_viewer/plot_viewport_process.py": {
+      "mtime_ns": 1777333148000000000,
+      "size": 11719,
+      "imports": [
+        "config",
+        "core",
+        "ctypes",
+        "dearpygui",
+        "loguru",
+        "numpy",
+        "typing"
+      ],
+      "missing_imports": [],
+      "env_fingerprint": "46fa17633f50d1d6",
+      "has_exported_class": false
+    },
+    "modules/Parallel_viewport/text_viewer/parallel_text_viewer_win.py": {
+      "mtime_ns": 1792954937000000000,
+      "size": 8596,
+      "imports": [
+        "core",
+        "dearpygui",
+        "loguru",
+        "threading",
+        "time"
+      ],
+      "missing_imports": [],
+      "env_fingerprint": "46fa17633f50d1d6",
+      "has_exported_class": true,
+      "validation_report": {
+        "is_valid": true,
+        "module_kind": "WindowBase",
+        "issues": [
+          {
+            "level": "INFO",
+            "message": "Found EXPORTED_CLASS = Parallel_viewer_win",
+            "line": null,
+            "suggestion": null,
+            "category": "structure"
+          },
+          {
+            "level": "INFO",
+            "message": "Inherits directly from WindowBase",
+            "line": 12,
+            "suggestion": null,
+            "category": "inheritance"
+          }
+        ]
+      },
+      "validator_fingerprint": "7356c01ab141b3d6",
+      "ancestor_files": {},
+      "metadata": {
+        "class_name": "Parallel_viewer_win",
+        "description": "Parallel Viewer",
+        "doc": "Parallel Viewer - Displays data in a separate OS window.\nUses multiprocessing to create an independent viewport."
+      }
+    },
+    "modules/Parallel_viewport/text_viewer/text_viewer_process.py": {
+      "mtime_ns": 1776601666000000000,
+      "size": 5034,
+      "imports": [
+        "config",
+        "core",
+        "ctypes",
+        "dearpygui",
+        "loguru",
+        "typing"
+      ],
+      "missing_imports": [],
+      "env_fingerprint": "46fa17633f50d1d6",
+      "has_exported_class": false
+    },
+    "modules/Plot/lineplot_win.py": {
+      "mtime_ns": 1793982969000000000,
+      "size": 45867,
+      "imports": [
+        "__future__",
+        "config",
+        "core",
+        "dearpygui",
+        "loguru",
+        "numpy",
+        "pandas",
+        "scipy",
+        "typing"
+      ],
+      "missing_imports": [],
+      "env_fingerprint": "46fa17633f50d1d6",
+      "has_exported_class": true,
+      "validation_report": {
+        "is_valid": true,
+        "module_kind": "WindowBase",
+        "issues": [
+          {
+            "level": "INFO",
+            "message": "Found EXPORTED_CLASS = Lineplot_win",
+            "line": null,
+            "suggestion": null,
+            "category": "structure"
+          },
+          {
+            "level": "INFO",
+            "message": "Inherits directly from WindowBase",
+            "line": 128,
+            "suggestion": null,
+            "category": "inheritance"
+          }
+        ]
+      },
+      "validator_fingerprint": "7356c01ab141b3d6",
+      "ancestor_files": {},
+      "metadata": {
+        "class_name": "Lineplot_win",
+        "description": "Lineplot",
+        "doc": "Interactive 2D multi-series line plot module.\n\nSupports continuous real-time streaming, dynamic multi-axis allocation (primary and secondary right axes),\ninteractive cursor hover inspection, Draggable vertical marker line, multiple smoothing algorithms,\nlogarithmic X-axis scaling, and TSV clipboard export."
+      }
+    },
+    "modules/Plot/sample_container_win.py": {
+      "mtime_ns": 1793984408000000000,
+      "size": 37253,
+      "imports": [
+        "__future__",
+        "config",
+        "core",
+        "csv",
+        "dearpygui",
+        "loguru",
+        "os",
+        "typing",
+        "uuid"
+      ],
+      "missing_imports": [],
+      "env_fingerprint": "46fa17633f50d1d6",
+      "has_exported_class": true,
+      "validation_report": {
+        "is_valid": true,
+        "module_kind": "WindowBase",
+        "issues": [
+          {
+            "level": "INFO",
+            "message": "Found EXPORTED_CLASS = Sample_container_win",
+            "line": null,
+            "suggestion": null,
+            "category": "structure"
+          },
+          {
+            "level": "INFO",
+            "message": "Inherits directly from WindowBase",
+            "line": 19,
+            "suggestion": null,
+            "category": "inheritance"
+          }
+        ]
+      },
+      "validator_fingerprint": "7356c01ab141b3d6",
+      "ancestor_files": {},
+      "metadata": {
+        "class_name": "Sample_container_win",
+        "description": "Sample Container",
+        "doc": "Centralized dataset and sample registry module.\n\nStores, manages, previews, and serializes multiple 1D/2D data series (`SAMPLE` payloads).\nSupports drag-and-drop list reordering, mini-plot hover inspection, conflict resolution\n(override vs append), flexible multi-column CSV/TSV import and export, and reactive\nevent broadcasting (select, unselect, rename)."
+      }
+    },
+    "modules/Video/video_reader_win.py": {
+      "mtime_ns": 1793033578000000000,
+      "size": 19817,
+      "imports": [
+        "__future__",
+        "config",
+        "core",
+        "dearpygui",
+        "loguru",
+        "os",
+        "threading",
+        "time",
+        "typing"
+      ],
+      "missing_imports": [],
+      "env_fingerprint": "46fa17633f50d1d6",
+      "has_exported_class": true,
+      "validation_report": {
+        "is_valid": true,
+        "module_kind": "WindowBase",
+        "issues": [
+          {
+            "level": "INFO",
+            "message": "Found EXPORTED_CLASS = VideoReader_win",
+            "line": null,
+            "suggestion": null,
+            "category": "structure"
+          },
+          {
+            "level": "INFO",
+            "message": "Inherits directly from WindowBase",
+            "line": 18,
+            "suggestion": null,
+            "category": "inheritance"
+          }
+        ]
+      },
+      "validator_fingerprint": "7356c01ab141b3d6",
+      "ancestor_files": {},
+      "metadata": {
+        "class_name": "VideoReader_win",
+        "description": "Video Reader",
+        "doc": "Video Reader window module.\n\nScans directories for video files (.mp4), provides interactive playback\ncontrols (Play, Pause, Stop, Seek Scrubber, FPS adjustment), and streams\nframes, triggers, and file paths downstream through node connections."
+      }
+    },
+    "modules/Video/video_tools.py": {
+      "mtime_ns": 1790689938000000000,
+      "size": 5820,
+      "imports": [
+        "__future__",
+        "collections",
+        "cv2",
+        "glob",
+        "numpy",
+        "os",
+        "re",
+        "threading",
+        "time",
+        "typing"
+      ],
+      "missing_imports": [],
+      "env_fingerprint": "46fa17633f50d1d6",
+      "has_exported_class": false
+    },
+    "modules/Video/video_viewer_win.py": {
+      "mtime_ns": 1794498254000000000,
+      "size": 31267,
+      "imports": [
+        "__future__",
+        "collections",
+        "config",
+        "core",
+        "cv2",
+        "dearpygui",
+        "loguru",
+        "numpy",
+        "threading",
+        "time",
+        "typing"
+      ],
+      "missing_imports": [],
+      "env_fingerprint": "46fa17633f50d1d6",
+      "has_exported_class": true,
+      "validation_report": {
+        "is_valid": true,
+        "module_kind": "WindowBase",
+        "issues": [
+          {
+            "level": "INFO",
+            "message": "Found EXPORTED_CLASS = VideoViewerWin",
+            "line": null,
+            "suggestion": null,
+            "category": "structure"
+          },
+          {
+            "level": "INFO",
+            "message": "Inherits directly from WindowBase",
+            "line": 27,
+            "suggestion": null,
+            "category": "inheritance"
+          }
+        ]
+      },
+      "validator_fingerprint": "7356c01ab141b3d6",
+      "ancestor_files": {},
+      "metadata": {
+        "class_name": "VideoViewerWin",
+        "description": "Video Viewer",
+        "doc": "Robust and high-performance video viewer window for DearPyGui.\n\nFeatures:\n- Dedicated worker thread rendering to prevent UI blocking (600+ FPS capability)\n- Automatic GPU texture allocation and aspect ratio scaling\n- Dual FPS telemetry (stream ingestion rate and actual GPU display rate) embedded directly in the class\n- Full support for Grayscale, BGR, BGRA, and RGBA pixel formats\n- Transparent overlay support for masks and segmentation layers\n- Dynamic monitor scaling via display_scaling"
+      }
+    }
+  },
+  "requirements": {}
+}

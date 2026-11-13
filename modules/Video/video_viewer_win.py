@@ -44,12 +44,15 @@ class VideoViewerWin(WindowBase):
 
     accepted_input_types: list[type] = [
         IOTypes.FRAME,
+        IOTypes.FRAME12,
+        IOTypes.FRAME16,
         IOTypes.MASK,
         IOTypes.FRAME_MASK_PAIR,
     ]
     outputs: dict[str, type] = {
         "Frame": IOTypes.FRAME,
         "Mask": IOTypes.MASK,
+        "Trigger": IOTypes.TRIGGER,
     }
     persistent_fields: list[str] = [
         "label",
@@ -112,7 +115,7 @@ class VideoViewerWin(WindowBase):
         self.texture_height = 0
         self._texture_initialized = False
         self._texture_buffer = None
-        self._thread_lock = threading.Lock()
+        self._thread_lock = threading.RLock()
         self._running = True
         self._last_source_name = None
 
@@ -272,8 +275,14 @@ class VideoViewerWin(WindowBase):
         if self._texture_buffer is None or self._texture_buffer.size != expected_size:
             self._texture_buffer = np.zeros(expected_size, dtype=np.float32)
 
-        if frame.dtype != np.uint8:
-            frame = frame.astype(np.uint8)
+        if frame.dtype == np.uint16:
+            # Scale 12-bit (0..4095) or 16-bit (0..65535) HDR frame down to 8-bit for display
+            if frame.max() > 4095:
+                frame = (frame >> 8).astype(np.uint8)
+            else:
+                frame = (frame >> 4).astype(np.uint8)
+        elif frame.dtype != np.uint8:
+            frame = np.clip(frame, 0, 255).astype(np.uint8)
 
         if len(frame.shape) == 2 or (len(frame.shape) == 3 and frame.shape[2] == 1):
             conv = cv2.cvtColor(frame, cv2.COLOR_GRAY2RGBA)
@@ -291,6 +300,42 @@ class VideoViewerWin(WindowBase):
             self._texture_buffer = flat.astype(np.float32) * (1.0 / 255.0)
 
         return self._texture_buffer
+
+    def _refresh_config_on_resize(self) -> None:
+        """
+        Re-evaluates in-memory config on resolution changes or texture re-creations.
+        Allows dynamically updating texture_mode ('raw' vs 'static') and aspect ratio
+        without needing to restart the application.
+        """
+        try:
+            viewer_cfg = config.get("Viewers", {}).get("video_viewer", {})
+            default_mode = viewer_cfg if isinstance(viewer_cfg, str) else viewer_cfg.get("texture_mode", "raw")
+            new_mode = str(default_mode).lower() if default_mode else "raw"
+            if new_mode in ("raw", "static") and new_mode != self.texture_mode:
+                logger.info(
+                    f"VideoViewer [{self.name}]: Live-updated texture_mode from config: "
+                    f"'{self.texture_mode}' -> '{new_mode}'"
+                )
+                with self._thread_lock:
+                    self.texture_mode = new_mode
+                    self._texture_initialized = False
+
+            # Check if preserve_aspect_ratio was updated in config
+            preserve = None
+            if isinstance(viewer_cfg, dict):
+                preserve = viewer_cfg.get("preserve_aspect_ratio")
+            if preserve is None:
+                preserve = config.get("Viewers", {}).get("preserve_aspect_ratio")
+            if preserve is not None:
+                new_preserve = (
+                    preserve.strip().lower() in ("true", "1", "yes", "preserve")
+                    if isinstance(preserve, str)
+                    else bool(preserve)
+                )
+                if new_preserve != self.preserve_aspect_ratio:
+                    self.set_preserve_aspect_ratio(new_preserve)
+        except Exception as e:
+            logger.debug(f"Failed to refresh texture mode from config on resize: {e}")
 
     def init_viewer(self, width: int, height: int) -> None:
         """
@@ -312,6 +357,7 @@ class VideoViewerWin(WindowBase):
     def _init_viewer_internal(self, width: int, height: int) -> None:
         """Construct or resize DPG texture and plot image series."""
         with self._thread_lock:
+            self._refresh_config_on_resize()
             self._texture_initialized = False
             self.texture_width = width
             self.texture_height = height
@@ -445,6 +491,12 @@ class VideoViewerWin(WindowBase):
             frame: Image array to render.
         """
         h, w = frame.shape[:2]
+        dim_changed = (
+            h != self.texture_height or w != self.texture_width or not self._texture_initialized
+        )
+        if dim_changed:
+            self._refresh_config_on_resize()
+
         texture_data = self._convert_to_texture_data(frame)
 
         if self.texture_mode == "static":
@@ -511,6 +563,10 @@ class VideoViewerWin(WindowBase):
             self._frame_count = 0
             if self.fps_counter_enabled and dpg.does_item_exist(self.fps_display_tag):
                 dpg.set_value(self.fps_display_tag, f"{smoothed_fps:.1f}")
+
+        # Fire Trigger output ONLY when a frame is rendered (and if connected)
+        if self.connections.get("Trigger"):
+            self.trigger_cb("Trigger", data=raw_fps)
 
     def set_texture_mode(self, mode: str) -> None:
         """
@@ -644,6 +700,7 @@ class VideoViewerWin(WindowBase):
 
         source_name = None
         frame = None
+        mask = None
 
         # Check for FRAME_MASK_PAIR: (frame, mask)
         is_frame_mask_pair = data_type == IOTypes.FRAME_MASK_PAIR or (
@@ -654,6 +711,7 @@ class VideoViewerWin(WindowBase):
         )
 
         if is_frame_mask_pair:
+            mask = data[1]
             frame = self._compose_frame_with_mask(data[0], data[1])
 
         elif isinstance(data, tuple) and len(data) >= 2 and isinstance(data[1], str):
@@ -673,6 +731,7 @@ class VideoViewerWin(WindowBase):
         elif isinstance(data, dict) and "frame" in data:
             frame = data["frame"]
             if "mask" in data and data["mask"] is not None:
+                mask = data["mask"]
                 frame = self._compose_frame_with_mask(frame, data["mask"])
 
         if frame is None:
@@ -688,6 +747,42 @@ class VideoViewerWin(WindowBase):
 
         if isinstance(frame, np.ndarray):
             self.update_image(frame)
+
+        # Forward frame downstream if connected
+        if self.connections.get("Frame"):
+            out_frame = (frame, source_name) if source_name else frame
+            self.trigger_cb("Frame", data=out_frame)
+
+        # Forward mask downstream if connected
+        if mask is not None and self.connections.get("Mask"):
+            self.trigger_cb("Mask", data=mask)
+
+    def trigger_cb(self, out_key: str, data: Any = None) -> None:
+        """
+        Emit data payload to all connected downstream modules for the given output port.
+
+        Args:
+            out_key: Output port name ("Frame", "Mask", or "Trigger").
+            data: Payload object to emit.
+        """
+        targets = self.connections.get(out_key, [])
+        if not targets:
+            return
+        dtype = self.outputs.get(out_key)
+        for module in targets:
+            try:
+                cb = getattr(module, "input_cb", None)
+                if callable(cb):
+                    cb(data=data, data_type=dtype)
+            except TypeError:
+                try:
+                    cb(data)
+                except Exception as e2:
+                    logger.error(f"[{self.label}] Fallback error triggering output '{out_key}': {e2}")
+            except Exception as e:
+                logger.error(
+                    f"[{self.label}] Error triggering output '{out_key}' to {getattr(module, 'label', 'module')}: {e}"
+                )
 
 VideoViewerWindow = VideoViewerWin
 EXPORTED_CLASS = VideoViewerWin

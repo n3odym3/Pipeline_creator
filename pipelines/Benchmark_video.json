@@ -1,0 +1,120 @@
+{
+    "is_relative": true,
+    "windows": [
+        {
+            "module": "Benchmark.video_benchmark_win",
+            "class_name": "VideoBenchmark_win",
+            "uuid": "1209",
+            "pos": [
+                2.6171875,
+                26.17135207496653
+            ],
+            "size": [
+                29.296875,
+                51.07095046854083
+            ],
+            "visible": true,
+            "params": {
+                "label": "Video Benchmark",
+                "frame_type": "FRAME (8-bit)",
+                "attach_stream_name": true,
+                "stream_name": "BenchCam",
+                "universal_any_output": false,
+                "resolution_preset": "VGA (640x480)",
+                "custom_width": 640,
+                "custom_height": 480,
+                "color_format": "BGR (3 ch)",
+                "pattern": "Gradient + Scanline",
+                "fps_target": 60.0,
+                "uncapped_speed": false,
+                "burst_count": 100,
+                "respect_backpressure": false,
+                "auto_start": false
+            },
+            "hidden_items": [
+                "tag:vbench_custom_grp_1209"
+            ],
+            "node_pos": [
+                69,
+                154
+            ]
+        },
+        {
+            "module": "Benchmark.image_processor_benchmark_win",
+            "class_name": "ImageProcessorBenchmark_win",
+            "uuid": "1260",
+            "pos": [
+                32.109375,
+                26.17135207496653
+            ],
+            "size": [
+                22.4609375,
+                51.137884872824635
+            ],
+            "visible": true,
+            "params": {
+                "label": "Image Processor Benchmark",
+                "algorithm": "Gaussian Blur (Heavy 25x25)",
+                "use_opencl": false,
+                "kernel_size": 25,
+                "iterations": 5,
+                "burn_ms": 5.0,
+                "thresh_val": 128,
+                "canny_t1": 50,
+                "canny_t2": 150,
+                "clahe_clip": 2.0,
+                "buffer_size": 5,
+                "drop_policy": "drop_oldest",
+                "universal_any_output": false
+            },
+            "hidden_items": [
+                "tag:ipb_grp_p_1260",
+                "tag:ipb_grp_b_1260",
+                "tag:ipb_grp_th_1260",
+                "tag:ipb_grp_c_1260",
+                "tag:ipb_grp_cl_1260"
+            ],
+            "node_pos": [
+                276,
+                155
+            ]
+        },
+        {
+            "module": "Video.video_viewer_win",
+            "class_name": "VideoViewerWin",
+            "uuid": "1326",
+            "pos": [
+                54.76562499999999,
+                26.104417670682732
+            ],
+            "size": [
+                39.453125,
+                51.27175368139224
+            ],
+            "visible": true,
+            "params": {
+                "label": "Video Viewer",
+                "fps_counter_enabled": true
+            },
+            "node_pos": [
+                606,
+                156
+            ],
+            "hidden_items": []
+        }
+    ],
+    "connections": [
+        {
+            "from": "1209",
+            "output": "Frame",
+            "to": "1260"
+        },
+        {
+            "from": "1260",
+            "output": "Frame",
+            "to": "1326"
+        }
+    ],
+    "link_nodes": [],
+    "views": {}
+}

@@ -1,0 +1,155 @@
+{
+    "is_relative": true,
+    "windows": [
+        {
+            "module": "Benchmark.sample_processor_benchmark_win",
+            "class_name": "SampleProcessorBenchmark_win",
+            "uuid": "1359",
+            "pos": [
+                22.265625,
+                23.293172690763054
+            ],
+            "size": [
+                18.0859375,
+                55.35475234270415
+            ],
+            "visible": true,
+            "params": {
+                "label": "Sample Processor Benchmark",
+                "algorithm": "Moving Average",
+                "window_size": 15,
+                "gain": 1.0,
+                "offset": 0.0,
+                "burn_ms": 5.0,
+                "resample_factor": 2,
+                "cutoff_freq": 0.2,
+                "poly_order": 2,
+                "buffer_size": 5,
+                "drop_policy": "block",
+                "universal_any_output": false
+            },
+            "hidden_items": [
+                "tag:spb_grp_g_1359",
+                "tag:spb_grp_rs_1359",
+                "tag:spb_grp_cf_1359",
+                "tag:spb_grp_po_1359",
+                "tag:spb_grp_b_1359"
+            ],
+            "node_pos": [
+                263,
+                157
+            ]
+        },
+        {
+            "module": "Benchmark.sample_benchmark_win",
+            "class_name": "SampleBenchmark_win",
+            "uuid": "1417",
+            "pos": [
+                0.1953125,
+                23.360107095046853
+            ],
+            "size": [
+                21.875,
+                55.35475234270415
+            ],
+            "visible": true,
+            "params": {
+                "label": "Sample Benchmark",
+                "id_mode": "Static / Overwrite",
+                "base_name": "Sample",
+                "id_pool_size": 5,
+                "signal_pattern": "Sine Wave",
+                "length_preset": "1,024 pts (Standard)",
+                "custom_length": 1024,
+                "noise_level": 0.05,
+                "frequency": 5.0,
+                "rate_target": 1000.0,
+                "uncapped_speed": false,
+                "burst_count": 100,
+                "respect_backpressure": true,
+                "universal_any_output": false,
+                "auto_start": false
+            },
+            "hidden_items": [
+                "tag:sb_grp_pool_1417",
+                "tag:sb_grp_cust_len_1417"
+            ],
+            "node_pos": [
+                37,
+                154
+            ]
+        },
+        {
+            "module": "Plot.sample_container_win",
+            "class_name": "Sample_container_win",
+            "uuid": "1473",
+            "pos": [
+                40.5078125,
+                23.293172690763054
+            ],
+            "size": [
+                8.1640625,
+                76.50602409638554
+            ],
+            "visible": true,
+            "params": {
+                "label": "Sample Container",
+                "export_path": "",
+                "filter_text": ""
+            },
+            "node_pos": [
+                606,
+                156
+            ],
+            "hidden_items": []
+        },
+        {
+            "module": "Plot.lineplot_win",
+            "class_name": "Lineplot_win",
+            "uuid": "1510",
+            "pos": [
+                48.7109375,
+                23.360107095046853
+            ],
+            "size": [
+                51.1328125,
+                76.37215528781793
+            ],
+            "visible": true,
+            "params": {
+                "label": "Lineplot",
+                "autoscale": true,
+                "smooth": false,
+                "smooth_algo": "Rolling Median",
+                "smooth_window": 5,
+                "log_x": false
+            },
+            "hidden_items": [
+                "tag:closest_point_anot_1510"
+            ],
+            "node_pos": [
+                828,
+                156
+            ]
+        }
+    ],
+    "connections": [
+        {
+            "from": "1359",
+            "output": "Data",
+            "to": "1473"
+        },
+        {
+            "from": "1417",
+            "output": "Data",
+            "to": "1359"
+        },
+        {
+            "from": "1473",
+            "output": "Data",
+            "to": "1510"
+        }
+    ],
+    "link_nodes": [],
+    "views": {}
+}
