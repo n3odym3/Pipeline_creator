@@ -2,6 +2,9 @@ if __name__ == "__main__":
     import sys
     import time
 
+    if getattr(sys, "frozen", False) or "__compiled__" in globals() or hasattr(sys, "__nuitka_version__"):
+        sys.frozen = True
+
     # Handle self-execution calls (like sys.executable -m mkdocs) in compiled/frozen mode
     if len(sys.argv) > 2 and sys.argv[1] == "-m":
         module_name = sys.argv[2]
@@ -307,7 +310,13 @@ if __name__ == "__main__":
         if default_script:
             script_path = Path(default_script.lstrip("/\\"))
             if not script_path.is_absolute():
-                script_path = PROJECT_ROOT / script_path
+                scripts_folder = Path(str(paths_config.get("default_scripts_folder", "scripts")).lstrip("/\\"))
+                scripts_dir = scripts_folder if scripts_folder.is_absolute() else PROJECT_ROOT / scripts_folder
+                candidates = [
+                    PROJECT_ROOT / script_path,
+                    scripts_dir / script_path,
+                ]
+                script_path = next((c for c in candidates if c.exists()), candidates[0])
             if script_path.exists():
                 automation_manager.set_script_path(str(script_path))
             else:
@@ -321,7 +330,13 @@ if __name__ == "__main__":
         if default_pipeline:
             pipeline_path = Path(default_pipeline.lstrip("/\\"))
             if not pipeline_path.is_absolute():
-                pipeline_path = PROJECT_ROOT / pipeline_path
+                pipeline_folder = Path(str(paths_config.get("default_pipeline_folder", "pipelines")).lstrip("/\\"))
+                pipelines_dir = pipeline_folder if pipeline_folder.is_absolute() else PROJECT_ROOT / pipeline_folder
+                candidates = [
+                    PROJECT_ROOT / pipeline_path,
+                    pipelines_dir / pipeline_path,
+                ]
+                pipeline_path = next((c for c in candidates if c.exists()), candidates[0])
             if pipeline_path.exists():
                 load_workspace(str(pipeline_path))
                 node_editor.rebuild_from_instances(MODULES_REGISTRY)

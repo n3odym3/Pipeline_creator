@@ -1,9 +1,11 @@
 __pycache__/
 temp/
 logs/
+dist/
 .vscode/
 dist/
 experiments/
 *.pyc
 *.pyo
+*.iss
 site/
