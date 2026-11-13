@@ -97,7 +97,7 @@ class MainWin:
         """
         _user     = {"theme", "tutorial", "pinned", "tools", "adapt_display", "minimize_tray", "fullscreen"}
         _advanced = _user | {
-            "workspace", "node_editor", "fusion_manager", "logs", "edit_config", "app_state", "install_module", "uninstall_module",
+            "workspace", "node_editor", "fusion_manager", "logs", "edit_config", "app_state", "flow_metrics", "install_module", "uninstall_module",
         }
         _dev      = _advanced | {
             "check_deps", "debug", "font_manager",
@@ -261,6 +261,11 @@ class MainWin:
             self._mode_tags["app_state"] = _as_tag
             dpg.add_menu_item(tag=_as_tag, label="App State", callback=self._on_show_app_state)
 
+            # Flow Metrics  (advanced+)
+            _fm_tag = dpg.generate_uuid()
+            self._mode_tags["flow_metrics"] = _fm_tag
+            dpg.add_menu_item(tag=_fm_tag, label="Flow Metrics", callback=self._on_show_flow_metrics)
+
             # Install Module  (advanced+)
             _im_tag = dpg.generate_uuid()
             self._mode_tags["install_module"] = _im_tag
@@ -321,6 +326,10 @@ class MainWin:
             
             with dpg.menu(label="Tutorials", tag="menu_tutorials"):
                 tutorial_manager.populate_tutorials_menu("menu_tutorials")
+            dpg.add_separator()
+
+            from core.bug_report import bug_report_window
+            dpg.add_menu_item(label="Bug report", callback=lambda *args: bug_report_window.show())
 
     def _create_theme_submenu(self) -> None:
         """Populate the Theme sub-menu with all auto-discovered palettes."""
@@ -1017,27 +1026,18 @@ class MainWin:
 
             if has_workspace_dep_issue or has_workspace_val_issue:
                 logger.warning("Loaded workspace contains modules with health issues")
-                module_health_manager.show_dialog_if_needed()
+                module_health_manager.show_dialog_if_needed(force_show=True)
     
     def _on_check_dependencies(self, sender: Any = None, app_data: Any = None, user_data: Any = None, *args) -> None:
         """
-        Manually trigger a full health check (dependencies + validation).
+        Manually trigger a full health check (dependencies + validation) with a progress bar.
         
-        Scans all modules for requirements.txt files, missing imports, and validation errors,
-        then displays the unified health dialog if any issues are found.
+        Runs regardless of `skip_import_validation` in config.json (which only applies to boot),
+        uses the persistent cache for unmodified modules, and displays the unified health dialog.
         """
         from core.module_health_manager import module_health_manager
 
-        # Clear previous detections and rescan from scratch
-        dependency_manager.missing_deps.clear()
-        module_validation_manager.validation_issues.clear()
-        
-        # Unified scan: triggers requirements.txt check, AST import analysis, and validation with force_reload=True
-        logger.info("Scanning modules for dependencies and validation issues...")
-        _ = get_available_modules('modules', force_reload=True)
-        
-        # Show unified health dialog
-        module_health_manager.show_dialog_if_needed()
+        module_health_manager.run_manual_health_check(use_cache=True)
 
     def _on_adapt_display(self, sender=None, app_data=None, user_data=None, *args):
         """Open a popup to adjust UI scale multiplier and re-apply display scaling."""
@@ -1097,6 +1097,11 @@ class MainWin:
         """Open the App State Inspector & Editor window."""
         from core.app_state_editor import app_state_editor
         app_state_editor.show()
+
+    def _on_show_flow_metrics(self, sender=None, app_data=None, user_data=None, *args):
+        """Open the Flow Metrics & Pipeline Health Inspector window."""
+        from core.flow_metrics_viewer import flow_metrics_viewer
+        flow_metrics_viewer.show()
 
     def _on_install_module(self, sender=None, app_data=None, user_data=None, *args):
         """Open the Module Installer window."""

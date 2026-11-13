@@ -72,6 +72,28 @@ class _GateNode:
             except Exception as e:
                 logger.error(f"Gate '{self.label}': error dispatching to {module} - {e}")
 
+    def is_ready(self) -> bool:
+        """Check if downstream targets are ready to receive data when the gate is open."""
+        if not self.is_open:
+            return True
+        for module in self.connections.get("Out", []):
+            is_ready = getattr(module, "is_ready", lambda: True)
+            if callable(is_ready) and not is_ready():
+                return False
+        return True
+
+    def set_acquisition(self, *args: Any, **kwargs: Any) -> None:
+        """Forward acquisition metadata (fps, calibration) to downstream targets."""
+        if not self.is_open:
+            return
+        for module in self.connections.get("Out", []):
+            fn = getattr(module, "set_acquisition", None)
+            if callable(fn):
+                try:
+                    fn(*args, **kwargs)
+                except Exception as e:
+                    logger.error(f"Gate '{self.label}': set_acquisition error - {e}")
+
     def set_open(self, is_open: bool, node_id: Optional[int] = None, editor: Optional[Any] = None) -> None:
         """Set the pass-through state of the gate and update checkbox widget."""
         self.is_open = bool(is_open)

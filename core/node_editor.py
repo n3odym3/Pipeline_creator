@@ -11,13 +11,26 @@ from core.input_output_types import IOTypes
 from core.module_registry import MODULES_REGISTRY, get_available_modules
 from core.node_callbacks import NodeCallbacksMixin
 from core.node_highlight import NodeHighlightMixin
-from core.node_link_proxies import _GateNode, _LinkInNode, _LinkOutNode, _WorkingDirNode
+from core.node_link_proxies import (
+    _GateNode,
+    _LinkInNode,
+    _LinkOutNode,
+    _PropagationTesterNode,
+    _WorkingDirNode,
+)
+from core.node_perf_profiler import NodePerfProfilerMixin
 from core.node_popup import NodePopupMixin
 from core.node_serialization import NodeSerializationMixin
 from core.working_directory_manager import working_directory_manager
 
 
-class NodeEditor(NodeHighlightMixin, NodePopupMixin, NodeCallbacksMixin, NodeSerializationMixin):
+class NodeEditor(
+    NodeHighlightMixin,
+    NodePerfProfilerMixin,
+    NodePopupMixin,
+    NodeCallbacksMixin,
+    NodeSerializationMixin,
+):
     """
     NodeEditor manages a visual node-based interface using DearPyGui.
     It supports dynamic module instantiation, node linking, validation of
@@ -73,6 +86,9 @@ class NodeEditor(NodeHighlightMixin, NodePopupMixin, NodeCallbacksMixin, NodeSer
 
         # Color theme cache: hue (int 0-359) -> (node_theme, link_theme)
         self._color_theme_cache: Dict[int, Tuple[int, int]] = {}
+
+        # Live Flow & Performance Profiler state (zero-overhead when inactive)
+        self._init_perf_profiler()
 
         # --- Build GUI ---
         vp_w = dpg.get_viewport_width() or 1200
@@ -169,6 +185,9 @@ class NodeEditor(NodeHighlightMixin, NodePopupMixin, NodeCallbacksMixin, NodeSer
                             "None      - disable highlighting",
                             wrap=280,
                         )
+
+                # Live Flow & Performance Profiler (Heartbeat Mode)
+                self._build_perf_profiler_menu()
 
             dpg.add_separator()
 
@@ -278,6 +297,19 @@ class NodeEditor(NodeHighlightMixin, NodePopupMixin, NodeCallbacksMixin, NodeSer
                             "Emits the folder path to connected modules whenever set or changed.",
                             wrap=300,
                         )
+                    dpg.add_button(
+                        label="Propagation Tester",
+                        tag=f"{self.popup_tag}_btn_propagation_tester",
+                        callback=self._add_propagation_tester_node,
+                        width=-1,
+                    )
+                    with dpg.tooltip(parent=f"{self.popup_tag}_btn_propagation_tester"):
+                        dpg.add_text(
+                            "Flow Speedometer & Propagation Delay (Delta-t) Tester.\n"
+                            "Connect Start (A) to upstream trigger and Stop (B) to downstream output\n"
+                            "to measure end-to-end and service propagation delay.",
+                            wrap=300,
+                        )
 
                 dpg.add_separator()
 
@@ -296,6 +328,8 @@ class NodeEditor(NodeHighlightMixin, NodePopupMixin, NodeCallbacksMixin, NodeSer
         ):
             pass
 
+        # Lightweight live telemetry tooltip popup (shown on click/right-click in Perf Mode)
+        self._build_perf_popup_window()
 
     def show(self) -> None:
         """Show the node editor window, center it in the viewport, and bring it to the front."""
@@ -321,6 +355,7 @@ class NodeEditor(NodeHighlightMixin, NodePopupMixin, NodeCallbacksMixin, NodeSer
         from core.module_item_inspector import ModuleItemInspector
 
         ModuleItemInspector.close_all()
+        self._on_editor_hidden_or_closed()
         self._clear_highlights()
 
     def hide(self) -> None:
@@ -328,6 +363,7 @@ class NodeEditor(NodeHighlightMixin, NodePopupMixin, NodeCallbacksMixin, NodeSer
         from core.module_item_inspector import ModuleItemInspector
 
         ModuleItemInspector.close_all()
+        self._on_editor_hidden_or_closed()
         self._clear_highlights()
         dpg.hide_item(self.winID)
 
@@ -722,6 +758,75 @@ class NodeEditor(NodeHighlightMixin, NodePopupMixin, NodeCallbacksMixin, NodeSer
         self._create_working_dir_node(self.mouse_pos)
         dpg.configure_item(self.popup_tag, show=False)
 
+    def _create_propagation_tester_node(
+        self, pos: Tuple[float, float], proxy: Optional[_PropagationTesterNode] = None
+    ) -> int:
+        """
+        Create the DPG node widget for a Propagation Tester built-in node.
+
+        Structure:
+            node ("Propagation Tester")
+            ├── node_attribute (Input)  ← "Start (A)" (upstream trigger / start point)
+            ├── node_attribute (Input)  ← "Stop (B)"  (downstream completion / end point)
+            └── node_attribute (Static) → Live Delta-t readout, average & rate, and Reset button
+        """
+        if proxy is None:
+            proxy = _PropagationTesterNode()
+
+        s = self.scale
+
+        with dpg.node(label=proxy.label, parent=self.editor_tag, pos=pos) as node_id:
+            with dpg.node_attribute(attribute_type=dpg.mvNode_Attr_Input, tag=f"{node_id}_InA"):
+                dpg.add_text("Start (A)", tag=proxy._pin_a_text_tag)
+                with dpg.tooltip(dpg.last_item()):
+                    dpg.add_text(
+                        f"Start of propagation (Trigger)\nConnected to: {proxy.source_a_name}",
+                        tag=proxy._pin_a_tooltip_tag,
+                        color=(150, 255, 150),
+                    )
+
+            with dpg.node_attribute(attribute_type=dpg.mvNode_Attr_Input, tag=f"{node_id}_InB"):
+                dpg.add_text("Stop (B)", tag=proxy._pin_b_text_tag)
+                with dpg.tooltip(dpg.last_item()):
+                    dpg.add_text(
+                        f"End of propagation (Result)\nConnected to: {proxy.source_b_name}",
+                        tag=proxy._pin_b_tooltip_tag,
+                        color=(150, 255, 150),
+                    )
+
+            with dpg.node_attribute(attribute_type=dpg.mvNode_Attr_Static):
+                # Clean primary readout with rich hover details tooltip
+                dpg.add_text("dt: 0.000 ms", tag=proxy._txt_primary_tag, color=(110, 205, 255))
+                with dpg.tooltip(dpg.last_item()):
+                    dpg.add_text(
+                        "Hover for full propagation breakdown",
+                        tag=proxy._tooltip_details_tag,
+                        wrap=260,
+                    )
+
+                dpg.add_text("avg 0.000 ms  (0.0 Hz)", tag=proxy._txt_secondary_tag, color=(170, 175, 185))
+
+                dpg.add_button(
+                    label="Reset",
+                    width=int(s(125)),
+                    callback=lambda *a: proxy.reset_metrics(),
+                )
+                with dpg.tooltip(dpg.last_item()):
+                    dpg.add_text("Clear buffers and reset min/max/average statistics")
+
+        proxy.node_id = node_id
+        proxy.editor = self
+        self.node_map[node_id] = proxy
+        return node_id
+
+    def _add_propagation_tester_node(
+        self, sender: int = 0, app_data: Any = None, user_data: Any = None, *args: Any, **kwargs: Any
+    ) -> None:
+        """Popup button callback — add a Propagation Tester node at the last right-click position."""
+        self._popup_click_handled = True
+        self._create_propagation_tester_node(self.mouse_pos)
+        dpg.configure_item(self.popup_tag, show=False)
+
     def _refresh_gate_io_type(self, gate_proxy: _GateNode) -> None:
         """
         Re-evaluate the inferred IOType of a Gate node based on its current links.
@@ -830,8 +935,18 @@ class NodeEditor(NodeHighlightMixin, NodePopupMixin, NodeCallbacksMixin, NodeSer
 
             if src and tgt:
                 src_key = self._find_output_key(from_node, from_attr)
-                if src_key and tgt in src.connections.get(src_key, []):
-                    src.connections[src_key].remove(tgt)
+                if src_key:
+                    conns = src.connections.get(src_key, [])
+                    if getattr(tgt, "KIND", "") == "propagation_tester":
+                        ep = tgt.resolve_endpoint(to_attr, to_node)
+                        if ep in conns:
+                            conns.remove(ep)
+                        if tgt.is_start_attr(to_attr, to_node):
+                            tgt.update_pin_labels(source_a="unconnected")
+                        else:
+                            tgt.update_pin_labels(source_b="unconnected")
+                    if tgt in conns:
+                        conns.remove(tgt)
                 dpg.delete_item(link_id)
             if link_id in self.link_map:
                 del self.link_map[link_id]
@@ -857,6 +972,10 @@ class NodeEditor(NodeHighlightMixin, NodePopupMixin, NodeCallbacksMixin, NodeSer
                 ModuleItemInspector.close_inspector(self.node_map[node_id])
             except Exception:
                 pass
+            try:
+                self.cleanup_deleted_node_perf(node_id)
+            except Exception:
+                pass
 
         if hasattr(self.node_map[node_id], "close"):
             self.node_map[node_id].close()
@@ -872,6 +991,10 @@ class NodeEditor(NodeHighlightMixin, NodePopupMixin, NodeCallbacksMixin, NodeSer
         from core.module_item_inspector import ModuleItemInspector
 
         ModuleItemInspector.close_all()
+        try:
+            self.stop_all_perf_profiling()
+        except Exception:
+            pass
         self._clear_highlights()
 
         for link_id in list(self.link_map.keys()):
@@ -1078,16 +1201,29 @@ class NodeEditor(NodeHighlightMixin, NodePopupMixin, NodeCallbacksMixin, NodeSer
                 if alias:
                     oid_str = alias
 
-            if (
+            matched = (
                 oid == attr_id
                 or str(oid) == str(attr_id)
                 or oid_str == attr_str
-                or (
-                    dpg.does_item_exist(oid)
-                    and dpg.does_item_exist(attr_id)
-                    and dpg.get_alias_id(oid) == dpg.get_alias_id(attr_id)
-                )
-            ):
+            )
+            if not matched:
+                try:
+                    id_a = (
+                        oid
+                        if isinstance(oid, int)
+                        else (dpg.get_alias_id(oid) if (isinstance(oid, str) and dpg.does_alias_exist(oid)) else None)
+                    )
+                    id_b = (
+                        attr_id
+                        if isinstance(attr_id, int)
+                        else (dpg.get_alias_id(attr_id) if (isinstance(attr_id, str) and dpg.does_alias_exist(attr_id)) else None)
+                    )
+                    if id_a is not None and id_b is not None and id_a == id_b:
+                        matched = True
+                except Exception:
+                    pass
+
+            if matched:
                 try:
                     return list(instance.outputs.keys())[idx]
                 except IndexError:

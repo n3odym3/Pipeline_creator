@@ -33,97 +33,22 @@ class NodeCallbacksMixin:
             if dpg.does_item_exist(self.popup_tag):
                 dpg.configure_item(self.popup_tag, show=False)
 
-            dpg.delete_item(self.node_popup_tag, children_only=True)
-
-            instance = self.node_map[hovered_node]
-
-            def _del_cb(s: Any, a: Any, u: Any, *args: Any, **kwargs: Any) -> None:
-                dpg.configure_item(self.node_popup_tag, show=False)
-                self.delete_node(s, a, u)
-
-            def _pin_cb(s: Any, a: Any, u: Any, *args: Any, **kwargs: Any) -> None:
-                dpg.configure_item(self.node_popup_tag, show=False)
-                self._pin_node_to_menu_bar(s, a, u)
-
-            def _rename_cb(s: Any, a: Any, u: Any, *args: Any, **kwargs: Any) -> None:
-                dpg.configure_item(self.node_popup_tag, show=False)
-                self._open_rename_node_modal(u)
-
-            tutorial_path = None
-            source_file = getattr(instance.__class__, "_source_file", None)
-            if source_file:
-                potential_path = Path(source_file).parent / "tutorial.json"
-                if potential_path.exists():
-                    tutorial_path = str(potential_path)
-
-            if tutorial_path:
-                from core.tutorial_manager import tutorial_manager
-
-                def _tut_cb(s: Any, a: Any, u: Any, *args: Any, **kwargs: Any) -> None:
+            # In Live Flow & Performance Visualizer mode, right-clicking a node immediately
+            # opens the lightweight live telemetry tooltip card (with the "View Full Report..." button).
+            if getattr(self, "perf_mode_active", False):
+                if hasattr(self, "node_popup_tag") and dpg.does_item_exist(self.node_popup_tag):
                     dpg.configure_item(self.node_popup_tag, show=False)
-                    tutorial_manager.load_and_play(u)
+                self.open_node_perf_popup(hovered_node, absolute_mouse_pos)
+                return
 
-                dpg.add_button(
-                    label="Show Tutorial",
-                    callback=_tut_cb,
-                    user_data=tutorial_path,
-                    parent=self.node_popup_tag,
-                )
-                dpg.add_separator(parent=self.node_popup_tag)
-
-            kind = getattr(instance, "KIND", "")
-            if kind == "gate":
-                def _toggle_gate_cb(s: Any, a: Any, u: Any, *args: Any, **kwargs: Any) -> None:
-                    dpg.configure_item(self.node_popup_tag, show=False)
-                    instance.set_open(not instance.is_open, node_id=hovered_node, editor=self)
-
-                dpg.add_button(
-                    label="Toggle Pass-through",
-                    callback=_toggle_gate_cb,
-                    user_data=hovered_node,
-                    parent=self.node_popup_tag,
-                )
-                dpg.add_separator(parent=self.node_popup_tag)
-            elif kind not in ("link_out", "link_in"):
-                def _edit_module_cb(s: Any, a: Any, u: Any, *args: Any, **kwargs: Any) -> None:
-                    dpg.configure_item(self.node_popup_tag, show=False)
-                    from core.module_item_inspector import ModuleItemInspector
-                    target_inst = self.node_map.get(u)
-                    if target_inst:
-                        ModuleItemInspector.open_inspector(target_inst)
-
-                dpg.add_button(
-                    label="Edit Module",
-                    callback=_edit_module_cb,
-                    user_data=hovered_node,
-                    parent=self.node_popup_tag,
-                )
-                dpg.add_separator(parent=self.node_popup_tag)
-                dpg.add_button(
-                    label="Rename Node",
-                    callback=_rename_cb,
-                    user_data=hovered_node,
-                    parent=self.node_popup_tag,
-                )
-                dpg.add_separator(parent=self.node_popup_tag)
-                dpg.add_button(
-                    label="Send to Menu Bar",
-                    callback=_pin_cb,
-                    user_data=hovered_node,
-                    parent=self.node_popup_tag,
-                )
-                dpg.add_separator(parent=self.node_popup_tag)
-
-            dpg.add_button(
-                label="Delete Node",
-                callback=_del_cb,
-                user_data=hovered_node,
-                parent=self.node_popup_tag,
-            )
-            dpg.configure_item(self.node_popup_tag, pos=absolute_mouse_pos, show=True)
+            self.open_classic_node_context_menu(hovered_node, absolute_mouse_pos)
             return
 
-        # No node hovered -> hide node menu, open global search popup
+        # No node hovered -> hide node menu & telemetry popup, open global search popup
+        if hasattr(self, "perf_popup_tag") and dpg.does_item_exist(self.perf_popup_tag):
+            if getattr(self, "_perf_popup_node_id", None) is not None or dpg.is_item_shown(self.perf_popup_tag):
+                self._close_perf_popup()
+
         if hasattr(self, "node_popup_tag") and dpg.does_item_exist(self.node_popup_tag):
             dpg.configure_item(self.node_popup_tag, show=False)
 
@@ -136,6 +61,135 @@ class NodeCallbacksMixin:
         dpg.set_item_width(self.popup_tag, self.scale(self.popup_width))
         dpg.set_item_height(self.popup_tag, self.scale(self.popup_height))
         dpg.focus_item(search_tag)
+
+    def open_classic_node_context_menu(
+        self, hovered_node: int, absolute_mouse_pos: Tuple[float, float]
+    ) -> None:
+        """Populate and show the standard node right-click context menu."""
+        if hovered_node not in self.node_map:
+            return
+        dpg.delete_item(self.node_popup_tag, children_only=True)
+
+        instance = self.node_map[hovered_node]
+
+        def _del_cb(s: Any, a: Any, u: Any, *args: Any, **kwargs: Any) -> None:
+            dpg.configure_item(self.node_popup_tag, show=False)
+            self.delete_node(s, a, u)
+
+        def _pin_cb(s: Any, a: Any, u: Any, *args: Any, **kwargs: Any) -> None:
+            dpg.configure_item(self.node_popup_tag, show=False)
+            self._pin_node_to_menu_bar(s, a, u)
+
+        def _rename_cb(s: Any, a: Any, u: Any, *args: Any, **kwargs: Any) -> None:
+            dpg.configure_item(self.node_popup_tag, show=False)
+            self._open_rename_node_modal(u)
+
+        tutorial_path = None
+        source_file = getattr(instance.__class__, "_source_file", None)
+        if source_file:
+            potential_path = Path(source_file).parent / "tutorial.json"
+            if potential_path.exists():
+                tutorial_path = str(potential_path)
+
+        if tutorial_path:
+            from core.tutorial_manager import tutorial_manager
+
+            def _tut_cb(s: Any, a: Any, u: Any, *args: Any, **kwargs: Any) -> None:
+                dpg.configure_item(self.node_popup_tag, show=False)
+                tutorial_manager.load_and_play(u)
+
+            dpg.add_button(
+                label="Show Tutorial",
+                callback=_tut_cb,
+                user_data=tutorial_path,
+                parent=self.node_popup_tag,
+            )
+            dpg.add_separator(parent=self.node_popup_tag)
+
+        kind = getattr(instance, "KIND", "")
+        if kind == "gate":
+            def _toggle_gate_cb(s: Any, a: Any, u: Any, *args: Any, **kwargs: Any) -> None:
+                dpg.configure_item(self.node_popup_tag, show=False)
+                instance.set_open(not instance.is_open, node_id=hovered_node, editor=self)
+
+            dpg.add_button(
+                label="Toggle Pass-through",
+                callback=_toggle_gate_cb,
+                user_data=hovered_node,
+                parent=self.node_popup_tag,
+            )
+            dpg.add_separator(parent=self.node_popup_tag)
+        elif kind == "propagation_tester":
+            def _reset_prop_cb(s: Any, a: Any, u: Any, *args: Any, **kwargs: Any) -> None:
+                dpg.configure_item(self.node_popup_tag, show=False)
+                instance.reset_metrics()
+
+            def _toggle_mode_cb(s: Any, a: Any, u: Any, *args: Any, **kwargs: Any) -> None:
+                dpg.configure_item(self.node_popup_tag, show=False)
+                new_m = (
+                    instance.MODE_E2E
+                    if instance.pairing_mode == instance.MODE_SERVICE
+                    else instance.MODE_SERVICE
+                )
+                instance.on_mode_changed(new_m)
+
+            dpg.add_button(
+                label=f"Mode: {instance.pairing_mode}",
+                callback=_toggle_mode_cb,
+                user_data=hovered_node,
+                parent=self.node_popup_tag,
+            )
+            dpg.add_button(
+                label="Reset Metrics",
+                callback=_reset_prop_cb,
+                user_data=hovered_node,
+                parent=self.node_popup_tag,
+            )
+            dpg.add_separator(parent=self.node_popup_tag)
+            dpg.add_button(
+                label="Rename Node",
+                callback=_rename_cb,
+                user_data=hovered_node,
+                parent=self.node_popup_tag,
+            )
+            dpg.add_separator(parent=self.node_popup_tag)
+        elif kind not in ("link_out", "link_in"):
+            def _edit_module_cb(s: Any, a: Any, u: Any, *args: Any, **kwargs: Any) -> None:
+                dpg.configure_item(self.node_popup_tag, show=False)
+                from core.module_item_inspector import ModuleItemInspector
+                target_inst = self.node_map.get(u)
+                if target_inst:
+                    ModuleItemInspector.open_inspector(target_inst)
+
+            dpg.add_button(
+                label="Edit Module",
+                callback=_edit_module_cb,
+                user_data=hovered_node,
+                parent=self.node_popup_tag,
+            )
+            dpg.add_separator(parent=self.node_popup_tag)
+            dpg.add_button(
+                label="Rename Node",
+                callback=_rename_cb,
+                user_data=hovered_node,
+                parent=self.node_popup_tag,
+            )
+            dpg.add_separator(parent=self.node_popup_tag)
+            dpg.add_button(
+                label="Send to Menu Bar",
+                callback=_pin_cb,
+                user_data=hovered_node,
+                parent=self.node_popup_tag,
+            )
+            dpg.add_separator(parent=self.node_popup_tag)
+
+        dpg.add_button(
+            label="Delete Node",
+            callback=_del_cb,
+            user_data=hovered_node,
+            parent=self.node_popup_tag,
+        )
+        dpg.configure_item(self.node_popup_tag, pos=absolute_mouse_pos, show=True)
 
     def _is_any_popup_child_hovered(self) -> bool:
         """Recursively check if any child of the popup windows is hovered."""
@@ -180,12 +234,26 @@ class NodeCallbacksMixin:
             if not self._is_any_popup_child_hovered():
                 dpg.configure_item(self.node_popup_tag, show=False)
 
+        # Close the telemetry popup whenever the user clicks anywhere outside it
+        if (
+            hasattr(self, "perf_popup_tag")
+            and dpg.does_item_exist(self.perf_popup_tag)
+            and dpg.is_item_shown(self.perf_popup_tag)
+        ):
+            if not self._is_perf_popup_hovered():
+                self._close_perf_popup()
+
         # 2. Only process node selection/highlighting if the node editor window is shown,
-        #    and the node editor canvas is hovered (active and in foreground, not obscured by other windows).
+        #    and the node editor canvas is hovered (active and in foreground, not obscured by floating windows/popups).
         if not dpg.does_item_exist(self.winID) or not dpg.is_item_shown(self.winID):
             return
 
         if not dpg.does_item_exist(self.editor_tag) or not dpg.is_item_hovered(self.editor_tag):
+            return
+
+        # In Live Flow & Performance Visualizer ("Heartbeat") mode, left-click behaves normally
+        # for dragging/moving/selecting nodes without opening the telemetry popup or clearing Heartbeat colors.
+        if getattr(self, "perf_mode_active", False):
             return
 
         self._clear_highlights()
@@ -242,6 +310,8 @@ class NodeCallbacksMixin:
 
     def left_release_callback(self, sender: int, app_data: Any, user_data: Any = None, *args: Any) -> None:
         """Handle mouse release to update selection highlighting if in Selection mode."""
+        if getattr(self, "perf_mode_active", False):
+            return
         if getattr(self, "highlight_mode", "none") != "selection":
             return
 
@@ -322,16 +392,36 @@ class NodeCallbacksMixin:
             logger.warning("Cannot connect a node to itself.")
             return
 
-        # Enforce single-input constraint for Gate nodes
-        if getattr(tgt, "KIND", "") == "gate":
+        # Enforce single-input constraint per pin for Gate and Propagation Tester nodes
+        if getattr(tgt, "KIND", "") in ("gate", "propagation_tester"):
+            def _same_attr(a: Any, b: Any) -> bool:
+                if a == b or str(a) == str(b):
+                    return True
+                try:
+                    id_a = (
+                        a
+                        if isinstance(a, int)
+                        else (dpg.get_alias_id(a) if (isinstance(a, str) and dpg.does_alias_exist(a)) else None)
+                    )
+                    id_b = (
+                        b
+                        if isinstance(b, int)
+                        else (dpg.get_alias_id(b) if (isinstance(b, str) and dpg.does_alias_exist(b)) else None)
+                    )
+                    if id_a is not None and id_b is not None:
+                        return id_a == id_b
+                except Exception:
+                    pass
+                return False
+
             existing_links = [
                 lid for lid, (f_at, t_at) in self.link_map.items()
-                if t_at == to_attr or str(t_at) == str(to_attr)
+                if _same_attr(t_at, to_attr)
             ]
             if existing_links:
                 logger.warning(
-                    f"Gate '{getattr(tgt, 'label', 'Gate')}' already has an input connection. "
-                    "Only 1 incoming connection is allowed."
+                    f"Pin on '{getattr(tgt, 'label', 'Node')}' already has an input connection. "
+                    "Only 1 incoming connection per pin is allowed."
                 )
                 return
 
@@ -348,6 +438,22 @@ class NodeCallbacksMixin:
         if not is_compatible:
             logger.warning(f"Incompatible types: {src_type} -> {tgt_types}")
             self._show_incompatible_types_warning(src_type, tgt_types)
+            return
+
+        # Special pin-endpoint wiring for Propagation Tester (Start A vs Stop B)
+        if getattr(tgt, "KIND", "") == "propagation_tester":
+            ep = tgt.resolve_endpoint(to_attr, to_node)
+            src_label = f"{getattr(src, 'label', type(src).__name__)}.{src_key}"
+            if ep not in src.connections[src_key]:
+                if tgt.is_start_attr(to_attr, to_node):
+                    # Insert Start (A) at index 0 so it timestamps BEFORE synchronous downstream modules run
+                    src.connections[src_key].insert(0, ep)
+                    tgt.update_pin_labels(source_a=src_label)
+                else:
+                    src.connections[src_key].append(ep)
+                    tgt.update_pin_labels(source_b=src_label)
+                dpg.add_node_link(from_attr, to_attr, parent=self.editor_tag, tag=link_id)
+                self.link_map[link_id] = (from_attr, to_attr)
             return
 
         if tgt not in src.connections[src_key]:
@@ -403,9 +509,19 @@ class NodeCallbacksMixin:
 
         if src and tgt:
             src_key = self._find_output_key(from_node, from_attr)
-            if src_key and tgt in src.connections.get(src_key, []):
-                src.connections[src_key].remove(tgt)
-            elif src_key is None:
+            if src_key:
+                conns = src.connections.get(src_key, [])
+                if getattr(tgt, "KIND", "") == "propagation_tester":
+                    ep = tgt.resolve_endpoint(to_attr, to_node)
+                    if ep in conns:
+                        conns.remove(ep)
+                    if tgt.is_start_attr(to_attr, to_node):
+                        tgt.update_pin_labels(source_a="unconnected")
+                    else:
+                        tgt.update_pin_labels(source_b="unconnected")
+                if tgt in conns:
+                    conns.remove(tgt)
+            else:
                 logger.warning("Unable to disconnect nodes cleanly.")
 
         dpg.delete_item(link_id)

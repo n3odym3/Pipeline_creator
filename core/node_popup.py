@@ -102,6 +102,7 @@ class NodePopupMixin:
         btn_li = f"{self.popup_tag}_btn_link_in"
         btn_gate = f"{self.popup_tag}_btn_gate"
         btn_wd = f"{self.popup_tag}_btn_working_dir"
+        btn_pt = f"{self.popup_tag}_btn_propagation_tester"
 
         if filter_lower:
             lo_score = fuzzy_score(filter_lower, "link out")
@@ -118,6 +119,15 @@ class NodePopupMixin:
                 fuzzy_score(filter_lower, "folder"),
                 fuzzy_score(filter_lower, "directory"),
                 fuzzy_score(filter_lower, "cwd"),
+            )
+            pt_score = max(
+                fuzzy_score(filter_lower, "propagation tester"),
+                fuzzy_score(filter_lower, "delta"),
+                fuzzy_score(filter_lower, "speed"),
+                fuzzy_score(filter_lower, "latency"),
+                fuzzy_score(filter_lower, "timer"),
+                fuzzy_score(filter_lower, "chrono"),
+                fuzzy_score(filter_lower, "benchmark"),
             )
             bi_score = fuzzy_score(filter_lower, "built-in")
 
@@ -143,7 +153,13 @@ class NodePopupMixin:
                 else:
                     dpg.hide_item(btn_wd)
 
-            if lo_score > 0 or li_score > 0 or gate_score > 0 or wd_score > 0 or bi_score > 50:
+            if dpg.does_item_exist(btn_pt):
+                if pt_score > 0 or bi_score > 50:
+                    dpg.show_item(btn_pt)
+                else:
+                    dpg.hide_item(btn_pt)
+
+            if lo_score > 0 or li_score > 0 or gate_score > 0 or wd_score > 0 or pt_score > 0 or bi_score > 50:
                 dpg.show_item(builtin_header)
                 dpg.set_value(builtin_header, True)
             else:
@@ -156,6 +172,8 @@ class NodePopupMixin:
                 dpg.show_item(btn_gate)
             if dpg.does_item_exist(btn_wd):
                 dpg.show_item(btn_wd)
+            if dpg.does_item_exist(btn_pt):
+                dpg.show_item(btn_pt)
             dpg.set_value(builtin_header, False)
 
         for h in self._popup_headers:
