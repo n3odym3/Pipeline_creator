@@ -39,6 +39,8 @@ class NodeHighlightMixin:
         from config.theme_manager import theme_manager
 
         self._color_theme_cache.clear()
+        if hasattr(self, "_perf_canvas_theme_cache"):
+            self._perf_canvas_theme_cache.clear()
 
         self.highlight_theme = theme_manager.create_highlight_theme()
         self.virtual_link_theme = theme_manager.create_virtual_link_theme()

@@ -68,6 +68,28 @@ class LinkBus:
         """Return a list of active channel names."""
         return list(self._subscribers.keys())
 
+    def is_ready(self, channel: str) -> bool:
+        """Check if all subscribers on the given channel are ready to receive data."""
+        channel_clean = channel.strip()
+        for cb in list(self._subscribers.get(channel_clean, [])):
+            owner = getattr(cb, "__self__", None)
+            is_ready = getattr(owner, "is_ready", None)
+            if callable(is_ready) and not is_ready():
+                return False
+        return True
+
+    def set_acquisition(self, channel: str, *args: Any, **kwargs: Any) -> None:
+        """Forward acquisition metadata (fps, calibration) to subscribers on the channel."""
+        channel_clean = channel.strip()
+        for cb in list(self._subscribers.get(channel_clean, [])):
+            owner = getattr(cb, "__self__", None)
+            fn = getattr(owner, "set_acquisition", None)
+            if callable(fn):
+                try:
+                    fn(*args, **kwargs)
+                except Exception as e:
+                    logger.error(f"LinkBus: set_acquisition error on '{channel_clean}': {e}")
+
 
 # Global singleton instance
 link_bus: LinkBus = LinkBus()
