@@ -1,0 +1,1784 @@
+{
+  "windows": [
+    {
+      "module": "modules.benchmark.perf_pulse_source_win",
+      "class_name": "PerfPulseSource_win",
+      "uuid": "u_src",
+      "pos": [
+        40,
+        40
+      ],
+      "size": [
+        320,
+        240
+      ],
+      "visible": false,
+      "params": {
+        "label": "BenchSource"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r0",
+      "pos": [
+        380,
+        40
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_0"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r1",
+      "pos": [
+        660,
+        40
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_1"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r2",
+      "pos": [
+        940,
+        40
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_2"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r3",
+      "pos": [
+        1220,
+        40
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_3"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r4",
+      "pos": [
+        1500,
+        40
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_4"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r5",
+      "pos": [
+        1780,
+        40
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_5"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r6",
+      "pos": [
+        380,
+        220
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_6"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r7",
+      "pos": [
+        660,
+        220
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_7"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r8",
+      "pos": [
+        940,
+        220
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_8"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r9",
+      "pos": [
+        1220,
+        220
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_9"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r10",
+      "pos": [
+        1500,
+        220
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_10"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r11",
+      "pos": [
+        1780,
+        220
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_11"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r12",
+      "pos": [
+        380,
+        400
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_12"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r13",
+      "pos": [
+        660,
+        400
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_13"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r14",
+      "pos": [
+        940,
+        400
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_14"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r15",
+      "pos": [
+        1220,
+        400
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_15"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r16",
+      "pos": [
+        1500,
+        400
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_16"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r17",
+      "pos": [
+        1780,
+        400
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_17"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r18",
+      "pos": [
+        380,
+        580
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_18"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r19",
+      "pos": [
+        660,
+        580
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_19"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r20",
+      "pos": [
+        940,
+        580
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_20"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r21",
+      "pos": [
+        1220,
+        580
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_21"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r22",
+      "pos": [
+        1500,
+        580
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_22"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r23",
+      "pos": [
+        1780,
+        580
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_23"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r24",
+      "pos": [
+        380,
+        760
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_24"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r25",
+      "pos": [
+        660,
+        760
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_25"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r26",
+      "pos": [
+        940,
+        760
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_26"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r27",
+      "pos": [
+        1220,
+        760
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_27"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r28",
+      "pos": [
+        1500,
+        760
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_28"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r29",
+      "pos": [
+        1780,
+        760
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_29"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r30",
+      "pos": [
+        380,
+        940
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_30"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r31",
+      "pos": [
+        660,
+        940
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_31"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r32",
+      "pos": [
+        940,
+        940
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_32"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r33",
+      "pos": [
+        1220,
+        940
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_33"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r34",
+      "pos": [
+        1500,
+        940
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_34"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r35",
+      "pos": [
+        1780,
+        940
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_35"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r36",
+      "pos": [
+        380,
+        1120
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_36"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r37",
+      "pos": [
+        660,
+        1120
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_37"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r38",
+      "pos": [
+        940,
+        1120
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_38"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r39",
+      "pos": [
+        1220,
+        1120
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_39"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r40",
+      "pos": [
+        1500,
+        1120
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_40"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r41",
+      "pos": [
+        1780,
+        1120
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_41"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r42",
+      "pos": [
+        380,
+        1300
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_42"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r43",
+      "pos": [
+        660,
+        1300
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_43"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r44",
+      "pos": [
+        940,
+        1300
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_44"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r45",
+      "pos": [
+        1220,
+        1300
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_45"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r46",
+      "pos": [
+        1500,
+        1300
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_46"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r47",
+      "pos": [
+        1780,
+        1300
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_47"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r48",
+      "pos": [
+        380,
+        1480
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_48"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r49",
+      "pos": [
+        660,
+        1480
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_49"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r50",
+      "pos": [
+        940,
+        1480
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_50"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r51",
+      "pos": [
+        1220,
+        1480
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_51"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r52",
+      "pos": [
+        1500,
+        1480
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_52"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r53",
+      "pos": [
+        1780,
+        1480
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_53"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r54",
+      "pos": [
+        380,
+        1660
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_54"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r55",
+      "pos": [
+        660,
+        1660
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_55"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r56",
+      "pos": [
+        940,
+        1660
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_56"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r57",
+      "pos": [
+        1220,
+        1660
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_57"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r58",
+      "pos": [
+        1500,
+        1660
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_58"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r59",
+      "pos": [
+        1780,
+        1660
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_59"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r60",
+      "pos": [
+        380,
+        1840
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_60"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r61",
+      "pos": [
+        660,
+        1840
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_61"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r62",
+      "pos": [
+        940,
+        1840
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_62"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r63",
+      "pos": [
+        1220,
+        1840
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_63"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r64",
+      "pos": [
+        1500,
+        1840
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_64"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r65",
+      "pos": [
+        1780,
+        1840
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_65"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r66",
+      "pos": [
+        380,
+        2020
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_66"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r67",
+      "pos": [
+        660,
+        2020
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_67"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r68",
+      "pos": [
+        940,
+        2020
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_68"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r69",
+      "pos": [
+        1220,
+        2020
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_69"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r70",
+      "pos": [
+        1500,
+        2020
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_70"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r71",
+      "pos": [
+        1780,
+        2020
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_71"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r72",
+      "pos": [
+        380,
+        2200
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_72"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r73",
+      "pos": [
+        660,
+        2200
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_73"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r74",
+      "pos": [
+        940,
+        2200
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_74"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r75",
+      "pos": [
+        1220,
+        2200
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_75"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r76",
+      "pos": [
+        1500,
+        2200
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_76"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r77",
+      "pos": [
+        1780,
+        2200
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_77"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r78",
+      "pos": [
+        380,
+        2380
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_78"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r79",
+      "pos": [
+        660,
+        2380
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_79"
+      }
+    }
+  ],
+  "connections": [
+    {
+      "from": "u_src",
+      "output": "Out",
+      "to": "u_r0"
+    },
+    {
+      "from": "u_r0",
+      "output": "Out",
+      "to": "u_r1"
+    },
+    {
+      "from": "u_r1",
+      "output": "Out",
+      "to": "u_r2"
+    },
+    {
+      "from": "u_r2",
+      "output": "Out",
+      "to": "u_r3"
+    },
+    {
+      "from": "u_r3",
+      "output": "Out",
+      "to": "u_r4"
+    },
+    {
+      "from": "u_r4",
+      "output": "Out",
+      "to": "u_r5"
+    },
+    {
+      "from": "u_r5",
+      "output": "Out",
+      "to": "u_r6"
+    },
+    {
+      "from": "u_r6",
+      "output": "Out",
+      "to": "u_r7"
+    },
+    {
+      "from": "u_r7",
+      "output": "Out",
+      "to": "u_r8"
+    },
+    {
+      "from": "u_r8",
+      "output": "Out",
+      "to": "u_r9"
+    },
+    {
+      "from": "u_r9",
+      "output": "Out",
+      "to": "u_r10"
+    },
+    {
+      "from": "u_r10",
+      "output": "Out",
+      "to": "u_r11"
+    },
+    {
+      "from": "u_r11",
+      "output": "Out",
+      "to": "u_r12"
+    },
+    {
+      "from": "u_r12",
+      "output": "Out",
+      "to": "u_r13"
+    },
+    {
+      "from": "u_r13",
+      "output": "Out",
+      "to": "u_r14"
+    },
+    {
+      "from": "u_r14",
+      "output": "Out",
+      "to": "u_r15"
+    },
+    {
+      "from": "u_r15",
+      "output": "Out",
+      "to": "u_r16"
+    },
+    {
+      "from": "u_r16",
+      "output": "Out",
+      "to": "u_r17"
+    },
+    {
+      "from": "u_r17",
+      "output": "Out",
+      "to": "u_r18"
+    },
+    {
+      "from": "u_r18",
+      "output": "Out",
+      "to": "u_r19"
+    },
+    {
+      "from": "u_r19",
+      "output": "Out",
+      "to": "u_r20"
+    },
+    {
+      "from": "u_r20",
+      "output": "Out",
+      "to": "u_r21"
+    },
+    {
+      "from": "u_r21",
+      "output": "Out",
+      "to": "u_r22"
+    },
+    {
+      "from": "u_r22",
+      "output": "Out",
+      "to": "u_r23"
+    },
+    {
+      "from": "u_r23",
+      "output": "Out",
+      "to": "u_r24"
+    },
+    {
+      "from": "u_r24",
+      "output": "Out",
+      "to": "u_r25"
+    },
+    {
+      "from": "u_r25",
+      "output": "Out",
+      "to": "u_r26"
+    },
+    {
+      "from": "u_r26",
+      "output": "Out",
+      "to": "u_r27"
+    },
+    {
+      "from": "u_r27",
+      "output": "Out",
+      "to": "u_r28"
+    },
+    {
+      "from": "u_r28",
+      "output": "Out",
+      "to": "u_r29"
+    },
+    {
+      "from": "u_r29",
+      "output": "Out",
+      "to": "u_r30"
+    },
+    {
+      "from": "u_r30",
+      "output": "Out",
+      "to": "u_r31"
+    },
+    {
+      "from": "u_r31",
+      "output": "Out",
+      "to": "u_r32"
+    },
+    {
+      "from": "u_r32",
+      "output": "Out",
+      "to": "u_r33"
+    },
+    {
+      "from": "u_r33",
+      "output": "Out",
+      "to": "u_r34"
+    },
+    {
+      "from": "u_r34",
+      "output": "Out",
+      "to": "u_r35"
+    },
+    {
+      "from": "u_r35",
+      "output": "Out",
+      "to": "u_r36"
+    },
+    {
+      "from": "u_r36",
+      "output": "Out",
+      "to": "u_r37"
+    },
+    {
+      "from": "u_r37",
+      "output": "Out",
+      "to": "u_r38"
+    },
+    {
+      "from": "u_r38",
+      "output": "Out",
+      "to": "u_r39"
+    },
+    {
+      "from": "u_r39",
+      "output": "Out",
+      "to": "u_r40"
+    },
+    {
+      "from": "u_r40",
+      "output": "Out",
+      "to": "u_r41"
+    },
+    {
+      "from": "u_r41",
+      "output": "Out",
+      "to": "u_r42"
+    },
+    {
+      "from": "u_r42",
+      "output": "Out",
+      "to": "u_r43"
+    },
+    {
+      "from": "u_r43",
+      "output": "Out",
+      "to": "u_r44"
+    },
+    {
+      "from": "u_r44",
+      "output": "Out",
+      "to": "u_r45"
+    },
+    {
+      "from": "u_r45",
+      "output": "Out",
+      "to": "u_r46"
+    },
+    {
+      "from": "u_r46",
+      "output": "Out",
+      "to": "u_r47"
+    },
+    {
+      "from": "u_r47",
+      "output": "Out",
+      "to": "u_r48"
+    },
+    {
+      "from": "u_r48",
+      "output": "Out",
+      "to": "u_r49"
+    },
+    {
+      "from": "u_r49",
+      "output": "Out",
+      "to": "u_r50"
+    },
+    {
+      "from": "u_r50",
+      "output": "Out",
+      "to": "u_r51"
+    },
+    {
+      "from": "u_r51",
+      "output": "Out",
+      "to": "u_r52"
+    },
+    {
+      "from": "u_r52",
+      "output": "Out",
+      "to": "u_r53"
+    },
+    {
+      "from": "u_r53",
+      "output": "Out",
+      "to": "u_r54"
+    },
+    {
+      "from": "u_r54",
+      "output": "Out",
+      "to": "u_r55"
+    },
+    {
+      "from": "u_r55",
+      "output": "Out",
+      "to": "u_r56"
+    },
+    {
+      "from": "u_r56",
+      "output": "Out",
+      "to": "u_r57"
+    },
+    {
+      "from": "u_r57",
+      "output": "Out",
+      "to": "u_r58"
+    },
+    {
+      "from": "u_r58",
+      "output": "Out",
+      "to": "u_r59"
+    },
+    {
+      "from": "u_r59",
+      "output": "Out",
+      "to": "u_r60"
+    },
+    {
+      "from": "u_r60",
+      "output": "Out",
+      "to": "u_r61"
+    },
+    {
+      "from": "u_r61",
+      "output": "Out",
+      "to": "u_r62"
+    },
+    {
+      "from": "u_r62",
+      "output": "Out",
+      "to": "u_r63"
+    },
+    {
+      "from": "u_r63",
+      "output": "Out",
+      "to": "u_r64"
+    },
+    {
+      "from": "u_r64",
+      "output": "Out",
+      "to": "u_r65"
+    },
+    {
+      "from": "u_r65",
+      "output": "Out",
+      "to": "u_r66"
+    },
+    {
+      "from": "u_r66",
+      "output": "Out",
+      "to": "u_r67"
+    },
+    {
+      "from": "u_r67",
+      "output": "Out",
+      "to": "u_r68"
+    },
+    {
+      "from": "u_r68",
+      "output": "Out",
+      "to": "u_r69"
+    },
+    {
+      "from": "u_r69",
+      "output": "Out",
+      "to": "u_r70"
+    },
+    {
+      "from": "u_r70",
+      "output": "Out",
+      "to": "u_r71"
+    },
+    {
+      "from": "u_r71",
+      "output": "Out",
+      "to": "u_r72"
+    },
+    {
+      "from": "u_r72",
+      "output": "Out",
+      "to": "u_r73"
+    },
+    {
+      "from": "u_r73",
+      "output": "Out",
+      "to": "u_r74"
+    },
+    {
+      "from": "u_r74",
+      "output": "Out",
+      "to": "u_r75"
+    },
+    {
+      "from": "u_r75",
+      "output": "Out",
+      "to": "u_r76"
+    },
+    {
+      "from": "u_r76",
+      "output": "Out",
+      "to": "u_r77"
+    },
+    {
+      "from": "u_r77",
+      "output": "Out",
+      "to": "u_r78"
+    },
+    {
+      "from": "u_r78",
+      "output": "Out",
+      "to": "u_r79"
+    }
+  ],
+  "is_relative": false
+}

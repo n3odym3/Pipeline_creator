@@ -14,7 +14,7 @@ import dearpygui.dearpygui as dpg
 from loguru import logger
 
 from core.module_registry import MODULES_REGISTRY
-from core.paths import LOGS_DIR
+from core.paths import BENCHMARK_DIR
 
 
 def _load_psutil() -> Any:
@@ -770,7 +770,7 @@ class FlowMetricsViewer:
     def _on_export_snapshot(self, sender: Any = None, app_data: Any = None, user_data: Any = None, *args: Any) -> None:
         try:
             snap = self._collect_snapshot()
-            out_dir: Path = LOGS_DIR / "benchmarks"
+            out_dir: Path = BENCHMARK_DIR
             out_dir.mkdir(parents=True, exist_ok=True)
             filename = out_dir / f"flow_metrics_snapshot_{int(time.time())}.json"
             clean_snap = dict(snap)

@@ -1,0 +1,244 @@
+{
+  "windows": [
+    {
+      "module": "modules.benchmark.perf_pulse_source_win",
+      "class_name": "PerfPulseSource_win",
+      "uuid": "u_src",
+      "pos": [
+        40,
+        40
+      ],
+      "size": [
+        320,
+        240
+      ],
+      "visible": false,
+      "params": {
+        "label": "BenchSource"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r0",
+      "pos": [
+        380,
+        40
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_0"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r1",
+      "pos": [
+        660,
+        40
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_1"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r2",
+      "pos": [
+        940,
+        40
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_2"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r3",
+      "pos": [
+        1220,
+        40
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_3"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r4",
+      "pos": [
+        1500,
+        40
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_4"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r5",
+      "pos": [
+        1780,
+        40
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_5"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r6",
+      "pos": [
+        380,
+        220
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_6"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r7",
+      "pos": [
+        660,
+        220
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_7"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r8",
+      "pos": [
+        940,
+        220
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_8"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_r9",
+      "pos": [
+        1220,
+        220
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Chain_9"
+      }
+    }
+  ],
+  "connections": [
+    {
+      "from": "u_src",
+      "output": "Out",
+      "to": "u_r0"
+    },
+    {
+      "from": "u_r0",
+      "output": "Out",
+      "to": "u_r1"
+    },
+    {
+      "from": "u_r1",
+      "output": "Out",
+      "to": "u_r2"
+    },
+    {
+      "from": "u_r2",
+      "output": "Out",
+      "to": "u_r3"
+    },
+    {
+      "from": "u_r3",
+      "output": "Out",
+      "to": "u_r4"
+    },
+    {
+      "from": "u_r4",
+      "output": "Out",
+      "to": "u_r5"
+    },
+    {
+      "from": "u_r5",
+      "output": "Out",
+      "to": "u_r6"
+    },
+    {
+      "from": "u_r6",
+      "output": "Out",
+      "to": "u_r7"
+    },
+    {
+      "from": "u_r7",
+      "output": "Out",
+      "to": "u_r8"
+    },
+    {
+      "from": "u_r8",
+      "output": "Out",
+      "to": "u_r9"
+    }
+  ],
+  "is_relative": false
+}

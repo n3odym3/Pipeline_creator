@@ -1,0 +1,112 @@
+{
+  "windows": [
+    {
+      "module": "modules.benchmark.perf_pulse_source_win",
+      "class_name": "PerfPulseSource_win",
+      "uuid": "u_src",
+      "pos": [
+        40,
+        40
+      ],
+      "size": [
+        320,
+        240
+      ],
+      "visible": false,
+      "params": {
+        "label": "BenchSource"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_f0",
+      "pos": [
+        400,
+        40
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Fan_0"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_f1",
+      "pos": [
+        670,
+        40
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Fan_1"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_f2",
+      "pos": [
+        940,
+        40
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Fan_2"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_f3",
+      "pos": [
+        1210,
+        40
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Fan_3"
+      }
+    }
+  ],
+  "connections": [
+    {
+      "from": "u_src",
+      "output": "Out",
+      "to": "u_f0"
+    },
+    {
+      "from": "u_src",
+      "output": "Out",
+      "to": "u_f1"
+    },
+    {
+      "from": "u_src",
+      "output": "Out",
+      "to": "u_f2"
+    },
+    {
+      "from": "u_src",
+      "output": "Out",
+      "to": "u_f3"
+    }
+  ],
+  "is_relative": false
+}

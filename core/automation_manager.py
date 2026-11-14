@@ -34,11 +34,17 @@ class AutomationManager:
         self.node_editor: Any = None
         self._pending_tasks: queue.Queue[tuple[Any, threading.Event]] = queue.Queue()
         self._is_running: bool = False
+        self._has_finished: bool = False
 
     @property
     def is_running(self) -> bool:
         """Return True if an automation script is currently executing."""
         return self._is_running
+
+    @property
+    def has_finished(self) -> bool:
+        """Return True once the last started automation script has completed."""
+        return self._has_finished
 
     def process_pending_steps(self) -> None:
         """Process queued UI automation tasks on the main thread."""
@@ -123,6 +129,7 @@ class AutomationManager:
             return
 
         self._is_running = True
+        self._has_finished = False
         try:
             with open(path, "r", encoding="utf-8") as f:
                 script_data = json.load(f)
@@ -142,6 +149,7 @@ class AutomationManager:
             logger.error(f"Automation failed: {e}")
         finally:
             self._is_running = False
+            self._has_finished = True
 
     def _execute_step(self, step: Dict[str, Any]) -> None:
         """Dispatcher for automation steps."""

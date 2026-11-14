@@ -1,0 +1,1201 @@
+{
+  "name": "Progressive Stress Suite (headless)",
+  "steps": [
+    {
+      "action": "load_pipeline",
+      "path": "C:\\Users\\gerva\\OneDrive\\Documents\\GitHub\\Pipeline_creator\\benchmark\\generated\\pipelines\\stress_chain_d2.json"
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_start",
+      "params": {
+        "scenario": "stress_chain_d2",
+        "mode": "headless",
+        "metadata": {
+          "stress_axis": "chain",
+          "depth": 2,
+          "nodes": 3,
+          "edges": 2,
+          "ui_update_hz": 0.0
+        }
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "run_burst",
+      "params": {
+        "count": 600,
+        "profile": "token",
+        "warmup": 30
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_stop"
+    },
+    {
+      "action": "load_pipeline",
+      "path": "C:\\Users\\gerva\\OneDrive\\Documents\\GitHub\\Pipeline_creator\\benchmark\\generated\\pipelines\\stress_chain_d10.json"
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_start",
+      "params": {
+        "scenario": "stress_chain_d10",
+        "mode": "headless",
+        "metadata": {
+          "stress_axis": "chain",
+          "depth": 10,
+          "nodes": 11,
+          "edges": 10,
+          "ui_update_hz": 0.0
+        }
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "run_burst",
+      "params": {
+        "count": 600,
+        "profile": "token",
+        "warmup": 30
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_stop"
+    },
+    {
+      "action": "load_pipeline",
+      "path": "C:\\Users\\gerva\\OneDrive\\Documents\\GitHub\\Pipeline_creator\\benchmark\\generated\\pipelines\\stress_chain_d20.json"
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_start",
+      "params": {
+        "scenario": "stress_chain_d20",
+        "mode": "headless",
+        "metadata": {
+          "stress_axis": "chain",
+          "depth": 20,
+          "nodes": 21,
+          "edges": 20,
+          "ui_update_hz": 0.0
+        }
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "run_burst",
+      "params": {
+        "count": 600,
+        "profile": "token",
+        "warmup": 30
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_stop"
+    },
+    {
+      "action": "load_pipeline",
+      "path": "C:\\Users\\gerva\\OneDrive\\Documents\\GitHub\\Pipeline_creator\\benchmark\\generated\\pipelines\\stress_chain_d40.json"
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_start",
+      "params": {
+        "scenario": "stress_chain_d40",
+        "mode": "headless",
+        "metadata": {
+          "stress_axis": "chain",
+          "depth": 40,
+          "nodes": 41,
+          "edges": 40,
+          "ui_update_hz": 0.0
+        }
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "run_burst",
+      "params": {
+        "count": 600,
+        "profile": "token",
+        "warmup": 30
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_stop"
+    },
+    {
+      "action": "load_pipeline",
+      "path": "C:\\Users\\gerva\\OneDrive\\Documents\\GitHub\\Pipeline_creator\\benchmark\\generated\\pipelines\\stress_chain_d80.json"
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_start",
+      "params": {
+        "scenario": "stress_chain_d80",
+        "mode": "headless",
+        "metadata": {
+          "stress_axis": "chain",
+          "depth": 80,
+          "nodes": 81,
+          "edges": 80,
+          "ui_update_hz": 0.0
+        }
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "run_burst",
+      "params": {
+        "count": 300,
+        "profile": "token",
+        "warmup": 30
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_stop"
+    },
+    {
+      "action": "load_pipeline",
+      "path": "C:\\Users\\gerva\\OneDrive\\Documents\\GitHub\\Pipeline_creator\\benchmark\\generated\\pipelines\\stress_chain_d120.json"
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_start",
+      "params": {
+        "scenario": "stress_chain_d120",
+        "mode": "headless",
+        "metadata": {
+          "stress_axis": "chain",
+          "depth": 120,
+          "nodes": 121,
+          "edges": 120,
+          "ui_update_hz": 0.0
+        }
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "run_burst",
+      "params": {
+        "count": 200,
+        "profile": "token",
+        "warmup": 30
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_stop"
+    },
+    {
+      "action": "load_pipeline",
+      "path": "C:\\Users\\gerva\\OneDrive\\Documents\\GitHub\\Pipeline_creator\\benchmark\\generated\\pipelines\\stress_chain_d160.json"
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_start",
+      "params": {
+        "scenario": "stress_chain_d160",
+        "mode": "headless",
+        "metadata": {
+          "stress_axis": "chain",
+          "depth": 160,
+          "nodes": 161,
+          "edges": 160,
+          "ui_update_hz": 0.0
+        }
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "run_burst",
+      "params": {
+        "count": 200,
+        "profile": "token",
+        "warmup": 30
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_stop"
+    },
+    {
+      "action": "load_pipeline",
+      "path": "C:\\Users\\gerva\\OneDrive\\Documents\\GitHub\\Pipeline_creator\\benchmark\\generated\\pipelines\\stress_fanout_k1.json"
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_start",
+      "params": {
+        "scenario": "stress_fanout_k1",
+        "mode": "headless",
+        "metadata": {
+          "stress_axis": "fanout",
+          "fanout": 1,
+          "nodes": 2,
+          "edges": 1,
+          "ui_update_hz": 0.0
+        }
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "run_burst",
+      "params": {
+        "count": 500,
+        "profile": "token",
+        "warmup": 20
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_stop"
+    },
+    {
+      "action": "load_pipeline",
+      "path": "C:\\Users\\gerva\\OneDrive\\Documents\\GitHub\\Pipeline_creator\\benchmark\\generated\\pipelines\\stress_fanout_k4.json"
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_start",
+      "params": {
+        "scenario": "stress_fanout_k4",
+        "mode": "headless",
+        "metadata": {
+          "stress_axis": "fanout",
+          "fanout": 4,
+          "nodes": 5,
+          "edges": 4,
+          "ui_update_hz": 0.0
+        }
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "run_burst",
+      "params": {
+        "count": 500,
+        "profile": "token",
+        "warmup": 20
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_stop"
+    },
+    {
+      "action": "load_pipeline",
+      "path": "C:\\Users\\gerva\\OneDrive\\Documents\\GitHub\\Pipeline_creator\\benchmark\\generated\\pipelines\\stress_fanout_k16.json"
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_start",
+      "params": {
+        "scenario": "stress_fanout_k16",
+        "mode": "headless",
+        "metadata": {
+          "stress_axis": "fanout",
+          "fanout": 16,
+          "nodes": 17,
+          "edges": 16,
+          "ui_update_hz": 0.0
+        }
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "run_burst",
+      "params": {
+        "count": 500,
+        "profile": "token",
+        "warmup": 20
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_stop"
+    },
+    {
+      "action": "load_pipeline",
+      "path": "C:\\Users\\gerva\\OneDrive\\Documents\\GitHub\\Pipeline_creator\\benchmark\\generated\\pipelines\\stress_fanout_k32.json"
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_start",
+      "params": {
+        "scenario": "stress_fanout_k32",
+        "mode": "headless",
+        "metadata": {
+          "stress_axis": "fanout",
+          "fanout": 32,
+          "nodes": 33,
+          "edges": 32,
+          "ui_update_hz": 0.0
+        }
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "run_burst",
+      "params": {
+        "count": 500,
+        "profile": "token",
+        "warmup": 20
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_stop"
+    },
+    {
+      "action": "load_pipeline",
+      "path": "C:\\Users\\gerva\\OneDrive\\Documents\\GitHub\\Pipeline_creator\\benchmark\\generated\\pipelines\\stress_fanout_k64.json"
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_start",
+      "params": {
+        "scenario": "stress_fanout_k64",
+        "mode": "headless",
+        "metadata": {
+          "stress_axis": "fanout",
+          "fanout": 64,
+          "nodes": 65,
+          "edges": 64,
+          "ui_update_hz": 0.0
+        }
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "run_burst",
+      "params": {
+        "count": 250,
+        "profile": "token",
+        "warmup": 20
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_stop"
+    },
+    {
+      "action": "load_pipeline",
+      "path": "C:\\Users\\gerva\\OneDrive\\Documents\\GitHub\\Pipeline_creator\\benchmark\\generated\\pipelines\\stress_fanout_k128.json"
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_start",
+      "params": {
+        "scenario": "stress_fanout_k128",
+        "mode": "headless",
+        "metadata": {
+          "stress_axis": "fanout",
+          "fanout": 128,
+          "nodes": 129,
+          "edges": 128,
+          "ui_update_hz": 0.0
+        }
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "run_burst",
+      "params": {
+        "count": 120,
+        "profile": "token",
+        "warmup": 20
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_stop"
+    },
+    {
+      "action": "load_pipeline",
+      "path": "C:\\Users\\gerva\\OneDrive\\Documents\\GitHub\\Pipeline_creator\\benchmark\\generated\\pipelines\\stress_fanout_k192.json"
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_start",
+      "params": {
+        "scenario": "stress_fanout_k192",
+        "mode": "headless",
+        "metadata": {
+          "stress_axis": "fanout",
+          "fanout": 192,
+          "nodes": 193,
+          "edges": 192,
+          "ui_update_hz": 0.0
+        }
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "run_burst",
+      "params": {
+        "count": 120,
+        "profile": "token",
+        "warmup": 20
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_stop"
+    },
+    {
+      "action": "load_pipeline",
+      "path": "C:\\Users\\gerva\\OneDrive\\Documents\\GitHub\\Pipeline_creator\\benchmark\\generated\\pipelines\\stress_mesh_2x4.json"
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_start",
+      "params": {
+        "scenario": "stress_mesh_2x4",
+        "mode": "headless",
+        "metadata": {
+          "stress_axis": "mesh",
+          "layers": 2,
+          "width": 4,
+          "nodes": 9,
+          "edges": 20,
+          "deliveries_per_pulse": 16,
+          "ui_update_hz": 0.0
+        }
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "run_burst",
+      "params": {
+        "count": 200,
+        "profile": "token",
+        "warmup": 2
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_stop"
+    },
+    {
+      "action": "load_pipeline",
+      "path": "C:\\Users\\gerva\\OneDrive\\Documents\\GitHub\\Pipeline_creator\\benchmark\\generated\\pipelines\\stress_mesh_3x4.json"
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_start",
+      "params": {
+        "scenario": "stress_mesh_3x4",
+        "mode": "headless",
+        "metadata": {
+          "stress_axis": "mesh",
+          "layers": 3,
+          "width": 4,
+          "nodes": 13,
+          "edges": 36,
+          "deliveries_per_pulse": 64,
+          "ui_update_hz": 0.0
+        }
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "run_burst",
+      "params": {
+        "count": 80,
+        "profile": "token",
+        "warmup": 2
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_stop"
+    },
+    {
+      "action": "load_pipeline",
+      "path": "C:\\Users\\gerva\\OneDrive\\Documents\\GitHub\\Pipeline_creator\\benchmark\\generated\\pipelines\\stress_mesh_4x4.json"
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_start",
+      "params": {
+        "scenario": "stress_mesh_4x4",
+        "mode": "headless",
+        "metadata": {
+          "stress_axis": "mesh",
+          "layers": 4,
+          "width": 4,
+          "nodes": 17,
+          "edges": 52,
+          "deliveries_per_pulse": 256,
+          "ui_update_hz": 0.0
+        }
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "run_burst",
+      "params": {
+        "count": 35,
+        "profile": "token",
+        "warmup": 2
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_stop"
+    },
+    {
+      "action": "load_pipeline",
+      "path": "C:\\Users\\gerva\\OneDrive\\Documents\\GitHub\\Pipeline_creator\\benchmark\\generated\\pipelines\\stress_mesh_4x6.json"
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_start",
+      "params": {
+        "scenario": "stress_mesh_4x6",
+        "mode": "headless",
+        "metadata": {
+          "stress_axis": "mesh",
+          "layers": 4,
+          "width": 6,
+          "nodes": 25,
+          "edges": 114,
+          "deliveries_per_pulse": 1296,
+          "ui_update_hz": 0.0
+        }
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "run_burst",
+      "params": {
+        "count": 12,
+        "profile": "token",
+        "warmup": 2
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_stop"
+    },
+    {
+      "action": "load_pipeline",
+      "path": "C:\\Users\\gerva\\OneDrive\\Documents\\GitHub\\Pipeline_creator\\benchmark\\generated\\pipelines\\stress_mesh_4x8.json"
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_start",
+      "params": {
+        "scenario": "stress_mesh_4x8",
+        "mode": "headless",
+        "metadata": {
+          "stress_axis": "mesh",
+          "layers": 4,
+          "width": 8,
+          "nodes": 33,
+          "edges": 200,
+          "deliveries_per_pulse": 4096,
+          "ui_update_hz": 0.0
+        }
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "run_burst",
+      "params": {
+        "count": 6,
+        "profile": "token",
+        "warmup": 2
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_stop"
+    },
+    {
+      "action": "load_pipeline",
+      "path": "C:\\Users\\gerva\\OneDrive\\Documents\\GitHub\\Pipeline_creator\\benchmark\\generated\\pipelines\\stress_mesh_5x6.json"
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_start",
+      "params": {
+        "scenario": "stress_mesh_5x6",
+        "mode": "headless",
+        "metadata": {
+          "stress_axis": "mesh",
+          "layers": 5,
+          "width": 6,
+          "nodes": 31,
+          "edges": 150,
+          "deliveries_per_pulse": 7776,
+          "ui_update_hz": 0.0
+        }
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "run_burst",
+      "params": {
+        "count": 4,
+        "profile": "token",
+        "warmup": 1
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_stop"
+    },
+    {
+      "action": "load_pipeline",
+      "path": "C:\\Users\\gerva\\OneDrive\\Documents\\GitHub\\Pipeline_creator\\benchmark\\generated\\pipelines\\stress_mesh_5x8.json"
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_start",
+      "params": {
+        "scenario": "stress_mesh_5x8",
+        "mode": "headless",
+        "metadata": {
+          "stress_axis": "mesh",
+          "layers": 5,
+          "width": 8,
+          "nodes": 41,
+          "edges": 264,
+          "deliveries_per_pulse": 32768,
+          "ui_update_hz": 0.0
+        }
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "run_burst",
+      "params": {
+        "count": 3,
+        "profile": "token",
+        "warmup": 1
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_stop"
+    },
+    {
+      "action": "load_pipeline",
+      "path": "C:\\Users\\gerva\\OneDrive\\Documents\\GitHub\\Pipeline_creator\\benchmark\\generated\\pipelines\\stress_workers_p1.json"
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "run_burst",
+      "params": {
+        "count": 6,
+        "profile": "numpy_1080p_rgb",
+        "warmup": 0
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "wait_workers_idle",
+      "params": {
+        "timeout_s": 25.0
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_start",
+      "params": {
+        "scenario": "stress_workers_p1",
+        "mode": "headless",
+        "metadata": {
+          "stress_axis": "workers",
+          "parallel_workers": 1,
+          "work_us": 2000,
+          "buffer_size": 6,
+          "payload": "1080p RGB (6.22 MB)",
+          "ui_update_hz": 0.0
+        }
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "run_burst",
+      "params": {
+        "count": 20,
+        "profile": "numpy_1080p_rgb",
+        "warmup": 0
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "wait_workers_idle",
+      "params": {
+        "timeout_s": 30.0
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_stop"
+    },
+    {
+      "action": "load_pipeline",
+      "path": "C:\\Users\\gerva\\OneDrive\\Documents\\GitHub\\Pipeline_creator\\benchmark\\generated\\pipelines\\stress_workers_p2.json"
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "run_burst",
+      "params": {
+        "count": 6,
+        "profile": "numpy_1080p_rgb",
+        "warmup": 0
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "wait_workers_idle",
+      "params": {
+        "timeout_s": 25.0
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_start",
+      "params": {
+        "scenario": "stress_workers_p2",
+        "mode": "headless",
+        "metadata": {
+          "stress_axis": "workers",
+          "parallel_workers": 2,
+          "work_us": 2000,
+          "buffer_size": 6,
+          "payload": "1080p RGB (6.22 MB)",
+          "ui_update_hz": 0.0
+        }
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "run_burst",
+      "params": {
+        "count": 20,
+        "profile": "numpy_1080p_rgb",
+        "warmup": 0
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "wait_workers_idle",
+      "params": {
+        "timeout_s": 30.0
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_stop"
+    },
+    {
+      "action": "load_pipeline",
+      "path": "C:\\Users\\gerva\\OneDrive\\Documents\\GitHub\\Pipeline_creator\\benchmark\\generated\\pipelines\\stress_workers_p4.json"
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "run_burst",
+      "params": {
+        "count": 6,
+        "profile": "numpy_1080p_rgb",
+        "warmup": 0
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "wait_workers_idle",
+      "params": {
+        "timeout_s": 25.0
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_start",
+      "params": {
+        "scenario": "stress_workers_p4",
+        "mode": "headless",
+        "metadata": {
+          "stress_axis": "workers",
+          "parallel_workers": 4,
+          "work_us": 2000,
+          "buffer_size": 6,
+          "payload": "1080p RGB (6.22 MB)",
+          "ui_update_hz": 0.0
+        }
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "run_burst",
+      "params": {
+        "count": 20,
+        "profile": "numpy_1080p_rgb",
+        "warmup": 0
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "wait_workers_idle",
+      "params": {
+        "timeout_s": 30.0
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_stop"
+    },
+    {
+      "action": "load_pipeline",
+      "path": "C:\\Users\\gerva\\OneDrive\\Documents\\GitHub\\Pipeline_creator\\benchmark\\generated\\pipelines\\stress_workers_p8.json"
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "run_burst",
+      "params": {
+        "count": 6,
+        "profile": "numpy_1080p_rgb",
+        "warmup": 0
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "wait_workers_idle",
+      "params": {
+        "timeout_s": 25.0
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_start",
+      "params": {
+        "scenario": "stress_workers_p8",
+        "mode": "headless",
+        "metadata": {
+          "stress_axis": "workers",
+          "parallel_workers": 8,
+          "work_us": 2000,
+          "buffer_size": 6,
+          "payload": "1080p RGB (6.22 MB)",
+          "ui_update_hz": 0.0
+        }
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "run_burst",
+      "params": {
+        "count": 20,
+        "profile": "numpy_1080p_rgb",
+        "warmup": 0
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "wait_workers_idle",
+      "params": {
+        "timeout_s": 30.0
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_stop"
+    },
+    {
+      "action": "load_pipeline",
+      "path": "C:\\Users\\gerva\\OneDrive\\Documents\\GitHub\\Pipeline_creator\\benchmark\\generated\\pipelines\\stress_workers_p12.json"
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "run_burst",
+      "params": {
+        "count": 6,
+        "profile": "numpy_1080p_rgb",
+        "warmup": 0
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "wait_workers_idle",
+      "params": {
+        "timeout_s": 25.0
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_start",
+      "params": {
+        "scenario": "stress_workers_p12",
+        "mode": "headless",
+        "metadata": {
+          "stress_axis": "workers",
+          "parallel_workers": 12,
+          "work_us": 2000,
+          "buffer_size": 6,
+          "payload": "1080p RGB (6.22 MB)",
+          "ui_update_hz": 0.0
+        }
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "run_burst",
+      "params": {
+        "count": 20,
+        "profile": "numpy_1080p_rgb",
+        "warmup": 0
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "wait_workers_idle",
+      "params": {
+        "timeout_s": 30.0
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_stop"
+    },
+    {
+      "action": "load_pipeline",
+      "path": "C:\\Users\\gerva\\OneDrive\\Documents\\GitHub\\Pipeline_creator\\benchmark\\generated\\pipelines\\stress_workers_p16.json"
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "run_burst",
+      "params": {
+        "count": 6,
+        "profile": "numpy_1080p_rgb",
+        "warmup": 0
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "wait_workers_idle",
+      "params": {
+        "timeout_s": 25.0
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_start",
+      "params": {
+        "scenario": "stress_workers_p16",
+        "mode": "headless",
+        "metadata": {
+          "stress_axis": "workers",
+          "parallel_workers": 16,
+          "work_us": 2000,
+          "buffer_size": 6,
+          "payload": "1080p RGB (6.22 MB)",
+          "ui_update_hz": 0.0
+        }
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "run_burst",
+      "params": {
+        "count": 20,
+        "profile": "numpy_1080p_rgb",
+        "warmup": 0
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "wait_workers_idle",
+      "params": {
+        "timeout_s": 30.0
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_stop"
+    },
+    {
+      "action": "load_pipeline",
+      "path": "C:\\Users\\gerva\\OneDrive\\Documents\\GitHub\\Pipeline_creator\\benchmark\\generated\\pipelines\\stress_workers_p20.json"
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "run_burst",
+      "params": {
+        "count": 6,
+        "profile": "numpy_1080p_rgb",
+        "warmup": 0
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "wait_workers_idle",
+      "params": {
+        "timeout_s": 25.0
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_start",
+      "params": {
+        "scenario": "stress_workers_p20",
+        "mode": "headless",
+        "metadata": {
+          "stress_axis": "workers",
+          "parallel_workers": 20,
+          "work_us": 2000,
+          "buffer_size": 6,
+          "payload": "1080p RGB (6.22 MB)",
+          "ui_update_hz": 0.0
+        }
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "run_burst",
+      "params": {
+        "count": 20,
+        "profile": "numpy_1080p_rgb",
+        "warmup": 0
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "wait_workers_idle",
+      "params": {
+        "timeout_s": 30.0
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_stop"
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "profiler_export",
+      "params": {
+        "output_prefix": "C:\\Users\\gerva\\OneDrive\\Documents\\GitHub\\Pipeline_creator\\benchmark\\stress_headless"
+      }
+    },
+    {
+      "action": "trigger",
+      "module_uuid": "u_src",
+      "method": "request_exit"
+    }
+  ]
+}

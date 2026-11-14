@@ -13,6 +13,8 @@ from typing import Any, Dict, Optional, Tuple, Union
 
 import dearpygui.dearpygui as dpg
 
+from core.app_state import app_state
+
 class LogViewer:
     """
     Class to capture and display logs in a DearPyGui window.
@@ -36,6 +38,7 @@ class LogViewer:
         self.log_container_tag: str = "log_viewer_container"
         self.auto_scroll: bool = True
         self.filter_text: str = ""
+        self.ui_sink_enabled: bool = True
 
     def sink(self, message: Any) -> None:
         """
@@ -53,8 +56,14 @@ class LogViewer:
         with self.lock:
             self.logs.append((text, level_name))
 
-            # Avoid calling DearPyGui functions from background threads for mkdocs logs to prevent thread-safety crashes
-            if not is_mkdocs and dpg.does_item_exist(self.log_container_tag):
+            # Avoid calling DearPyGui functions from background threads for mkdocs logs, headless mode,
+            # or after destroy_context() to prevent native C++ access violations.
+            if (
+                not is_mkdocs
+                and self.ui_sink_enabled
+                and not app_state.headless
+                and dpg.does_item_exist(self.log_container_tag)
+            ):
                 if not self.filter_text or self.filter_text.lower() in text.lower():
                     color = self.LEVEL_COLORS.get(level_name, (255, 255, 255))
                     dpg.add_text(text.strip(), parent=self.log_container_tag, color=color)

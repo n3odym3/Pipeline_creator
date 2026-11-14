@@ -1164,9 +1164,11 @@ def load_positions_from_dict(data: Dict[str, Any]) -> Dict[str, Any]:
                 
         # Fallback to class matching if UUID not found
         if not target_win:
+            mod_low = str(mod_class_path or "").strip().lower()
+            mod_stripped = mod_low.removeprefix("modules.")
             for r in registered:
-                r_mod = r.__class__.__module__
-                if r_mod == mod_class_path or r_mod == f"modules.{mod_class_path}" or r_mod.replace("modules.", "") == mod_class_path:
+                r_mod = str(getattr(r.__class__, "__module__", "") or "").lower()
+                if r_mod == mod_low or (mod_stripped and r_mod.removeprefix("modules.") == mod_stripped):
                     target_win = r
                     break
                     
@@ -1222,6 +1224,39 @@ def load_positions_from_dict(data: Dict[str, Any]) -> Dict[str, Any]:
     logger.success("Workspace positions reloaded from dictionary")
     # Return the dictionary of updated instances just in case it's needed
     return {win.UUID: win for win in registered if getattr(win, "UUID", None)}
+
+
+def resolve_module_class(
+    module_key: str,
+    module_registry: Dict[str, Any],
+) -> Optional[Any]:
+    """
+    Resolve a pipeline module class from ``module_registry``, supporting an optional
+    ``modules.`` prefix and case-insensitive dotted paths (e.g., ``Benchmark.foo``
+    matches ``modules.benchmark.foo`` and vice versa).
+    """
+    if not module_key or not module_registry:
+        return None
+
+    cls = module_registry.get(module_key)
+    if cls is not None:
+        return cls
+
+    if not module_key.startswith("modules."):
+        cls = module_registry.get(f"modules.{module_key}")
+        if cls is not None:
+            return cls
+
+    key_low = str(module_key).strip().lower()
+    stripped_low = key_low.removeprefix("modules.")
+    prefixed_low = f"modules.{stripped_low}"
+
+    for reg_key, reg_cls in module_registry.items():
+        rk_low = str(reg_key).lower()
+        if rk_low == key_low or rk_low == prefixed_low or rk_low.removeprefix("modules.") == stripped_low:
+            return reg_cls
+
+    return None
 
 
 def load_from_dict(
@@ -1289,12 +1324,8 @@ def load_from_dict(
     WindowBase._batch_loading = True
     for i, wdata in enumerate(data.get("windows", [])):
         module_key = wdata["module"]
-        cls = module_registry.get(module_key)
-        
-        # Fallback for older pipelines where "modules." might have been omitted
-        if not cls and not module_key.startswith("modules."):
-            cls = module_registry.get(f"modules.{module_key}")
-            
+        cls = resolve_module_class(module_key, module_registry)
+
         if not cls:
             msg = f"Unknown module in pipeline: {module_key}"
             logger.warning(msg)

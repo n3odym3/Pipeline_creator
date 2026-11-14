@@ -3,6 +3,7 @@ import sys
 import logging
 from pathlib import Path
 
+# Setup professional logging
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 logger = logging.getLogger("FontMerger")
 
@@ -41,6 +42,8 @@ def merge_fonts(main_font_path, icon_font_path, output_path):
         main_font['glyf'] = table__g_l_y_f()
         main_font['glyf'].glyphs = {}
         main_font['loca'] = table__l_o_c_a()
+        # We need to populate glyf with existing icons if we want to preserve them, 
+        # but for Consola.ttf -> Merged, it's safer to just use a TTF source.
 
     # 3. Tables to update
     main_hmtx = main_font['hmtx'].metrics
@@ -72,7 +75,9 @@ def merge_fonts(main_font_path, icon_font_path, output_path):
         if original_name not in icon_glyph_set:
             continue
             
-        # Guarantee NO collision with standard glyphs
+        # Guarantee NO collision with standard glyphs!
+        # We unconditionally prefix ALL imported FontAwesome vectors so they can never overwrite a Consolas base character.
+        # This fixes any mysterious overwrite issue completely.
         target_name = f"FA_icon_{code:04X}_{original_name}"
             
         added_to_cmap = False

@@ -91,8 +91,11 @@ class NodeEditor(
         self._init_perf_profiler()
 
         # --- Build GUI ---
-        vp_w = dpg.get_viewport_width() or 1200
-        vp_h = dpg.get_viewport_height() or 800
+        try:
+            vp_w = dpg.get_viewport_width() or 1200
+            vp_h = dpg.get_viewport_height() or 800
+        except Exception:
+            vp_w, vp_h = 1200, 800
         win_w = 800
         win_h = 600
         init_pos = (max(0, (vp_w - win_w) // 2), max(0, (vp_h - win_h) // 2))

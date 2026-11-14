@@ -374,6 +374,12 @@ def show_crash_popup(pump_frames: bool = False) -> None:
     and pumps DPG frames until the user answers (call it at startup, before
     the main loop).
     """
+    from core.app_state import app_state
+
+    if app_state.is_non_interactive():
+        logger.debug("Headless or automation script mode active - suppressing crash popup")
+        return
+
     tag = "bug_report_crash_popup"
     if dpg.does_item_exist(tag):
         dpg.delete_item(tag)

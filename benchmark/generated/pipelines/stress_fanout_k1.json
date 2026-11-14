@@ -1,0 +1,46 @@
+{
+  "windows": [
+    {
+      "module": "modules.benchmark.perf_pulse_source_win",
+      "class_name": "PerfPulseSource_win",
+      "uuid": "u_src",
+      "pos": [
+        40,
+        40
+      ],
+      "size": [
+        320,
+        240
+      ],
+      "visible": false,
+      "params": {
+        "label": "BenchSource"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_f0",
+      "pos": [
+        400,
+        40
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Fan_0"
+      }
+    }
+  ],
+  "connections": [
+    {
+      "from": "u_src",
+      "output": "Out",
+      "to": "u_f0"
+    }
+  ],
+  "is_relative": false
+}

@@ -223,3 +223,46 @@ Applies a saved named view layout preset.
 | Parameter | Type | Description |
 |---|---|---|
 | `view_name` | `str` | Name of the view to apply (e.g., `"user"`, `"advanced"`, or a custom name) |
+
+---
+
+## <u>Headless Execution Mode (`--headless`)</u>
+
+Pipeline Creator can run pipelines and `AutomationManager` scripts completely **headless**—without opening a splash screen, OS viewport window, GPU/OpenGL swapchain, or interactive startup dialogs (`ModuleHealthManager`, crash recovery popup, `LoginDialog`, or `StartupDialog`).
+
+This is useful for CI testing, server/background processing, batch pipelines, and benchmarking pure data-plane throughput without UI rendering overhead.
+
+### How Headless Mode Works
+
+When launched with `--headless`:
+
+1. `main.py` skips the `tkinter` splash screen and calls `strip_headless_cli_flags()` + `run_headless_app()` (`core/headless_runner.py`) immediately after `dpg.create_context()`.
+2. `install_headless_dpg_shims()` wraps DearPyGui viewport getters (returning a `1920x1080` virtual fallback) and viewport mutation calls as safe no-ops, and disables the `LogViewer` UI item sink so existing `WindowBase` and `ProcessingBase` modules can instantiate and communicate over `connections` / `LinkBus` without refactoring. Modules may also check `app_state.headless` to skip creating DPG widgets altogether.
+3. `AutomationManager` runs the JSON script provided via `--script` and processes main-thread steps inside a lightweight polling loop instead of `dpg.render_dearpygui_frame()`.
+
+### CLI Examples & Execution Flags
+
+```bash
+# Standard headless pipeline execution (auto-exits when script finishes)
+python main.py --headless --exit-on-complete --script scripts/my_startup.json
+
+# Fast benchmark-module discovery + safety watchdog timeout (60s)
+python main.py --headless --benchmark-modules-only --exit-on-complete --max-seconds 60 --script benchmark/generated/scripts/headless_matrix_script.json
+```
+
+| Flag | Applies To | Description |
+|---|---|---|
+| `--headless` | `main.py` | Launches via `core/headless_runner.py` with `app_state.headless = True` (no viewport, no GPU render loop). |
+| `--script <path>` | GUI & Headless | Path to an `AutomationManager` JSON script to execute on startup (mandatory for headless runs; exits immediately if omitted). Also sets `vsync=False` in GUI mode. |
+| `--exit-on-complete` | Headless | Exits cleanly as soon as the automation script has finished (`automation_manager.has_finished`) and all queued main-thread tasks have drained. |
+| `--benchmark-modules-only` | Headless | Fast discovery mode that loads only `modules/benchmark/` instead of scanning every module directory, reducing headless startup time for benchmarks and CI. |
+| `--max-seconds <float>` | GUI & Headless | Safety watchdog timeout (in seconds) after which the main loop terminates cleanly (`0` = disabled). |
+
+### Lifecycle & Clean Shutdown
+
+A headless session terminates cleanly via any of the following triggers, running `clear_registry()` (stopping all background `ProcessingBase` workers) and `dpg.destroy_context()`:
+
+- Script completion when `--exit-on-complete` is set.
+- A module or script setting `app_state.close_requested = True` (e.g., `PerfPulseSource_win.request_exit`).
+- Exceeding the `--max-seconds` timeout.
+- User interrupt (`Ctrl+C` / `KeyboardInterrupt`).

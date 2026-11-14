@@ -188,10 +188,10 @@ class ModuleHealthManager:
                 logger.debug("skip_import_validation is True - suppressing startup module health dialog")
                 return
 
-            from core.automation_manager import automation_manager
+            from core.app_state import app_state
 
-            if not force_show and automation_manager.is_running:
-                logger.debug("Automation script running - suppressing module health dialog")
+            if not force_show and app_state.is_non_interactive():
+                logger.debug("Headless or automation script mode active - suppressing module health dialog")
                 return
 
             from core.module_registry import get_available_modules
@@ -231,6 +231,8 @@ class ModuleHealthManager:
             )
 
             if pump_frames:
+                from core.automation_manager import automation_manager
+
                 while dpg.is_dearpygui_running() and dpg.does_item_exist(self.winID):
                     automation_manager.process_pending_steps()
                     dpg.render_dearpygui_frame()

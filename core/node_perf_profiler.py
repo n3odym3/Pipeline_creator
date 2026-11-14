@@ -18,7 +18,7 @@ from loguru import logger
 
 from core.file_explorer import file_explorer
 from core.module_registry import MODULES_REGISTRY
-from core.paths import LOGS_DIR
+from core.paths import BENCHMARK_DIR
 
 
 # ----------------------------------------------------------------------------
@@ -3565,7 +3565,7 @@ class NodePerfProfilerMixin:
 
     def _export_single_node_report(self, rec: _NodePerfRecord, win_tag: str) -> None:
         """Open native OS file browser (`file_explorer.save_file`) to export node telemetry to CSV or JSON."""
-        out_dir: Path = LOGS_DIR / "benchmarks"
+        out_dir: Path = BENCHMARK_DIR
         out_dir.mkdir(parents=True, exist_ok=True)
         ts_int = int(time.time())
         safe_lbl = "".join(c if c.isalnum() or c in "_-" else "_" for c in rec.label)

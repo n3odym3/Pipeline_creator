@@ -182,3 +182,131 @@ The suite comprises specialized generator and consumer modules:
 | **Vector Benchmark** (`vector_benchmark_win.py`) | Producer | `VECTORS`, `SAMPLE` | High-density vector field generator. Emits angular distributions (Spotlight, Bimodal, Pendulum, Vortex) with 16 to 65,536+ vectors per frame, burst mode, and batch mode. |
 | **CMD Benchmark** (`cmd_benchmark_win.py`) | Producer / Tester | `CMD_DICT`, `TRIGGER`, `NUMBER`, `TEXT` | Command and control packet generator. Tests latency, response turnaround, and command sequencing. |
 | **Hardware Simulator** (`hardware_simulator_win.py`) | Simulator / Sink | `TRIGGER`, `TEXT`, `ANY` | Simulates physical hardware device delays, communication timeouts, and intermittent failures for robust error-handling validation. |
+| **Perf Pulse Source** (`perf_pulse_source_win.py`) | Micro-Benchmark Source | `ANY`, `TRIGGER`, `CMD_DICT` | Nanosecond-stamped packet and NumPy array emitter (`token`, `numpy_1kb` to `numpy_4mb`, `numpy_1080p_rgb`). Supports bursts, paced/uncapped streams, `Stop` interruption, and AutomationManager profiler control. |
+| **Perf Relay Node** (`perf_relay_win.py`) | Relay / Terminal Sink | `ANY`, `TRIGGER`, `SAMPLE`, `FRAME`, `CMD_DICT` | Zero-compute pass-through relay and terminal sink that measures single-hop (`link_hop_ns`) and end-to-end DAG (`e2e_dag_ns`) latency with configurable UI update cadence (`ui_update_hz`). |
+| **Perf Worker Node** (`perf_worker_win.py`) | IPC Worker Wrapper | `ANY`, `SAMPLE`, `FRAME`, `CMD_DICT` | Dedicated `ProcessingBase` wrapper (`PerfPassWorker` with `ShmPool` or `PerfPassNoShmWorker` with `use_shared_memory=False`) that breaks down main-thread encoding, queue transit, worker compute, and IPC return latency. |
+
+### Interactive vs Automated Mode for Perf Nodes
+
+When wiring `PerfPulseSource_win`, `PerfRelayNode_win`, and `PerfWorkerNode_win` manually on the canvas:
+
+- **Manual Testing (`framework_profiler.enabled == False`)**: Clicking **Burst** or **Stream** automatically refreshes node readouts (`Emitted`, `Recv`, `Last hop`, `Done | Drop`) at **15 Hz** and forces a final exact counter sync when the run ends. Clicking **Stop** triggers an internal `threading.Event` to halt an ongoing burst or stream immediately.
+- **Automated Profiling (`framework_profiler.enabled == True`)**: By default (`ui_update_hz = 0.0`), Perf nodes skip widget text updates to isolate pure framework overhead; calling `set_cluster_ui_update_hz(30.0)` enables realistic 30 Hz live widget updates during benchmark sweeps.
+
+---
+
+## <u>Automated Framework Benchmark & Stress-Test Suite</u>
+
+Beyond live interactive inspection, Pipeline Creator provides an automated, reproducible benchmark and progressive stress-testing suite in `tools/run_benchmark.py`. It measures nanosecond framework overhead, isolates multiprocessing serialization costs (`ShmPool` shared memory vs pure `pickle`), compares headless and GUI execution modes, and identifies practical hardware breaking points on your workstation.
+
+### Quick Start & CLI Commands
+
+By default, running `tools/run_benchmark.py` executes the **complete end-to-end pipeline** automatically in a single command:
+
+1. Regenerates all pipeline layouts and AutomationManager scripts in `benchmark/generated/`.
+2. Runs the headless matrix, 3-mode comparison, and progressive stress sweeps.
+3. Synthesizes `benchmark/benchmark_report.{json,csv,md}` and `benchmark/summary.md`.
+4. Generates all figures (`PNG` + `PDF`) in `benchmark/figures/`, plus `benchmark/interactive_report.html` and `benchmark/benchmark_analysis.ipynb`.
+
+```bash
+python tools/run_benchmark.py
+```
+
+#### Selective Benchmark Flags (`tools/run_benchmark.py`)
+
+| Flag | Description |
+|---|---|
+| `--skip-matrix` | Skip the headless scaling matrix (still builds all outputs at the end). |
+| `--skip-headless-cmp` | Skip the headless pass of the 3-mode comparison scenarios. |
+| `--skip-gui` | Skip the Passive GUI comparison pass (`live_ui_updates=False`). |
+| `--skip-gui-live` | Skip the Realistic 30 Hz Live-UI GUI comparison pass. |
+| `--skip-stress` | Skip the progressive stress-test breaking-point sweeps. |
+| `--stress-only` | Run only the progressive stress sweeps (Headless + Live-UI) and rebuild all combined figures and reports. |
+| `--rebuild-only` | Regenerate `benchmark/generated/` pipelines & scripts, `summary.md`, `benchmark_report.*`, `interactive_report.html`, `benchmark_analysis.ipynb`, and `benchmark/figures/` (PNG & PDF) from existing JSON/CSV results without re-running benchmarks. |
+
+Running an individual benchmark script directly (e.g., `python main.py --headless --script benchmark/generated/scripts/headless_matrix_script.json`) also triggers figure and interactive report generation automatically at export time unless orchestrated by `tools/run_benchmark.py`.
+
+#### Optional Standalone Sub-Tools
+
+If you only want to invoke the low-level figure or report builders on a custom CSV/JSON file outside `tools/run_benchmark.py --rebuild-only`:
+
+```bash
+# Regenerate matplotlib figures (PNG and/or PDF)
+python tools/plot_benchmark_figures.py --csv benchmark/benchmark_report.csv --out-dir benchmark/figures --formats png,pdf
+
+# Regenerate the interactive Plotly HTML dashboard and Jupyter Notebook
+python tools/generate_user_reports.py --json benchmark/benchmark_report.json --csv benchmark/benchmark_report.csv --out-html benchmark/interactive_report.html --out-ipynb benchmark/benchmark_analysis.ipynb
+```
+
+---
+
+### Core Instrumentation (`FrameworkProfiler`)
+
+All automated scenarios are instrumented by the global `framework_profiler` singleton in `core/framework_profiler.py`:
+
+- **Nanosecond Precision**: Uses `time.perf_counter_ns()` across dispatch, link hops, DAG terminal arrival, and `ProcessingBase` child IPC transitions.
+- **Exact Percentile Statistics**: `summarize_samples_ns()` computes `count`, `min`, `mean`, `std`, `p50` (median), `p95`, `p99`, and `max` in microseconds (`us`) for every recorded metric.
+- **Process-Tree Resource Telemetry**: Polls parent and child process RSS memory (`rss_peak_mb`), normalized CPU utilization (`cpu_mean_pct`), thread count, and child process count via `psutil`.
+- **Uncapped Frame-Rate Probing**: Under `--script` automation, `main.py` disables VSync (`use_vsync = False`), requests 1 ms Windows timer resolution (`winmm.timeBeginPeriod(1)`), and records actual viewport render times (`notify_frame_rendered`, `pump_gui_frame_if_needed`, and `_run_uncapped_fps_probe`) to measure true UI headroom.
+
+!!! note "Power Mode & Display Swapchain Caps"
+    Even with VSync disabled in DearPyGui, laptop battery power profiles (e.g., Windows Dynamic Refresh Rate or hybrid GPU battery savers) may clamp DXGI swapchain presentation to ~48 FPS. Run GUI benchmarks on AC power for unthrottled maximum FPS measurements.
+
+---
+
+### What the Benchmark Matrix Tests
+
+#### 1. Intra-Process Routing & Topology Scaling (Headless)
+- **Calibration (`calibration_profiler_self_overhead`)**: Quantifies the measurement noise floor of `time.perf_counter_ns()` and `record_hop`.
+- **Zero-Copy Reference vs NumPy Transfers (`hop_1to1_*`)**: Compares Python token objects against `1 KB` and `1 MB` NumPy arrays passed across module links (`link_hop_ns`, `e2e_dag_ns`).
+- **Conditional & Bus Routing (`routing_gate`, `routing_linkbus`)**: Isolates per-packet overhead of `Gate` flow control and `LinkOut -> LinkBus -> LinkIn` publish/subscribe routing.
+- **Topologies**: Evaluates linear chains (`chain_d2` through `chain_d40`), 1-to-K broadcast fan-out (`fanout_k1` through `fanout_k64`), and multi-layer dense meshes (`mesh_2x4`, `mesh_4x4`, `mesh_4x8`).
+
+#### 2. Multiprocess IPC Breakdown (`ShmPool` vs Pure Pickle)
+Using `PerfWorkerNode_win` (`PerfPassWorker` vs `PerfPassNoShmWorker`), each round-trip is decomposed into 4 stages:
+- `proc_main_encode_ns`: Main-process serialization / shared-memory write before queue push.
+- `proc_ipc_in_ns`: OS pipe/queue transit into the child worker process.
+- `proc_worker_compute_ns`: Child `_process_data` execution time.
+- `proc_ipc_out_ns`: Return queue transit back to the parent polling thread.
+- `proc_total_roundtrip_ns` & `proc_ipc_overhead_ns`: Full end-to-end turnaround and pure IPC overhead excluding compute.
+
+The suite directly contrasts `ShmPool` shared-memory transport against pure Python `pickle` (`use_shared_memory=False`) across `token`, `1 KB`, `64 KB`, `256 KB`, `1 MB`, and `4 MB` payloads, then scales parallel worker processes (`workers_parallel_p1` through `p16`) on realistic **1080p RGB frames (`1920x1080x3 uint8`, 6.22 MB)**.
+
+#### 3. Three-Mode Execution Comparison (`cmp_*`)
+Selected representative workloads (`cmp_hop_1to1_burst`, `cmp_hop_1to1_stream_uncapped`, `cmp_chain_d20_burst`, `cmp_fanout_k32_burst`, `cmp_mesh_4x8_burst`, `cmp_proc_shm_1mb`, `cmp_workers_p4_1080p`) are run side-by-side across three modes:
+
+| Mode | Renderer / Viewport | Widget Updates | Purpose |
+|---|---|---|---|
+| `headless` | Disabled (`core/headless_runner.py`) | Skipped | Pure Python + IPC data-plane ceiling with zero GPU contention. |
+| `gui` | Full DearPyGui (`vsync=False`) | Passive (`ui_update_hz = 0.0`) | Isolates base DearPyGui viewport loop overhead. |
+| `gui_live_ui` | Full DearPyGui (`vsync=False`) | Active (`ui_update_hz = 30.0`, windows visible) | Realistic interactive desktop conditions with live UI telemetry updates. |
+
+#### 4. Progressive Stress Suite & Breaking-Point Analysis (`stress_*`)
+Designed as a hardware stress test when deploying Pipeline Creator on a target PC, the stress suite progressively increases workload complexity in both **`headless`** and **`gui_live_ui`** modes until real-time budgets or UI responsiveness saturate:
+
+- **Serial Chain Depth**: `D = 2, 10, 20, 40, 80, 120, 160` (`stress_chain_d*`)
+- **Parallel Fan-Out**: `K = 1, 4, 16, 32, 64, 128, 192` (`stress_fanout_k*`)
+- **Dense Matrix Mesh**: `2x4, 3x4, 4x4, 4x6, 4x8, 5x6, 5x8` (`stress_mesh_*`)
+- **Parallel 1080p RGB Workers**: `P = 1, 2, 4, 8, 12, 16` (and `P = 20` headless, `stress_workers_p*`)
+
+Results are automatically classified by `FrameworkProfiler.compute_comfort_and_limits()`:
+- **Real-Time Pipeline Budgets**: `Real-Time 60 Hz` (`<= 16.67 ms`), `Real-Time 30 Hz` (`<= 33.33 ms`), or `Over Real-Time Budget (>33.3 ms)`.
+- **UI Interactive Comfort**: `Smooth` (`>= 45 FPS`), `Comfortable` (`25–45 FPS`), `Sluggish` (`12–25 FPS`), and `Critical / Breaking Point` (`< 12 FPS`).
+
+---
+
+### Generated Reports & Output Files (`benchmark/`)
+
+All benchmark output artifacts (reports, figures, notebooks, raw JSON/CSV telemetry) are written to `benchmark/` and excluded by `.gitignore`, while the generated benchmark pipelines and automation scripts under `benchmark/generated/` remain tracked in Git:
+
+| Output File | Description |
+|---|---|
+| `benchmark/interactive_report.html` | Self-contained interactive **Plotly** web dashboard featuring global KPI cards, a plain-language **Beginner Guide**, full embedded summary & PC-limit tables, interactive zoomable charts with `Mean -> p95` jitter bands, and a filterable/sortable full-scenario explorer (`Mode`, `Category`, `Comfort`, `Real-Time`, `Metric Scope`, text search, quick presets, and `us`/`ms`/`ns` unit selector). |
+| `benchmark/summary.md` | Concise executive summary containing the **Global Summary**, **Practical PC Limits & UI Comfort**, and **GUI Impact** tables plus a quick interpretation guide. |
+| `benchmark/benchmark_analysis.ipynb` | Pre-configured **Jupyter Notebook** (`nbformat` v4) loading `benchmark_report.json` / `.csv` into `pandas` and `matplotlib` for custom exploratory analysis. |
+| `benchmark/benchmark_report.md` | Complete technical Markdown report with environment specs, summary tables, and full per-metric percentiles for every scenario. |
+| `benchmark/benchmark_report.json` / `.csv` | Machine-readable JSON telemetry and flat CSV metric export (`matrix_headless.*`, `compare_*.*`, and `stress_*.*` intermediate passes are also preserved). |
+| `benchmark/figures/` | Generated PNG/PDF figures (`fig1_framework_primitives`, `fig2_topology_scaling`, `fig3_ipc_worker_breakdown`, `fig4_headless_vs_gui`, `fig5_stress_limits_and_fps`). |
+
+!!! tip "Reading Shaded Bands in Benchmark Plots"
+    In `fig5_stress_limits_and_fps` and the Plotly charts inside `interactive_report.html`, the solid line traces the **Mean** latency across iterations, while the translucent **shaded band (`Mean -> p95`)** highlights how high occasional tail spikes reach (95th percentile jitter). Similarly, shaded `p50 -> p95` bands in topology/payload charts separate typical median speed from worst-case OS scheduling tails.

@@ -2,6 +2,12 @@ if __name__ == "__main__":
     import sys
     import time
 
+    import faulthandler
+
+    # Native crashes (segfault in DearPyGui...) leave a Python stack here
+    _fault_file = open("fault.log", "a", buffering=1)
+    faulthandler.enable(file=_fault_file, all_threads=True)
+
     if getattr(sys, "frozen", False) or "__compiled__" in globals() or hasattr(sys, "__nuitka_version__"):
         sys.frozen = True
 
@@ -114,7 +120,6 @@ if __name__ == "__main__":
     sys.coinit_flags = 2
     try:
         import comtypes.client
-
         comtypes.client.gen_dir = None
     except ImportError:
         pass
@@ -146,9 +151,9 @@ if __name__ == "__main__":
     from core.paths import LOGS_DIR, PROJECT_ROOT
     from core.splash import close_splash, show_splash, update_splash_status
 
-    # Display splash screen as early as possible
+    # Display splash screen as early as possible (skipped in --headless mode)
     splash_cfg = config.get("Splash", {})
-    if splash_cfg.get("enabled", True):
+    if "--headless" not in sys.argv and splash_cfg.get("enabled", True):
         splash_image = splash_cfg.get("image", "ressources/Polypy.png")
         splash_size = splash_cfg.get("size", 400)
         splash_thickness = splash_cfg.get("thickness", 2)
@@ -189,10 +194,32 @@ if __name__ == "__main__":
             ]
         )
 
+    # Crash detection: must run before the new session marker is written
+    from core import crash_detection
+
+    _previous_crashed = None
+    if config.get("General", {}).get("check_crash_on_boot", True):
+        _previous_crashed = crash_detection.previous_session_crashed()
+
+    def _log_uncaught(exc_type, exc_value, exc_tb):
+        logger.opt(exception=(exc_type, exc_value, exc_tb)).critical("Uncaught exception")
+
+    sys.excepthook = _log_uncaught
+
     update_splash_status("Initializing DearPyGui...", "Initializing interface")
     import dearpygui.dearpygui as dpg
 
     dpg.create_context()
+
+    # Logged here: the log_viewer sink calls DPG, which needs a context
+    crash_detection.mark_session_start()
+
+    from core.headless_runner import strip_headless_cli_flags, run_headless_app
+
+    _headless_opts = strip_headless_cli_flags()
+    if _headless_opts.get("headless"):
+        run_headless_app(_headless_opts)
+        raise SystemExit(0)
 
     from config.display_scaling import display_scaling
 
@@ -202,7 +229,8 @@ if __name__ == "__main__":
     vp_height = int(display_scaling.screen_height * 0.85)
 
     window_config = config.get("Window", {})
-    use_vsync = window_config.get("vsync", False)
+    _has_cli_script = "--script" in sys.argv or bool(_headless_opts.get("script_path"))
+    use_vsync = False if _has_cli_script else window_config.get("vsync", False)
 
     icon_cfg = config.get("Icon", {})
     icon_path = PROJECT_ROOT / icon_cfg.get("path", "ressources/icon.ico")
@@ -232,10 +260,16 @@ if __name__ == "__main__":
 
     if sys.platform == "win32":
         try:
+            import atexit
+
             ES_CONTINUOUS = 0x80000000
             ES_DISPLAY_REQUIRED = 0x00000002
             ctypes.windll.kernel32.SetThreadExecutionState(ES_CONTINUOUS | ES_DISPLAY_REQUIRED)
-            logger.debug(f"Windows: sleep prevention enabled, display scale={display_scaling.scale_factor:.2f}")
+            if ctypes.windll.winmm.timeBeginPeriod(1) == 0:
+                atexit.register(lambda: ctypes.windll.winmm.timeEndPeriod(1))
+            logger.debug(
+                f"Windows: sleep prevention & 1ms timer resolution enabled, display scale={display_scaling.scale_factor:.2f}"
+            )
         except Exception as e:
             logger.warning(f"Failed to set Windows features: {e}")
 
@@ -262,6 +296,7 @@ if __name__ == "__main__":
     theme_manager.update_titlebar()
 
     close_splash()
+    dpg.render_dearpygui_frame()
 
     dpg.set_viewport_always_top(True)
     dpg.set_viewport_always_top(False)
@@ -269,6 +304,12 @@ if __name__ == "__main__":
     from core.module_health_manager import module_health_manager
 
     module_health_manager.show_dialog_if_needed(pump_frames=True)
+
+    if _previous_crashed:
+        logger.warning("Previous session did not close properly")
+        from core import bug_report
+
+        bug_report.show_crash_popup(pump_frames=True)
 
     _login_cfg = config.get("Login", {})
     _default_mode = _login_cfg.get("default_mode", "user")
@@ -355,20 +396,36 @@ if __name__ == "__main__":
 
     _vp_pos_cache = None
     _last_scaling_check = 0.0
-    while dpg.is_dearpygui_running():
-        now = time.time()
-        if now - _last_scaling_check >= 0.2:
-            _last_scaling_check = now
-            _vp_pos = dpg.get_viewport_pos()
-            if _vp_pos and _vp_pos != _vp_pos_cache:
-                display_scaling.adapt_to_display()
-                _vp_pos_cache = _vp_pos
+    _gui_loop_start = time.perf_counter()
+    _gui_max_s = float(_headless_opts.get("max_seconds") or 0.0)
+    from core.framework_profiler import framework_profiler
+    if automation_manager.script_path:
+        try:
+            dpg.set_viewport_vsync(False)
+        except Exception:
+            pass
+    app_state.gui_running = True
+    try:
+        while dpg.is_dearpygui_running():
+            now = time.time()
+            if now - _last_scaling_check >= 0.2:
+                _last_scaling_check = now
+                _vp_pos = dpg.get_viewport_pos()
+                if _vp_pos and _vp_pos != _vp_pos_cache:
+                    display_scaling.adapt_to_display()
+                    _vp_pos_cache = _vp_pos
 
-        if app_state.close_requested:
-            break
+            if app_state.close_requested:
+                break
+            if _gui_max_s > 0.0 and (time.perf_counter() - _gui_loop_start) >= _gui_max_s:
+                break
 
-        automation_manager.process_pending_steps()
-        dpg.render_dearpygui_frame()
+            automation_manager.process_pending_steps()
+            _t_f0 = time.perf_counter_ns()
+            dpg.render_dearpygui_frame()
+            framework_profiler.notify_frame_rendered(render_ns=time.perf_counter_ns() - _t_f0)
+    finally:
+        app_state.gui_running = False
 
     if _system_tray:
         _system_tray.stop()
@@ -381,4 +438,7 @@ if __name__ == "__main__":
         logger.warning(f"Error stopping documentation server during cleanup: {e}")
 
     clear_registry()
+    log_viewer.ui_sink_enabled = False
     dpg.destroy_context()
+
+    logger.success("Pipeline Creator closed successfully")

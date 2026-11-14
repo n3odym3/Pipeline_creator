@@ -1,0 +1,1004 @@
+{
+  "windows": [
+    {
+      "module": "modules.benchmark.perf_pulse_source_win",
+      "class_name": "PerfPulseSource_win",
+      "uuid": "u_src",
+      "pos": [
+        40,
+        40
+      ],
+      "size": [
+        320,
+        240
+      ],
+      "visible": false,
+      "params": {
+        "label": "BenchSource"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_worker_win",
+      "class_name": "PerfWorkerNode_win",
+      "uuid": "u_w0",
+      "pos": [
+        400,
+        40
+      ],
+      "size": [
+        290,
+        170
+      ],
+      "visible": false,
+      "params": {
+        "label": "Worker_0",
+        "work_us": 2000,
+        "raw_ndarray_submit": true,
+        "use_shared_memory": true,
+        "buffer_size": 6,
+        "drop_policy": "block"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_s0",
+      "pos": [
+        760,
+        40
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Sink_0"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_worker_win",
+      "class_name": "PerfWorkerNode_win",
+      "uuid": "u_w1",
+      "pos": [
+        400,
+        230
+      ],
+      "size": [
+        290,
+        170
+      ],
+      "visible": false,
+      "params": {
+        "label": "Worker_1",
+        "work_us": 2000,
+        "raw_ndarray_submit": true,
+        "use_shared_memory": true,
+        "buffer_size": 6,
+        "drop_policy": "block"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_s1",
+      "pos": [
+        760,
+        230
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Sink_1"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_worker_win",
+      "class_name": "PerfWorkerNode_win",
+      "uuid": "u_w2",
+      "pos": [
+        400,
+        420
+      ],
+      "size": [
+        290,
+        170
+      ],
+      "visible": false,
+      "params": {
+        "label": "Worker_2",
+        "work_us": 2000,
+        "raw_ndarray_submit": true,
+        "use_shared_memory": true,
+        "buffer_size": 6,
+        "drop_policy": "block"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_s2",
+      "pos": [
+        760,
+        420
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Sink_2"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_worker_win",
+      "class_name": "PerfWorkerNode_win",
+      "uuid": "u_w3",
+      "pos": [
+        400,
+        610
+      ],
+      "size": [
+        290,
+        170
+      ],
+      "visible": false,
+      "params": {
+        "label": "Worker_3",
+        "work_us": 2000,
+        "raw_ndarray_submit": true,
+        "use_shared_memory": true,
+        "buffer_size": 6,
+        "drop_policy": "block"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_s3",
+      "pos": [
+        760,
+        610
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Sink_3"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_worker_win",
+      "class_name": "PerfWorkerNode_win",
+      "uuid": "u_w4",
+      "pos": [
+        400,
+        800
+      ],
+      "size": [
+        290,
+        170
+      ],
+      "visible": false,
+      "params": {
+        "label": "Worker_4",
+        "work_us": 2000,
+        "raw_ndarray_submit": true,
+        "use_shared_memory": true,
+        "buffer_size": 6,
+        "drop_policy": "block"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_s4",
+      "pos": [
+        760,
+        800
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Sink_4"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_worker_win",
+      "class_name": "PerfWorkerNode_win",
+      "uuid": "u_w5",
+      "pos": [
+        400,
+        990
+      ],
+      "size": [
+        290,
+        170
+      ],
+      "visible": false,
+      "params": {
+        "label": "Worker_5",
+        "work_us": 2000,
+        "raw_ndarray_submit": true,
+        "use_shared_memory": true,
+        "buffer_size": 6,
+        "drop_policy": "block"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_s5",
+      "pos": [
+        760,
+        990
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Sink_5"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_worker_win",
+      "class_name": "PerfWorkerNode_win",
+      "uuid": "u_w6",
+      "pos": [
+        400,
+        1180
+      ],
+      "size": [
+        290,
+        170
+      ],
+      "visible": false,
+      "params": {
+        "label": "Worker_6",
+        "work_us": 2000,
+        "raw_ndarray_submit": true,
+        "use_shared_memory": true,
+        "buffer_size": 6,
+        "drop_policy": "block"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_s6",
+      "pos": [
+        760,
+        1180
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Sink_6"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_worker_win",
+      "class_name": "PerfWorkerNode_win",
+      "uuid": "u_w7",
+      "pos": [
+        400,
+        1370
+      ],
+      "size": [
+        290,
+        170
+      ],
+      "visible": false,
+      "params": {
+        "label": "Worker_7",
+        "work_us": 2000,
+        "raw_ndarray_submit": true,
+        "use_shared_memory": true,
+        "buffer_size": 6,
+        "drop_policy": "block"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_s7",
+      "pos": [
+        760,
+        1370
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Sink_7"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_worker_win",
+      "class_name": "PerfWorkerNode_win",
+      "uuid": "u_w8",
+      "pos": [
+        400,
+        1560
+      ],
+      "size": [
+        290,
+        170
+      ],
+      "visible": false,
+      "params": {
+        "label": "Worker_8",
+        "work_us": 2000,
+        "raw_ndarray_submit": true,
+        "use_shared_memory": true,
+        "buffer_size": 6,
+        "drop_policy": "block"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_s8",
+      "pos": [
+        760,
+        1560
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Sink_8"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_worker_win",
+      "class_name": "PerfWorkerNode_win",
+      "uuid": "u_w9",
+      "pos": [
+        400,
+        1750
+      ],
+      "size": [
+        290,
+        170
+      ],
+      "visible": false,
+      "params": {
+        "label": "Worker_9",
+        "work_us": 2000,
+        "raw_ndarray_submit": true,
+        "use_shared_memory": true,
+        "buffer_size": 6,
+        "drop_policy": "block"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_s9",
+      "pos": [
+        760,
+        1750
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Sink_9"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_worker_win",
+      "class_name": "PerfWorkerNode_win",
+      "uuid": "u_w10",
+      "pos": [
+        400,
+        1940
+      ],
+      "size": [
+        290,
+        170
+      ],
+      "visible": false,
+      "params": {
+        "label": "Worker_10",
+        "work_us": 2000,
+        "raw_ndarray_submit": true,
+        "use_shared_memory": true,
+        "buffer_size": 6,
+        "drop_policy": "block"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_s10",
+      "pos": [
+        760,
+        1940
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Sink_10"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_worker_win",
+      "class_name": "PerfWorkerNode_win",
+      "uuid": "u_w11",
+      "pos": [
+        400,
+        2130
+      ],
+      "size": [
+        290,
+        170
+      ],
+      "visible": false,
+      "params": {
+        "label": "Worker_11",
+        "work_us": 2000,
+        "raw_ndarray_submit": true,
+        "use_shared_memory": true,
+        "buffer_size": 6,
+        "drop_policy": "block"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_s11",
+      "pos": [
+        760,
+        2130
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Sink_11"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_worker_win",
+      "class_name": "PerfWorkerNode_win",
+      "uuid": "u_w12",
+      "pos": [
+        400,
+        2320
+      ],
+      "size": [
+        290,
+        170
+      ],
+      "visible": false,
+      "params": {
+        "label": "Worker_12",
+        "work_us": 2000,
+        "raw_ndarray_submit": true,
+        "use_shared_memory": true,
+        "buffer_size": 6,
+        "drop_policy": "block"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_s12",
+      "pos": [
+        760,
+        2320
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Sink_12"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_worker_win",
+      "class_name": "PerfWorkerNode_win",
+      "uuid": "u_w13",
+      "pos": [
+        400,
+        2510
+      ],
+      "size": [
+        290,
+        170
+      ],
+      "visible": false,
+      "params": {
+        "label": "Worker_13",
+        "work_us": 2000,
+        "raw_ndarray_submit": true,
+        "use_shared_memory": true,
+        "buffer_size": 6,
+        "drop_policy": "block"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_s13",
+      "pos": [
+        760,
+        2510
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Sink_13"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_worker_win",
+      "class_name": "PerfWorkerNode_win",
+      "uuid": "u_w14",
+      "pos": [
+        400,
+        2700
+      ],
+      "size": [
+        290,
+        170
+      ],
+      "visible": false,
+      "params": {
+        "label": "Worker_14",
+        "work_us": 2000,
+        "raw_ndarray_submit": true,
+        "use_shared_memory": true,
+        "buffer_size": 6,
+        "drop_policy": "block"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_s14",
+      "pos": [
+        760,
+        2700
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Sink_14"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_worker_win",
+      "class_name": "PerfWorkerNode_win",
+      "uuid": "u_w15",
+      "pos": [
+        400,
+        2890
+      ],
+      "size": [
+        290,
+        170
+      ],
+      "visible": false,
+      "params": {
+        "label": "Worker_15",
+        "work_us": 2000,
+        "raw_ndarray_submit": true,
+        "use_shared_memory": true,
+        "buffer_size": 6,
+        "drop_policy": "block"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_s15",
+      "pos": [
+        760,
+        2890
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Sink_15"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_worker_win",
+      "class_name": "PerfWorkerNode_win",
+      "uuid": "u_w16",
+      "pos": [
+        400,
+        3080
+      ],
+      "size": [
+        290,
+        170
+      ],
+      "visible": false,
+      "params": {
+        "label": "Worker_16",
+        "work_us": 2000,
+        "raw_ndarray_submit": true,
+        "use_shared_memory": true,
+        "buffer_size": 6,
+        "drop_policy": "block"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_s16",
+      "pos": [
+        760,
+        3080
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Sink_16"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_worker_win",
+      "class_name": "PerfWorkerNode_win",
+      "uuid": "u_w17",
+      "pos": [
+        400,
+        3270
+      ],
+      "size": [
+        290,
+        170
+      ],
+      "visible": false,
+      "params": {
+        "label": "Worker_17",
+        "work_us": 2000,
+        "raw_ndarray_submit": true,
+        "use_shared_memory": true,
+        "buffer_size": 6,
+        "drop_policy": "block"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_s17",
+      "pos": [
+        760,
+        3270
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Sink_17"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_worker_win",
+      "class_name": "PerfWorkerNode_win",
+      "uuid": "u_w18",
+      "pos": [
+        400,
+        3460
+      ],
+      "size": [
+        290,
+        170
+      ],
+      "visible": false,
+      "params": {
+        "label": "Worker_18",
+        "work_us": 2000,
+        "raw_ndarray_submit": true,
+        "use_shared_memory": true,
+        "buffer_size": 6,
+        "drop_policy": "block"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_s18",
+      "pos": [
+        760,
+        3460
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Sink_18"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_worker_win",
+      "class_name": "PerfWorkerNode_win",
+      "uuid": "u_w19",
+      "pos": [
+        400,
+        3650
+      ],
+      "size": [
+        290,
+        170
+      ],
+      "visible": false,
+      "params": {
+        "label": "Worker_19",
+        "work_us": 2000,
+        "raw_ndarray_submit": true,
+        "use_shared_memory": true,
+        "buffer_size": 6,
+        "drop_policy": "block"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_s19",
+      "pos": [
+        760,
+        3650
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "Sink_19"
+      }
+    }
+  ],
+  "connections": [
+    {
+      "from": "u_src",
+      "output": "Out",
+      "to": "u_w0"
+    },
+    {
+      "from": "u_w0",
+      "output": "Out",
+      "to": "u_s0"
+    },
+    {
+      "from": "u_src",
+      "output": "Out",
+      "to": "u_w1"
+    },
+    {
+      "from": "u_w1",
+      "output": "Out",
+      "to": "u_s1"
+    },
+    {
+      "from": "u_src",
+      "output": "Out",
+      "to": "u_w2"
+    },
+    {
+      "from": "u_w2",
+      "output": "Out",
+      "to": "u_s2"
+    },
+    {
+      "from": "u_src",
+      "output": "Out",
+      "to": "u_w3"
+    },
+    {
+      "from": "u_w3",
+      "output": "Out",
+      "to": "u_s3"
+    },
+    {
+      "from": "u_src",
+      "output": "Out",
+      "to": "u_w4"
+    },
+    {
+      "from": "u_w4",
+      "output": "Out",
+      "to": "u_s4"
+    },
+    {
+      "from": "u_src",
+      "output": "Out",
+      "to": "u_w5"
+    },
+    {
+      "from": "u_w5",
+      "output": "Out",
+      "to": "u_s5"
+    },
+    {
+      "from": "u_src",
+      "output": "Out",
+      "to": "u_w6"
+    },
+    {
+      "from": "u_w6",
+      "output": "Out",
+      "to": "u_s6"
+    },
+    {
+      "from": "u_src",
+      "output": "Out",
+      "to": "u_w7"
+    },
+    {
+      "from": "u_w7",
+      "output": "Out",
+      "to": "u_s7"
+    },
+    {
+      "from": "u_src",
+      "output": "Out",
+      "to": "u_w8"
+    },
+    {
+      "from": "u_w8",
+      "output": "Out",
+      "to": "u_s8"
+    },
+    {
+      "from": "u_src",
+      "output": "Out",
+      "to": "u_w9"
+    },
+    {
+      "from": "u_w9",
+      "output": "Out",
+      "to": "u_s9"
+    },
+    {
+      "from": "u_src",
+      "output": "Out",
+      "to": "u_w10"
+    },
+    {
+      "from": "u_w10",
+      "output": "Out",
+      "to": "u_s10"
+    },
+    {
+      "from": "u_src",
+      "output": "Out",
+      "to": "u_w11"
+    },
+    {
+      "from": "u_w11",
+      "output": "Out",
+      "to": "u_s11"
+    },
+    {
+      "from": "u_src",
+      "output": "Out",
+      "to": "u_w12"
+    },
+    {
+      "from": "u_w12",
+      "output": "Out",
+      "to": "u_s12"
+    },
+    {
+      "from": "u_src",
+      "output": "Out",
+      "to": "u_w13"
+    },
+    {
+      "from": "u_w13",
+      "output": "Out",
+      "to": "u_s13"
+    },
+    {
+      "from": "u_src",
+      "output": "Out",
+      "to": "u_w14"
+    },
+    {
+      "from": "u_w14",
+      "output": "Out",
+      "to": "u_s14"
+    },
+    {
+      "from": "u_src",
+      "output": "Out",
+      "to": "u_w15"
+    },
+    {
+      "from": "u_w15",
+      "output": "Out",
+      "to": "u_s15"
+    },
+    {
+      "from": "u_src",
+      "output": "Out",
+      "to": "u_w16"
+    },
+    {
+      "from": "u_w16",
+      "output": "Out",
+      "to": "u_s16"
+    },
+    {
+      "from": "u_src",
+      "output": "Out",
+      "to": "u_w17"
+    },
+    {
+      "from": "u_w17",
+      "output": "Out",
+      "to": "u_s17"
+    },
+    {
+      "from": "u_src",
+      "output": "Out",
+      "to": "u_w18"
+    },
+    {
+      "from": "u_w18",
+      "output": "Out",
+      "to": "u_s18"
+    },
+    {
+      "from": "u_src",
+      "output": "Out",
+      "to": "u_w19"
+    },
+    {
+      "from": "u_w19",
+      "output": "Out",
+      "to": "u_s19"
+    }
+  ],
+  "is_relative": false
+}

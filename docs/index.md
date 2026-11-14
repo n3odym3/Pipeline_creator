@@ -15,6 +15,7 @@ Pipeline Creator simplifies the development of complex graphical interfaces by t
 - **Role-Based Privilege Modes**: Toggle between `User`, `Advanced`, and `Dev` modes to adjust the UI complexity based on the operator's role.
 - **Save & Restore Workspaces**: Save your entire workspace layout, configurations, and connections to portable JSON files for instant recovery.
 - **Startup Automation**: Execute startup scripts to auto-load pipelines, log in, and trigger module actions automatically.
+- **Headless Execution (`--headless`)**: Run automated pipelines and background worker processes from the CLI without creating a GUI viewport or GPU render loop.
 - **Tutorial Manager**: Launch interactive, step-by-step tutorials.
 - **Profiling & Benchmarking**: Measure propagation latency between nodes, inspect pipeline flow rates, and profile execution performance.
 
@@ -27,11 +28,11 @@ Pipeline Creator simplifies the development of complex graphical interfaces by t
 | 🖥️ [Main Window](main_window.md) | Menu bar, themes, modes, keyboard shortcuts |
 | 🕸️ [Node Editor](node_editor_guide.md) | Canvas, connections, colorization, flow import/export |
 | 📁 [Fusion Manager](fusion_manager.md) | Window docking, tab layouts, workspace organization |
-| ⏱️ [Timing & Benchmarks](timing_benchmarks_and_safety.md) | Latency measurement, flow metrics, profiling, and queue safety |
+| ⏱️ [Timing & Benchmarks](timing_benchmarks_and_safety.md) | Latency measurement, flow metrics, automated stress-test suite, and queue safety |
 | 🏛️ [Architecture](architecture.md) | Boot sequence, scaling, Link Bus, App State |
 | 🧩 [Core vs Dynamic Modules](core_vs_dynamic.md) | Static framework vs user-created extensions |
 | ⚙️ [Configuration Reference](config_reference.md) | All `config.json` keys explained |
-| 🤖 [Automation & Login](automation_login.md) | Startup scripts, login modes, CLI flags |
+| 🤖 [Automation & Login](automation_login.md) | Startup scripts, headless mode, login modes, CLI flags |
 | 📚 [Tutorial Manager](tutorial_manager.md) | Interactive step-by-step tutorials |
 | 📦 [Module Manager](module_manager.md) | Install and manage module packs |
 | 🛠️ [Developer Guide](developer_guide.md) | How to create UI nodes, processors, and themes |

@@ -1,0 +1,73 @@
+{
+  "windows": [
+    {
+      "module": "modules.benchmark.perf_pulse_source_win",
+      "class_name": "PerfPulseSource_win",
+      "uuid": "u_src",
+      "pos": [
+        40,
+        40
+      ],
+      "size": [
+        320,
+        240
+      ],
+      "visible": false,
+      "params": {
+        "label": "BenchSource"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_worker_win",
+      "class_name": "PerfWorkerNode_win",
+      "uuid": "u_wrk",
+      "pos": [
+        400,
+        40
+      ],
+      "size": [
+        290,
+        170
+      ],
+      "visible": false,
+      "params": {
+        "label": "Worker_0",
+        "work_us": 0,
+        "raw_ndarray_submit": false,
+        "use_shared_memory": false,
+        "buffer_size": 512,
+        "drop_policy": "block"
+      }
+    },
+    {
+      "module": "modules.benchmark.perf_relay_win",
+      "class_name": "PerfRelayNode_win",
+      "uuid": "u_snk",
+      "pos": [
+        760,
+        40
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "visible": false,
+      "params": {
+        "label": "RelaySink"
+      }
+    }
+  ],
+  "connections": [
+    {
+      "from": "u_src",
+      "output": "Out",
+      "to": "u_wrk"
+    },
+    {
+      "from": "u_wrk",
+      "output": "Out",
+      "to": "u_snk"
+    }
+  ],
+  "is_relative": false
+}

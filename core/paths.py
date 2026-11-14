@@ -46,6 +46,7 @@ PIPELINES_DIR: Path = PROJECT_ROOT / "pipelines"
 SCRIPTS_DIR: Path = PROJECT_ROOT / "scripts"
 CONFIG_DIR: Path = PROJECT_ROOT / "config"
 LOGS_DIR: Path = PROJECT_ROOT / "logs"
+BENCHMARK_DIR: Path = PROJECT_ROOT / "benchmark"
 RESSOURCES_DIR: Path = PROJECT_ROOT / "ressources"
 TUTORIALS_DIR: Path = PROJECT_ROOT / "tutorials"
 

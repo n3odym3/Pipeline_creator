@@ -2,7 +2,7 @@
     "is_relative": true,
     "windows": [
         {
-            "module": "Benchmark.video_benchmark_win",
+            "module": "benchmark.video_benchmark_win",
             "class_name": "VideoBenchmark_win",
             "uuid": "1209",
             "pos": [
@@ -40,7 +40,7 @@
             ]
         },
         {
-            "module": "Benchmark.image_processor_benchmark_win",
+            "module": "benchmark.image_processor_benchmark_win",
             "class_name": "ImageProcessorBenchmark_win",
             "uuid": "1260",
             "pos": [

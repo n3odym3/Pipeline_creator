@@ -45,6 +45,16 @@ graph TD
 4. **Deferred Module Discovery**: `get_available_modules(force_reload=True)` runs *after* the DearPyGui context, viewport, and theme are ready, ensuring module metadata, validation, and optional preloading initialize cleanly.
 5. **Frame Pumping for Startup Dialogs**: Blocking startup modals (`ModuleHealthManager`, crash recovery popup, `LoginDialog`, and `StartupDialog`) run before the main render loop using `pump_frames=True`, manually calling `automation_manager.process_pending_steps()` and `dpg.render_dearpygui_frame()` until dismissed.
 
+### Headless Boot Path (`--headless`)
+
+When `main.py` is started with `--headless`, it skips the `tkinter` splash screen and branches immediately after `dpg.create_context()` into `strip_headless_cli_flags()` and `run_headless_app()` in `core/headless_runner.py`:
+
+- Sets `app_state.headless = True` and calls `install_headless_dpg_shims()` so DearPyGui viewport calls remain safe no-ops without an OS window.
+- Discovers modules (`get_available_modules(force_reload=True)` or `load_benchmark_modules_only()` when `--benchmark-modules-only` is passed).
+- Executes the `--script` workflow via `automation_manager` and exits cleanly when finished (`--exit-on-complete`), when `app_state.close_requested` becomes `True`, or after `--max-seconds`.
+
+See [Automation & Login — Headless Execution Mode](automation_login.md#headless-execution-mode-headless) for CLI flags and usage examples.
+
 ---
 
 ## <u>App State (`app_state.py`)</u>
@@ -63,12 +73,16 @@ if app_state.login_done:
     enable_workspace_features()
 ```
 
-| Attribute | Type | Description |
+| Attribute / Method | Type | Description |
 |---|---|---|
 | `username` | `str` | The logged-in profile name |
 | `mode` | `str` | Privilege mode: `"user"` \| `"advanced"` \| `"dev"` |
 | `login_done` | `bool` | Blocks UI bypass before the login dialog completes |
 | `close_requested` | `bool` | Set to `True` to trigger graceful shutdown |
+| `headless` | `bool` | `True` when running via `--headless` without a DearPyGui viewport |
+| `gui_running` | `bool` | `True` while the GUI main render loop (`dpg.render_dearpygui_frame`) is active |
+| `exit_on_script_complete` | `bool` | `True` when `--exit-on-complete` is active in headless mode |
+| `is_non_interactive()` | `() -> bool` | Returns `True` in headless mode or while an automation `--script` is active/queued |
 
 ---
 

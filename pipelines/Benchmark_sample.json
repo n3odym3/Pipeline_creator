@@ -2,7 +2,7 @@
     "is_relative": true,
     "windows": [
         {
-            "module": "Benchmark.sample_processor_benchmark_win",
+            "module": "benchmark.sample_processor_benchmark_win",
             "class_name": "SampleProcessorBenchmark_win",
             "uuid": "1359",
             "pos": [
@@ -41,7 +41,7 @@
             ]
         },
         {
-            "module": "Benchmark.sample_benchmark_win",
+            "module": "benchmark.sample_benchmark_win",
             "class_name": "SampleBenchmark_win",
             "uuid": "1417",
             "pos": [
