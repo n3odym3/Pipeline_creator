@@ -601,6 +601,7 @@ class NodeEditor(
                     hint="channel name",
                     width=140,
                     on_enter=False,
+                    callback=lambda s, a, u: proxy.on_name_changed(a),
                 )
 
             self.node_map[node_id] = proxy

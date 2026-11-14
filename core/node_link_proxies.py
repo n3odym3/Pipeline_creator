@@ -8,6 +8,8 @@ from loguru import logger
 from core.input_output_types import IOTypes
 from core.link_bus import link_bus
 
+_SENTINEL: Any = object()
+
 
 class _LinkOutNode:
     """Built-in LinkOut node proxy. Publishes incoming wired data to LinkBus."""
@@ -15,7 +17,8 @@ class _LinkOutNode:
     KIND: str = "link_out"
 
     def __init__(self, link_name: str = "", uuid: Optional[str] = None) -> None:
-        self.link_name: str = link_name
+        self._link_name: str = link_name
+        self._channel_clean: str = link_name.strip() if isinstance(link_name, str) else ""
         self.UUID: str = uuid or str(dpg.generate_uuid())
         self.label: str = "Link Out"
         self.accepted_input_types: List[IOTypes] = [IOTypes.ANY]
@@ -23,10 +26,29 @@ class _LinkOutNode:
         self.connections: Dict[str, List[Any]] = {}
         self._name_input_tag: str = f"_link_out_name_{self.UUID}"
 
-    def input_cb(self, *args: Any, **kwargs: Any) -> None:
-        name = self._get_live_name()
-        if name:
-            link_bus.publish(name, *args, **kwargs)
+    @property
+    def link_name(self) -> str:
+        return self._link_name
+
+    @link_name.setter
+    def link_name(self, value: str) -> None:
+        self._link_name = value
+        self._channel_clean = value.strip() if isinstance(value, str) else ""
+
+    def on_name_changed(self, new_name: str) -> None:
+        new_name_clean = new_name.strip() if isinstance(new_name, str) else ""
+        self._link_name = new_name_clean
+        self._channel_clean = new_name_clean
+
+    def input_cb(self, data: Any = _SENTINEL, *args: Any, **kwargs: Any) -> None:
+        name = self._channel_clean
+        if not name:
+            return
+        if not args and not kwargs and data is not _SENTINEL:
+            link_bus.publish_fast(name, data)
+            return
+        fwd_args = args if data is _SENTINEL else (data, *args)
+        link_bus.publish(name, *fwd_args, **kwargs)
 
     def is_ready(self) -> bool:
         name = self._get_live_name()
@@ -85,10 +107,20 @@ class _LinkInNode:
         self.link_name = new_name_clean
         self._subscribe(new_name_clean)
 
-    def _dispatch(self, *args: Any, **kwargs: Any) -> None:
-        for module in self.connections.get("Out", []):
+    def _dispatch(self, data: Any = _SENTINEL, *args: Any, **kwargs: Any) -> None:
+        targets = self.connections["Out"]
+        if not args and not kwargs and data is not _SENTINEL:
+            for module in targets:
+                try:
+                    module.input_cb(data)
+                except Exception as e:
+                    logger.error(f"LinkIn '{self.link_name}': dispatch error - {e}")
+            return
+
+        fwd_args = args if data is _SENTINEL else (data, *args)
+        for module in targets:
             try:
-                module.input_cb(*args, **kwargs)
+                module.input_cb(*fwd_args, **kwargs)
             except Exception as e:
                 logger.error(f"LinkIn '{self.link_name}': dispatch error - {e}")
 

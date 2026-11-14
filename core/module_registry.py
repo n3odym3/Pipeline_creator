@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import ast
 import importlib
+import importlib.abc
 import importlib.machinery
 import importlib.util
 import json
@@ -77,6 +78,174 @@ class LocalPackagesFinder:
         return None
 
 
+def _find_canonical_entry(parent: Path, name: str) -> Optional[Path]:
+    """Return child Path in `parent` matching `name` case-insensitively with canonical disk casing."""
+    target_low = name.lower()
+    try:
+        with os.scandir(parent) as it:
+            ci_match: Optional[Path] = None
+            for entry in it:
+                if entry.name == name:
+                    return Path(entry.path)
+                if ci_match is None and entry.name.lower() == target_low:
+                    ci_match = Path(entry.path)
+            return ci_match
+    except OSError:
+        return None
+
+
+def _canonicalize_path_under_root(path: Path, root: Path = PROJECT_ROOT) -> Tuple[Path, Optional[Path]]:
+    """
+    Resolve `path` under `root` component-by-component using `os.scandir` so that
+    both the full path and relative path carry canonical on-disk casing on Windows
+    and case-sensitive filesystems alike.
+    """
+    rel: Optional[Path] = None
+    try:
+        rel = path.relative_to(root)
+    except ValueError:
+        try:
+            rel = path.resolve().relative_to(root.resolve())
+        except ValueError:
+            rel = None
+
+    if rel is None:
+        return path, None
+
+    cur = root
+    canon_parts: List[str] = []
+    for part in rel.parts:
+        matched = _find_canonical_entry(cur, part)
+        if matched is None:
+            canon_parts.append(part)
+            cur = cur / part
+        else:
+            canon_parts.append(matched.name)
+            cur = matched
+    canon_rel = Path(*canon_parts) if canon_parts else Path(".")
+    return cur, canon_rel
+
+
+def _resolve_search_dir_canonical(base_path: str | Path) -> Path:
+    """Resolve `base_path` (relative to `PROJECT_ROOT` or absolute) with canonical on-disk casing."""
+    raw = Path(base_path)
+    candidate = raw if raw.is_absolute() else (PROJECT_ROOT / raw)
+    canon_full, canon_rel = _canonicalize_path_under_root(candidate, PROJECT_ROOT)
+    if canon_rel is not None and canon_full.exists():
+        return canon_full
+    return candidate
+
+
+class _CaseInsensitiveAliasLoader(importlib.abc.Loader):
+    """Loads the canonical-case module first and aliases the requested name in `sys.modules`."""
+
+    def __init__(self, canonical_name: str) -> None:
+        self.canonical_name = canonical_name
+
+    def create_module(self, spec: importlib.machinery.ModuleSpec) -> Any:
+        canonical_mod = sys.modules.get(self.canonical_name)
+        if canonical_mod is None:
+            root_str = str(PROJECT_ROOT)
+            if root_str not in sys.path:
+                sys.path.insert(0, root_str)
+            canonical_mod = importlib.import_module(self.canonical_name)
+        sys.modules[spec.name] = canonical_mod
+        return canonical_mod
+
+    def exec_module(self, module: Any) -> None:
+        # Canonical module was already executed (or initialized if namespace pkg) in create_module.
+        return None
+
+
+class CaseInsensitiveModulesFinder(importlib.abc.MetaPathFinder):
+    """
+    MetaPathFinder enabling case-insensitive imports under `modules.*` (e.g.,
+    `modules.benchmark.perf_worker_win` when disk folder is `modules/Benchmark/`).
+
+    Always canonicalizes `__module__` / `sys.modules` to the true on-disk casing so
+    `multiprocessing.spawn` child processes unpickle classes reliably with standard Python finders.
+    """
+
+    def find_spec(
+        self,
+        fullname: str,
+        path: Optional[Any] = None,
+        target: Optional[Any] = None,
+    ) -> Optional[importlib.machinery.ModuleSpec]:
+        parts = fullname.split(".")
+        if not parts or parts[0].lower() != "modules":
+            return None
+
+        cur = _find_canonical_entry(PROJECT_ROOT, parts[0])
+        if cur is None or not cur.is_dir():
+            return None
+
+        canon_parts: List[str] = [cur.name]
+        for part in parts[1:-1]:
+            nxt = _find_canonical_entry(cur, part)
+            if nxt is None or not nxt.is_dir():
+                return None
+            canon_parts.append(nxt.name)
+            cur = nxt
+
+        is_package = False
+        is_namespace = False
+        target_path: Optional[Path] = None
+        search_locs: Optional[List[str]] = None
+
+        if len(parts) == 1:
+            init_file = _find_canonical_entry(cur, "__init__.py")
+            is_package = True
+            if init_file is not None and init_file.is_file():
+                target_path = init_file
+            else:
+                is_namespace = True
+                target_path = cur
+            search_locs = [str(cur)]
+        else:
+            last = parts[-1]
+            matched_dir = _find_canonical_entry(cur, last)
+            if matched_dir is not None and matched_dir.is_dir():
+                canon_parts.append(matched_dir.name)
+                init_file = _find_canonical_entry(matched_dir, "__init__.py")
+                is_package = True
+                if init_file is not None and init_file.is_file():
+                    target_path = init_file
+                else:
+                    is_namespace = True
+                    target_path = matched_dir
+                search_locs = [str(matched_dir)]
+            else:
+                matched_file = _find_canonical_entry(cur, f"{last}.py")
+                if matched_file is None or not matched_file.is_file():
+                    return None
+                canon_parts.append(matched_file.stem)
+                target_path = matched_file
+
+        canonical_name = ".".join(canon_parts)
+        if canonical_name == fullname:
+            # Exact disk casing: let Python's standard PathFinder handle it natively
+            return None
+
+        loader = _CaseInsensitiveAliasLoader(canonical_name)
+        origin = str(target_path) if (target_path is not None and not is_namespace) else None
+        spec = importlib.machinery.ModuleSpec(fullname, loader, origin=origin, is_package=is_package)
+        if search_locs is not None:
+            spec.submodule_search_locations = search_locs
+        return spec
+
+
+def ensure_case_insensitive_modules_finder() -> None:
+    """Ensure CaseInsensitiveModulesFinder sits at index 0 of `sys.meta_path`."""
+    for f in sys.meta_path:
+        if isinstance(f, CaseInsensitiveModulesFinder):
+            return
+    sys.meta_path.insert(0, CaseInsensitiveModulesFinder())
+
+
+ensure_case_insensitive_modules_finder()
+
+
 class LazyModuleProxy:
     """Proxy object that acts as a class for modules and loads the real class on demand."""
 
@@ -115,13 +284,20 @@ class LazyModuleProxy:
 
 def load_single_module_dynamic(module_name: str, file_path: str) -> Any:
     """Dynamically loads a single module and returns its EXPORTED_CLASS."""
-    full_path = Path(file_path)
+    raw_path = Path(file_path)
+    canon_full, canon_rel = _canonicalize_path_under_root(raw_path, PROJECT_ROOT)
+    full_path = canon_full
+    canonical_name = (
+        ".".join(canon_rel.with_suffix("").parts)
+        if canon_rel is not None
+        else module_name
+    )
     try:
         module_dir = str(full_path.parent)
         if module_dir not in sys.path:
             sys.path.insert(0, module_dir)
 
-        parts = module_name.split(".")
+        parts = canonical_name.split(".")
         for i in range(1, len(parts)):
             parent_name = ".".join(parts[:i])
             if parent_name not in sys.modules:
@@ -130,18 +306,21 @@ def load_single_module_dynamic(module_name: str, file_path: str) -> Any:
                 except Exception:
                     pass
 
-        spec = importlib.util.spec_from_file_location(module_name, str(full_path))
+        spec = importlib.util.spec_from_file_location(canonical_name, str(full_path))
         if spec is None or spec.loader is None:
             logger.warning(f"Could not load spec for {full_path}")
             return None
 
         mod = importlib.util.module_from_spec(spec)
-        sys.modules[module_name] = mod
+        sys.modules[canonical_name] = mod
+        if module_name and module_name != canonical_name:
+            sys.modules[module_name] = mod
         try:
             spec.loader.exec_module(mod)
         except Exception:
-            if module_name in sys.modules:
-                del sys.modules[module_name]
+            sys.modules.pop(canonical_name, None)
+            if module_name and module_name != canonical_name:
+                sys.modules.pop(module_name, None)
             raise
 
         if hasattr(mod, "EXPORTED_CLASS"):
@@ -292,7 +471,8 @@ def _discover_module_files(search_path: Path) -> Tuple[List[Path], List[Path]]:
     for d in reversed(dirs_to_prepend):
         sys.path.insert(0, d)
 
-    # Register LocalPackagesFinder once
+    # Register CaseInsensitiveModulesFinder and LocalPackagesFinder once
+    ensure_case_insensitive_modules_finder()
     finder_exists = any(isinstance(f, LocalPackagesFinder) for f in sys.meta_path)
     if not finder_exists and local_packages:
         sys.meta_path.insert(0, LocalPackagesFinder(local_packages))
@@ -347,7 +527,8 @@ def register_module(module: Any) -> None:
     try:
         from core.data_stream_interceptor import data_stream_interceptor
 
-        data_stream_interceptor.hook_module(module)
+        if data_stream_interceptor.is_active:
+            data_stream_interceptor.hook_module(module)
     except Exception:
         pass
 
@@ -447,11 +628,8 @@ def get_available_modules(
             logger.warning("Could not import module validator, skipping validation")
             validator = None
 
-    # Resolve base_path relative to project root if it's not absolute
-    if not Path(base_path).is_absolute():
-        search_path = PROJECT_ROOT / base_path
-    else:
-        search_path = Path(base_path)
+    # Resolve base_path relative to project root if it's not absolute, canonicalizing on-disk casing
+    search_path = _resolve_search_dir_canonical(base_path)
     if not search_path.exists():
         logger.warning(f"Modules path '{search_path}' does not exist")
         return {}
@@ -709,10 +887,7 @@ def scan_modules_health(
     dependency_manager.missing_deps.clear()
     module_validation_manager.validation_issues.clear()
 
-    if not Path(base_path).is_absolute():
-        search_path = PROJECT_ROOT / base_path
-    else:
-        search_path = Path(base_path)
+    search_path = _resolve_search_dir_canonical(base_path)
 
     if not search_path.exists():
         return {"total_files": 0, "scanned": 0, "cached": 0, "elapsed_ms": 0.0}

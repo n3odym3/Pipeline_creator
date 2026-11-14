@@ -184,11 +184,13 @@ class PerfPulseSource_win(WindowBase):
 
     def _emit_one(self, payload: Optional[np.ndarray], nbytes: int, copy_per_target: bool = True) -> None:
         self._seq += 1
-        targets = self.connections.get("Out", [])
+        conns = self.connections
+        targets = conns["Out"] if "Out" in conns else ()
         t_start = time.perf_counter_ns()
 
         for tgt in targets:
-            if hasattr(tgt, "input_cb"):
+            cb = getattr(tgt, "input_cb", None)
+            if cb is not None:
                 t_hop = time.perf_counter_ns()
                 pkt = {
                     "__perf__": True,
@@ -198,12 +200,13 @@ class PerfPulseSource_win(WindowBase):
                     "nbytes": nbytes,
                     "data": payload,
                 }
-                tgt.input_cb(pkt)
+                cb(pkt)
 
-        trig_targets = self.connections.get("Trigger", [])
-        for tgt in trig_targets:
-            if hasattr(tgt, "input_cb"):
-                tgt.input_cb(True)
+        if "Trigger" in conns:
+            for tgt in conns["Trigger"]:
+                cb = getattr(tgt, "input_cb", None)
+                if cb is not None:
+                    cb(True)
 
         framework_profiler.record_dispatch("source_dispatch_ns", time.perf_counter_ns() - t_start)
         self._refresh_ui(force=False)

@@ -8,7 +8,7 @@ wire in the node editor.
 
 from __future__ import annotations
 
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Tuple
 
 from loguru import logger
 
@@ -23,6 +23,7 @@ class LinkBus:
 
     def __init__(self) -> None:
         self._subscribers: Dict[str, List[Callable[..., Any]]] = {}
+        self._subscribers_tuple: Dict[str, Tuple[Callable[..., Any], ...]] = {}
 
     def subscribe(self, channel: str, callback: Callable[..., Any]) -> None:
         """Register a LinkIn callback on a named channel."""
@@ -34,6 +35,7 @@ class LinkBus:
             self._subscribers[channel_clean] = []
         if callback not in self._subscribers[channel_clean]:
             self._subscribers[channel_clean].append(callback)
+            self._subscribers_tuple[channel_clean] = tuple(self._subscribers[channel_clean])
             logger.debug(f"LinkBus: subscribed to channel '{channel_clean}'")
 
     def unsubscribe(self, channel: str, callback: Callable[..., Any]) -> None:
@@ -47,22 +49,53 @@ class LinkBus:
                 pass
             if not self._subscribers[channel_clean]:
                 del self._subscribers[channel_clean]
+                self._subscribers_tuple.pop(channel_clean, None)
+            else:
+                self._subscribers_tuple[channel_clean] = tuple(self._subscribers[channel_clean])
+
+    def publish_fast(self, channel_clean: str, data: Any) -> None:
+        """
+        Zero-allocation hot-path publish for a single payload when `channel_clean`
+        is already stripped.
+        """
+        subscribers = self._subscribers_tuple.get(channel_clean)
+        if not subscribers:
+            return
+        for cb in subscribers:
+            try:
+                cb(data)
+            except Exception as e:
+                logger.error(f"LinkBus: error dispatching to subscriber on '{channel_clean}': {e}")
 
     def publish(self, channel: str, *args: Any, **kwargs: Any) -> None:
         """
         Push data to all LinkIn nodes registered on the given channel.
         Silently does nothing if no subscribers exist.
         """
-        channel_clean = channel.strip()
-        subscribers = self._subscribers.get(channel_clean, [])
-        if not subscribers:
-            logger.trace(f"LinkBus: no subscribers on channel '{channel_clean}'")
+        subscribers = self._subscribers_tuple.get(channel)
+        if subscribers is None:
+            channel_clean = channel.strip()
+            subscribers = self._subscribers_tuple.get(channel_clean)
+            if not subscribers:
+                return
+            channel = channel_clean
+        elif not subscribers:
             return
-        for cb in list(subscribers):
+
+        if len(args) == 1 and not kwargs:
+            arg0 = args[0]
+            for cb in subscribers:
+                try:
+                    cb(arg0)
+                except Exception as e:
+                    logger.error(f"LinkBus: error dispatching to subscriber on '{channel}': {e}")
+            return
+
+        for cb in subscribers:
             try:
                 cb(*args, **kwargs)
             except Exception as e:
-                logger.error(f"LinkBus: error dispatching to subscriber on '{channel_clean}': {e}")
+                logger.error(f"LinkBus: error dispatching to subscriber on '{channel}': {e}")
 
     def channel_names(self) -> List[str]:
         """Return a list of active channel names."""

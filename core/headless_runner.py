@@ -139,21 +139,22 @@ def load_benchmark_modules_only() -> int:
     import core.module_registry as mr
     from core.paths import MODULES_DIR
 
-    modules_root = Path(MODULES_DIR)
-    bench_dir = modules_root / "benchmark"
-    if not bench_dir.exists() and modules_root.exists():
+    modules_root = mr._resolve_search_dir_canonical(MODULES_DIR)
+    bench_dir: Optional[Path] = None
+    if modules_root.exists():
         for cand in sorted(modules_root.iterdir()):
             if cand.is_dir() and cand.name.lower() == "benchmark":
                 bench_dir = cand
-                break
+                if cand.name == "benchmark":
+                    break
     loaded: Dict[str, Any] = {}
-    if not bench_dir.exists():
+    if bench_dir is None or not bench_dir.exists():
         mr._AVAILABLE_MODULES_CACHE = loaded
         return 0
     for py_file in sorted(bench_dir.glob("*.py")):
         if py_file.name == "__init__.py":
             continue
-        mod_path = f"modules.{bench_dir.name}.{py_file.stem}"
+        mod_path = f"{modules_root.name}.{bench_dir.name}.{py_file.stem}"
         try:
             cls = mr.load_single_module_dynamic(mod_path, str(py_file))
             if cls is not None:

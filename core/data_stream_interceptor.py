@@ -691,10 +691,26 @@ class DataStreamInterceptor:
 
     def __init__(self) -> None:
         self.codec = UniversalDataCodec()
-        self.is_active: bool = False
+        self._is_active: bool = False
         self._tls = threading.local()
         self._hooked_modules: weakref.WeakSet[Any] = weakref.WeakSet()
         self._lock = threading.RLock()
+
+    @property
+    def is_active(self) -> bool:
+        return self._is_active
+
+    @is_active.setter
+    def is_active(self, value: bool) -> None:
+        active = bool(value)
+        with self._lock:
+            if active == self._is_active:
+                return
+            self._is_active = active
+            if active:
+                self.ensure_all_hooked()
+            else:
+                self.unhook_all()
 
     @property
     def _call_depth(self) -> int:
@@ -737,6 +753,9 @@ class DataStreamInterceptor:
             return self._handle_call(target_instance, orig_cb, args, kwargs)
 
         try:
+            mod_dict = getattr(module, "__dict__", None)
+            had_instance_cb = isinstance(mod_dict, dict) and "input_cb" in mod_dict
+            object.__setattr__(module, "_pc_had_instance_cb", had_instance_cb)
             object.__setattr__(module, "_pc_orig_input_cb", orig_cb)
             object.__setattr__(module, "input_cb", _intercepted_input_cb)
             object.__setattr__(module, "_pc_input_cb_hooked", True)
@@ -744,12 +763,49 @@ class DataStreamInterceptor:
         except Exception as e:
             logger.debug(f"Could not hook input_cb on {module}: {e}")
 
+    def unhook_module(self, module: Any) -> None:
+        """Restore `module.input_cb` to its pre-hook state when interception is inactive."""
+        if module is None or not getattr(module, "_pc_input_cb_hooked", False):
+            return
+        try:
+            had_instance_cb = bool(getattr(module, "_pc_had_instance_cb", True))
+            orig_cb = getattr(module, "_pc_orig_input_cb", None)
+            if had_instance_cb and orig_cb is not None:
+                object.__setattr__(module, "input_cb", orig_cb)
+            else:
+                try:
+                    object.__delattr__(module, "input_cb")
+                except AttributeError:
+                    pass
+            for attr in ("_pc_orig_input_cb", "_pc_input_cb_hooked", "_pc_had_instance_cb"):
+                try:
+                    object.__delattr__(module, attr)
+                except AttributeError:
+                    pass
+        except Exception as e:
+            logger.debug(f"Could not unhook input_cb on {module}: {e}")
+
     def ensure_all_hooked(self) -> None:
         """Ensure every currently registered module in `MODULES_REGISTRY` has its `input_cb` hooked."""
         from core.module_registry import MODULES_REGISTRY
 
-        for mod in list(MODULES_REGISTRY.values()):
-            self.hook_module(mod)
+        with self._lock:
+            for mod in list(MODULES_REGISTRY.values()):
+                self.hook_module(mod)
+
+    def unhook_all(self) -> None:
+        """Remove `input_cb` interceptor wrappers from all hooked and registered modules."""
+        from core.module_registry import MODULES_REGISTRY
+
+        with self._lock:
+            seen: set[int] = set()
+            for mod in list(self._hooked_modules) + list(MODULES_REGISTRY.values()):
+                mid = id(mod)
+                if mid in seen:
+                    continue
+                seen.add(mid)
+                self.unhook_module(mod)
+            self._hooked_modules.clear()
 
     def _find_sender_from_stack(self, target_module: Any) -> Tuple[Optional[Any], str]:
         """

@@ -113,7 +113,8 @@ class PerfRelayNode_win(WindowBase):
         """Receive packet, record hop & E2E timestamps, and forward downstream if connected."""
         t_enter = time.perf_counter_ns()
         self.recv_count += 1
-        targets = self.connections.get("Out", [])
+        conns = self.connections
+        targets = conns["Out"] if "Out" in conns else ()
         is_sink = self.force_terminal_e2e or (len(targets) == 0)
 
         if isinstance(data, dict) and data.get("__perf__"):

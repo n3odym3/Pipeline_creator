@@ -7,6 +7,8 @@ from loguru import logger
 
 from core.input_output_types import IOTypes
 
+_SENTINEL: Any = object()
+
 
 class _GateNode:
     """
@@ -57,7 +59,7 @@ class _GateNode:
         """Get formatted string for current IOType (e.g. 'Frame', 'Any')."""
         return str(self.io_type.value) if hasattr(self.io_type, "value") else str(self.io_type)
 
-    def input_cb(self, *args: Any, **kwargs: Any) -> None:
+    def input_cb(self, data: Any = _SENTINEL, *args: Any, **kwargs: Any) -> None:
         """
         Receives data from an upstream module.
         If pass-through is active (is_open=True), forwards data downstream.
@@ -66,9 +68,19 @@ class _GateNode:
         if not self.is_open:
             return
 
-        for module in self.connections.get("Out", []):
+        targets = self.connections["Out"]
+        if not args and not kwargs and data is not _SENTINEL:
+            for module in targets:
+                try:
+                    module.input_cb(data)
+                except Exception as e:
+                    logger.error(f"Gate '{self.label}': error dispatching to {module} - {e}")
+            return
+
+        fwd_args = args if data is _SENTINEL else (data, *args)
+        for module in targets:
             try:
-                module.input_cb(*args, **kwargs)
+                module.input_cb(*fwd_args, **kwargs)
             except Exception as e:
                 logger.error(f"Gate '{self.label}': error dispatching to {module} - {e}")
 
