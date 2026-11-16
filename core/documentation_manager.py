@@ -25,7 +25,7 @@ from loguru import logger
 
 from config.display_scaling import display_scaling
 from core.config_manager import config
-from core.paths import PROJECT_ROOT
+from core.paths import IS_COMPILED, PROJECT_ROOT
 
 
 class DocumentationManager:
@@ -78,8 +78,21 @@ class DocumentationManager:
                 startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
                 startupinfo.wShowWindow = 0  # SW_HIDE
 
-            # Run Python module mkdocs serve on the found local port
-            cmd = [sys.executable, "-m", "mkdocs", "serve", "-a", f"127.0.0.1:{self.port}"]
+            # Run Python module mkdocs serve on the found local port.
+            # In source mode, launch via `runpy.run_module` under `-c` instead of `-m`
+            # so debugger subprocess wrappers (e.g. debugpy/pydevd on Python 3.14+, where
+            # `pkgutil.get_loader` was removed) do not fail with "No module named mkdocs".
+            if IS_COMPILED:
+                cmd = [sys.executable, "-m", "mkdocs", "serve", "-a", f"127.0.0.1:{self.port}"]
+            else:
+                cmd = [
+                    sys.executable,
+                    "-c",
+                    "import runpy; runpy.run_module('mkdocs', run_name='__main__', alter_sys=True)",
+                    "serve",
+                    "-a",
+                    f"127.0.0.1:{self.port}",
+                ]
             logger.info(f"Starting mkdocs server on port {self.port}: {' '.join(cmd)}")
 
             self.process = subprocess.Popen(
