@@ -18,7 +18,11 @@ from loguru import logger
 
 from core.file_explorer import file_explorer
 from core.module_registry import MODULES_REGISTRY
-from core.paths import BENCHMARK_DIR
+from core.paths import BENCHMARK_DIR, LOGS_DIR
+
+
+_SENTINEL = object()
+_PSUTIL_PROC_CACHE: Dict[int, Any] = {}
 
 
 # ----------------------------------------------------------------------------
@@ -60,16 +64,21 @@ def _get_process_memory_mb(pid: int) -> Tuple[float, float]:
     if pid <= 0:
         return 0.0, 0.0
 
-    # 1. psutil fast-path if available
+    # 1. psutil fast-path (cached Process object avoids re-parsing /proc or OpenProcess each tick)
     if _HAS_PSUTIL:
         try:
-            p = psutil.Process(pid)
+            p = _PSUTIL_PROC_CACHE.get(pid)
+            if p is None:
+                p = psutil.Process(pid)
+                if len(_PSUTIL_PROC_CACHE) > 256:
+                    _PSUTIL_PROC_CACHE.clear()
+                _PSUTIL_PROC_CACHE[pid] = p
             mem = p.memory_info()
             rss_mb = mem.rss / (1024.0 * 1024.0)
             peak_mb = getattr(mem, "peak_wset", getattr(mem, "vms", mem.rss)) / (1024.0 * 1024.0)
             return float(rss_mb), float(max(rss_mb, peak_mb))
         except Exception:
-            pass
+            _PSUTIL_PROC_CACHE.pop(pid, None)
 
     # 2. Windows native (psapi.dll via ctypes)
     if sys.platform == "win32":
@@ -202,9 +211,9 @@ def _estimate_module_buffers_mb(obj: Any) -> float:
 
 
 def _fmt_ms(val_ms: float) -> str:
-    """Format milliseconds with 3 decimals for sub-0.1 ms values so microsecond hops are visible."""
+    """Format milliseconds with microsecond clarity for sub-0.1 ms hops."""
     if 0.0 < abs(val_ms) < 0.1:
-        return f"{val_ms:.3f} ms"
+        return f"{val_ms:.3f} ms ({val_ms * 1000.0:.1f} us)"
     return f"{val_ms:.2f} ms"
 
 # Visual status palette (RGBA / RGB)
@@ -285,7 +294,7 @@ class _TrackedTargetProxy:
         object.__setattr__(self, "_profiler", profiler)
         object.__setattr__(self, "_target_idx", target_idx)
 
-    def input_cb(self, *args: Any, **kwargs: Any) -> Any:
+    def input_cb(self, data: Any = _SENTINEL, *args: Any, **kwargs: Any) -> Any:
         target = object.__getattribute__(self, "_target")
         profiler = object.__getattribute__(self, "_profiler")
         src_uid = object.__getattribute__(self, "_src_uid")
@@ -296,9 +305,19 @@ class _TrackedTargetProxy:
         t_enter = time.perf_counter()
         profiler._on_proxy_emit_start(src_uid, out_key, tgt_uid, t_enter, target_idx)
         try:
-            # Always invoke `target.input_cb` so any external probe (e.g. `FlowMetricsViewer`)
-            # attached to `target.input_cb` remains in the call chain and never loses sync.
-            return target.input_cb(*args, **kwargs)
+            cb = target.input_cb
+            # Bypass `_wrapped_input_cb` when it is still the outermost wrapper on `target`,
+            # avoiding duplicate timestamps & TLS checks while preserving any external probe.
+            wrapped_fn = getattr(target, "_perf_wrapped_input_func", None)
+            if wrapped_fn is not None and getattr(cb, "__func__", None) is wrapped_fn:
+                cb = target._perf_orig_input_cb
+            if data is _SENTINEL and not args and not kwargs:
+                return cb()
+            if not args and not kwargs:
+                return cb(data)
+            if data is _SENTINEL:
+                return cb(*args, **kwargs)
+            return cb(data, *args, **kwargs)
         finally:
             t_exit = time.perf_counter()
             dt_ms = (t_exit - t_enter) * 1000.0
@@ -614,11 +633,15 @@ class NodePerfProfilerMixin:
 
         self._perf_records: Dict[str, _NodePerfRecord] = {}
         self._perf_report_windows: Dict[str, Dict[str, Any]] = {}
+        self._perf_overview_win_tag: str = f"ne_perf_overview_win_{self.UUID}"
+        self._perf_overview_ui: Dict[str, Any] = {}
+        self._perf_last_overview_ts: float = 0.0
         self._perf_hooked_instances: Set[int] = set()
         self._perf_hooked_video_objs: List[Any] = []
         self._perf_stack_lock = threading.Lock()
         self._thread_call_stack: Dict[int, List[Dict[str, Any]]] = {}
         self._thread_source_prep_ms: Dict[int, float] = {}
+        self._perf_tls = threading.local()
 
         self._perf_applied_node_themes: Dict[int, int] = {}
         self._perf_applied_link_themes: Dict[int, int] = {}
@@ -697,6 +720,15 @@ class NodePerfProfilerMixin:
 
             dpg.add_separator()
             dpg.add_menu_item(
+                label="Pipeline Overview (All Nodes)...",
+                callback=self.open_pipeline_perf_overview_window,
+            )
+            with dpg.tooltip(parent=dpg.last_item()):
+                dpg.add_text(
+                    "Open a live comparison & bottleneck ranking table for every node in the pipeline.",
+                    wrap=280,
+                )
+            dpg.add_menu_item(
                 label="Reset All Node Metrics",
                 callback=self._on_reset_all_perf_metrics,
             )
@@ -715,11 +747,26 @@ class NodePerfProfilerMixin:
     # LIFECYCLE MANAGEMENT (ZERO OVERHEAD WHEN INACTIVE)
     # =========================================================================
 
+    def _is_overview_window_open(self) -> bool:
+        """Return True if the global Pipeline Overview window is open and visible."""
+        ov_tag = getattr(self, "_perf_overview_win_tag", "")
+        if not ov_tag:
+            return False
+        try:
+            return bool(dpg.does_item_exist(ov_tag) and dpg.is_item_shown(ov_tag))
+        except Exception:
+            return False
+
     def _is_profiler_needed(self, force_dpg_check: bool = True) -> bool:
-        """Return True if either Heartbeat mode is active or at least one Report Window is open."""
+        """Return True if Profiling mode, the Overview window, popup, or any Report Window is open."""
         now = time.perf_counter()
         if not force_dpg_check and (now - self._perf_last_needed_check_ts) < 0.50:
-            if self.perf_mode_active or self._perf_popup_node_id is not None or self._perf_report_windows:
+            if (
+                self.perf_mode_active
+                or self._perf_popup_node_id is not None
+                or self._perf_report_windows
+                or self._is_overview_window_open()
+            ):
                 return self._perf_last_needed_result
             return False
 
@@ -729,6 +776,9 @@ class NodePerfProfilerMixin:
             self._perf_last_needed_result = True
             return True
         if self._perf_popup_node_id is not None and dpg.does_item_exist(self.perf_popup_tag) and dpg.is_item_shown(self.perf_popup_tag):
+            self._perf_last_needed_result = True
+            return True
+        if self._is_overview_window_open():
             self._perf_last_needed_result = True
             return True
         # Clean up any report windows that were closed externally
@@ -824,6 +874,16 @@ class NodePerfProfilerMixin:
         if dpg.does_item_exist(self.perf_popup_tag):
             dpg.configure_item(self.perf_popup_tag, show=False)
 
+        # Close global overview window
+        ov_tag = getattr(self, "_perf_overview_win_tag", "")
+        if ov_tag and dpg.does_item_exist(ov_tag):
+            try:
+                dpg.delete_item(ov_tag)
+            except Exception:
+                pass
+        if hasattr(self, "_perf_overview_ui"):
+            self._perf_overview_ui.clear()
+
         # Close all standalone report windows
         self._close_all_report_windows()
 
@@ -866,6 +926,7 @@ class NodePerfProfilerMixin:
             else:
                 self._restore_canvas_themes()
             self._ensure_profiler_running()
+            self._update_perf_menu_badge(0.0)
         else:
             if dpg.does_item_exist(self._perf_menu_badge_tag):
                 dpg.set_value(self._perf_menu_badge_tag, "")
@@ -893,6 +954,19 @@ class NodePerfProfilerMixin:
         self._perf_t0 = time.perf_counter()
         for rec in list(self._perf_records.values()):
             rec.reset()
+        for inst in list(getattr(self, "node_map", {}).values()):
+            if inst is not None and getattr(inst, "KIND", "") == "propagation_tester":
+                try:
+                    inst.reset_metrics()
+                except Exception:
+                    pass
+        if self._is_overview_window_open():
+            try:
+                self._refresh_perf_overview_window(0.0)
+            except Exception:
+                pass
+        if getattr(self, "perf_mode_active", False):
+            self._update_perf_menu_badge(0.0)
 
     # =========================================================================
     # NON-INTRUSIVE HOOKS (CONNECTIONS PROXY + INPUT_CB + WORKER QUEUES)
@@ -949,28 +1023,33 @@ class NodePerfProfilerMixin:
         return None
 
     def _get_live_queue_size_for_uid(self, uid: str) -> int:
-        """Query the live `_in_queue.qsize()` of the module identified by `uid` right now."""
-        for inst in self.node_map.values():
-            if inst is not None and self._instance_uid(inst) == uid:
-                worker = self._find_module_worker(inst)
-                q_fn = getattr(worker, "queue_size", None) if worker is not None else None
-                if callable(q_fn):
-                    try:
-                        q_val = int(q_fn())
-                        if q_val >= 0:
-                            return q_val
-                    except Exception:
-                        pass
-                in_q = getattr(worker, "_in_queue", None) if worker is not None else None
-                if in_q is not None:
-                    try:
-                        return max(0, int(in_q.qsize()))
-                    except Exception:
-                        try:
-                            return 1 if not in_q.empty() else 0
-                        except Exception:
-                            return 0
-                break
+        """Query the live `_in_queue.qsize()` of the module identified by `uid` in O(1)."""
+        rec = self._perf_records.get(uid)
+        worker = rec._cached_worker if rec is not None else None
+        if rec is None:
+            for inst in self.node_map.values():
+                if inst is not None and self._instance_uid(inst) == uid:
+                    worker = self._find_module_worker(inst)
+                    break
+        if worker is None:
+            return 0
+        q_fn = getattr(worker, "queue_size", None)
+        if callable(q_fn):
+            try:
+                q_val = int(q_fn())
+                if q_val >= 0:
+                    return q_val
+            except Exception:
+                pass
+        in_q = getattr(worker, "_in_queue", None)
+        if in_q is not None:
+            try:
+                return max(0, int(in_q.qsize()))
+            except Exception:
+                try:
+                    return 1 if not in_q.empty() else 0
+                except Exception:
+                    return 0
         return 0
 
     def _sync_module_hooks(self, force: bool = True) -> None:
@@ -1044,18 +1123,32 @@ class NodePerfProfilerMixin:
         if inst_id in self._perf_hooked_instances:
             return
 
-        # 1. Hook `input_cb`
+        # 1. Hook `input_cb` (1-arg positional fast path + exact wrapper tag for proxy bypass)
         orig_cb = getattr(inst, "input_cb", None)
         if callable(orig_cb) and not getattr(orig_cb, "_perf_wrapped", False):
             orig_func = orig_cb.__func__ if hasattr(orig_cb, "__func__") else None
 
-            def _wrapped_input_cb(self_obj: Any, *args: Any, **kwargs: Any) -> Any:
+            def _wrapped_input_cb(
+                self_obj: Any, data: Any = _SENTINEL, *args: Any, **kwargs: Any
+            ) -> Any:
                 t_enter = time.perf_counter()
                 pushed = profiler._on_direct_input_start(uid, t_enter)
                 try:
                     if orig_func is not None:
-                        return orig_func(self_obj, *args, **kwargs)
-                    return orig_cb(*args, **kwargs)
+                        if data is _SENTINEL and not args and not kwargs:
+                            return orig_func(self_obj)
+                        if not args and not kwargs:
+                            return orig_func(self_obj, data)
+                        if data is _SENTINEL:
+                            return orig_func(self_obj, *args, **kwargs)
+                        return orig_func(self_obj, data, *args, **kwargs)
+                    if data is _SENTINEL and not args and not kwargs:
+                        return orig_cb()
+                    if not args and not kwargs:
+                        return orig_cb(data)
+                    if data is _SENTINEL:
+                        return orig_cb(*args, **kwargs)
+                    return orig_cb(data, *args, **kwargs)
                 finally:
                     t_exit = time.perf_counter()
                     dt_ms = (t_exit - t_enter) * 1000.0
@@ -1064,6 +1157,7 @@ class NodePerfProfilerMixin:
             setattr(_wrapped_input_cb, "_perf_wrapped", True)
             try:
                 setattr(inst, "_perf_orig_input_cb", orig_cb)
+                setattr(inst, "_perf_wrapped_input_func", _wrapped_input_cb)
                 setattr(inst, "input_cb", types.MethodType(_wrapped_input_cb, inst))
             except Exception:
                 pass
@@ -1151,8 +1245,7 @@ class NodePerfProfilerMixin:
                         return orig_read(*args, **kwargs)
                     finally:
                         t1 = time.perf_counter()
-                        with profiler._perf_stack_lock:
-                            profiler._thread_source_prep_ms[threading.get_ident()] = (t1 - t0) * 1000.0
+                        profiler._perf_tls.prep_ms = (t1 - t0) * 1000.0
 
                 setattr(_wrapped_video_read, "_perf_wrapped", True)
                 setattr(v_obj, "_perf_orig_read", orig_read)
@@ -1217,6 +1310,11 @@ class NodePerfProfilerMixin:
                         delattr(inst, attr_orig)
                     except Exception:
                         pass
+            if hasattr(inst, "_perf_wrapped_input_func"):
+                try:
+                    delattr(inst, "_perf_wrapped_input_func")
+                except Exception:
+                    pass
 
             # 3. Restore worker.submit if wrapped
             worker = self._find_module_worker(inst)
@@ -1243,6 +1341,7 @@ class NodePerfProfilerMixin:
             with self._perf_stack_lock:
                 self._thread_call_stack.clear()
                 self._thread_source_prep_ms.clear()
+        self._perf_tls = threading.local()
 
         self._perf_hooked_instances.clear()
 
@@ -1253,41 +1352,39 @@ class NodePerfProfilerMixin:
     def _push_thread_frame(
         self, uid: str, t_enter: float, prep_ms: float = 0.0, from_proxy: bool = False
     ) -> Dict[str, Any]:
-        tid = threading.get_ident()
+        tls = self._perf_tls
+        stack: Optional[List[Dict[str, Any]]] = getattr(tls, "stack", None)
+        if stack is None:
+            stack = []
+            tls.stack = stack
         frame: Dict[str, Any] = {
             "uid": uid,
             "t_enter": t_enter,
             "child_ms": 0.0,
             "prep_ms": prep_ms,
-            "ports": [],
-            "port_self_ms": {},
+            "ports": None,
+            "port_self_ms": None,
             "from_proxy": from_proxy,
             "entered_cb": False,
         }
-        with self._perf_stack_lock:
-            stack = self._thread_call_stack.setdefault(tid, [])
-            stack.append(frame)
+        stack.append(frame)
         return frame
 
     def _pop_thread_frame(self, uid: str, dt_ms: float) -> Optional[Dict[str, Any]]:
-        tid = threading.get_ident()
-        with self._perf_stack_lock:
-            stack = self._thread_call_stack.get(tid)
-            if not stack:
-                return None
-            frame = stack.pop()
-            if stack:
-                stack[-1]["child_ms"] += dt_ms
-            return frame
+        stack: Optional[List[Dict[str, Any]]] = getattr(self._perf_tls, "stack", None)
+        if not stack:
+            return None
+        frame = stack.pop()
+        if stack:
+            stack[-1]["child_ms"] += dt_ms
+        return frame
 
     def _peek_thread_frame(self, uid: str) -> Optional[Dict[str, Any]]:
-        tid = threading.get_ident()
-        with self._perf_stack_lock:
-            stack = self._thread_call_stack.get(tid)
-            if stack:
-                for f in reversed(stack):
-                    if f["uid"] == uid:
-                        return f
+        stack: Optional[List[Dict[str, Any]]] = getattr(self._perf_tls, "stack", None)
+        if stack:
+            for f in reversed(stack):
+                if f["uid"] == uid:
+                    return f
         return None
 
     def _record_completed_sync_frame(
@@ -1309,9 +1406,9 @@ class NodePerfProfilerMixin:
 
             # If this module uses an async worker process (`ProcessingBase`) and did not emit
             # synchronously during this `input_cb`, its `Exec time` will be recorded when the worker emits.
-            ports_emitted = frame["ports"] if frame else []
+            ports_emitted = frame["ports"] if frame else None
             if ports_emitted:
-                port_self_map: Dict[str, float] = frame.get("port_self_ms", {}) if frame else {}
+                port_self_map: Dict[str, float] = (frame.get("port_self_ms") or {}) if frame else {}
                 max_pre_emit = max(port_self_map.values(), default=0.0)
                 tail_ms = max(0.0, self_ms - max_pre_emit)
                 for p_key in ports_emitted:
@@ -1331,9 +1428,10 @@ class NodePerfProfilerMixin:
                 rec.in_to_out_ms.append(self_ms)
 
     def _on_source_method_start(self, uid: str, t_enter: float, record_input: bool = False) -> None:
-        tid = threading.get_ident()
-        with self._perf_stack_lock:
-            prep_ms = self._thread_source_prep_ms.pop(tid, 0.0)
+        tls = self._perf_tls
+        prep_ms = getattr(tls, "prep_ms", 0.0)
+        if prep_ms:
+            tls.prep_ms = 0.0
         self._push_thread_frame(uid, t_enter, prep_ms=prep_ms)
         rec = self._perf_records.get(uid)
         if rec is not None:
@@ -1371,7 +1469,8 @@ class NodePerfProfilerMixin:
                 else 0
             )
             with src_rec.lock:
-                src_rec.ensure_port_registered(out_key)
+                if out_key not in src_rec.port_out_timestamps:
+                    src_rec.ensure_port_registered(out_key)
                 src_rec.last_out_ts = t_enter
                 src_rec.port_last_emit_ts[out_key] = t_enter
                 src_rec.edge_last_emit_ts[(out_key, tgt_uid)] = t_enter
@@ -1392,13 +1491,21 @@ class NodePerfProfilerMixin:
 
                     if src_frame is not None:
                         # Synchronous or hooked source emission: record cumulative self time up to this port
-                        if out_key not in src_frame["ports"]:
-                            src_frame["ports"].append(out_key)
+                        ports_list = src_frame["ports"]
+                        if ports_list is None:
+                            ports_list = []
+                            src_frame["ports"] = ports_list
+                        if out_key not in ports_list:
+                            ports_list.append(out_key)
+                        port_self = src_frame["port_self_ms"]
+                        if port_self is None:
+                            port_self = {}
+                            src_frame["port_self_ms"] = port_self
                         elapsed_self_ms = float(src_frame["prep_ms"]) + max(
                             0.0,
                             (t_enter - float(src_frame["t_enter"])) * 1000.0 - float(src_frame["child_ms"]),
                         )
-                        src_frame["port_self_ms"][out_key] = elapsed_self_ms
+                        port_self[out_key] = elapsed_self_ms
                     else:
                         # Asynchronous emission from a worker poll thread (outside `input_cb` / `frame_cb`).
                         # Exclude queue wait time: if an item sat in `_in_queue` while the worker was busy
@@ -1477,9 +1584,14 @@ class NodePerfProfilerMixin:
 
         tgt_rec = self._perf_records.get(tgt_uid)
         if tgt_rec is not None and tgt_rec.cls_name != "_PropagationTesterNode":
+            is_link_out = tgt_rec.cls_name == "_LinkOutNode"
             with tgt_rec.lock:
                 tgt_rec._in_active_depth = max(0, tgt_rec._in_active_depth - 1)
-            self._record_completed_sync_frame(tgt_rec, tgt_frame, dt_ms, is_link_out=False)
+                if is_link_out:
+                    tgt_rec.last_out_ts = t_exit
+                    tgt_rec.total_out += 1
+                    tgt_rec.out_timestamps.append(t_exit)
+            self._record_completed_sync_frame(tgt_rec, tgt_frame, dt_ms, is_link_out=is_link_out)
 
     def _on_direct_input_start(self, uid: str, t_enter: float) -> bool:
         # Avoid duplicate frame if already inside a `_TrackedTargetProxy` call for `uid`
@@ -2143,6 +2255,8 @@ class NodePerfProfilerMixin:
                 self._sync_module_hooks(force=False)
 
                 record_hist = (now - self._perf_last_history_ts) >= 0.25
+                need_overview = record_hist and self._is_overview_window_open()
+                need_badge = record_hist and self.perf_mode_active
                 if record_hist:
                     self._perf_last_history_ts = now
                     self._update_all_records(now, record_history=True)
@@ -2157,6 +2271,16 @@ class NodePerfProfilerMixin:
 
                 if record_hist and self._perf_report_windows:
                     self._refresh_all_report_windows()
+
+                if need_badge or need_overview:
+                    try:
+                        ui_fps = float(dpg.get_frame_rate()) if dpg.is_dearpygui_running() else 0.0
+                    except Exception:
+                        ui_fps = 0.0
+                    if need_badge:
+                        self._update_perf_menu_badge(ui_fps)
+                    if need_overview:
+                        self._refresh_perf_overview_window(ui_fps)
             except Exception as exc:
                 logger.debug(f"NodePerfProfiler loop error: {exc}")
 
@@ -2332,6 +2456,17 @@ class NodePerfProfilerMixin:
         if not dpg.is_item_shown(self.perf_popup_tag):
             return False
 
+        # O(1) bounding-box test first (handles 99% of popup interactions without DPG tree walk)
+        try:
+            pos = dpg.get_item_pos(self.perf_popup_tag)
+            sz = dpg.get_item_rect_size(self.perf_popup_tag)
+            mx, my = dpg.get_mouse_pos(local=False)
+            if sz and sz[0] > 0 and sz[1] > 0:
+                if (pos[0] - 6 <= mx <= pos[0] + sz[0] + 16) and (pos[1] - 6 <= my <= pos[1] + sz[1] + 16):
+                    return True
+        except Exception:
+            pass
+
         try:
             if dpg.is_item_active(self.perf_popup_tag):
                 return True
@@ -2355,19 +2490,7 @@ class NodePerfProfilerMixin:
                     pass
             return False
 
-        if _check_item(self.perf_popup_tag):
-            return True
-
-        try:
-            pos = dpg.get_item_pos(self.perf_popup_tag)
-            sz = dpg.get_item_rect_size(self.perf_popup_tag)
-            mx, my = dpg.get_mouse_pos(local=False)
-            if sz and sz[0] > 0 and sz[1] > 0:
-                # Include a generous 16px border around the bottom/right for the resize grip
-                return (pos[0] - 6 <= mx <= pos[0] + sz[0] + 16) and (pos[1] - 6 <= my <= pos[1] + sz[1] + 16)
-        except Exception:
-            pass
-        return False
+        return _check_item(self.perf_popup_tag)
 
     def _refresh_perf_popup_ui(self) -> None:
         node_id = self._perf_popup_node_id
@@ -3706,3 +3829,502 @@ class NodePerfProfilerMixin:
             extensions=[("CSV file", "*.csv"), ("JSON file", "*.json")],
             callback=_on_file_chosen,
         )
+
+    # =========================================================================
+    # GLOBAL MENU-BAR BADGE & PIPELINE PERFORMANCE OVERVIEW WINDOW
+    # =========================================================================
+
+    _OVERVIEW_SORT_OPTIONS: List[str] = [
+        "Turnaround Mean (ms)",
+        "Self Exec (ms)",
+        "Input Rate (Hz)",
+        "Output Rate (Hz)",
+        "Queue Fill (%)",
+        "Dropped",
+        "Name",
+    ]
+
+    def build_pipeline_overview_snapshot(self, sort_by: str = "Turnaround Mean (ms)") -> Dict[str, Any]:
+        """Build a thread-safe sorted snapshot of every node's live telemetry and global bottleneck."""
+        rows: List[Dict[str, Any]] = []
+        active_count = 0
+        congested_count = 0
+        busy_count = 0
+        total_drops = 0
+
+        for node_id, inst in list(self.node_map.items()):
+            if inst is None:
+                continue
+            uid = self._instance_uid(inst)
+            rec = self._perf_records.get(uid)
+            label = str(getattr(inst, "label", type(inst).__name__))
+            cls_name = type(inst).__name__
+
+            if rec is not None:
+                with rec.lock:
+                    status = rec.flow_state_text
+                    color = rec.flow_state_color
+                    in_hz = float(rec.in_rate_hz)
+                    out_hz = float(rec.out_rate_hz)
+                    turn_mean = float(rec.mean_turnaround_ms)
+                    turn_p95 = float(rec.p95_turnaround_ms)
+                    self_mean = float(rec.mean_self_ms)
+                    q_has = bool(rec.q_has_worker)
+                    q_sz = int(rec.q_size)
+                    q_max = int(rec.q_max)
+                    q_pct = float(rec.q_fill_pct)
+                    drops = int(rec.dropped_count)
+                    is_wait = bool(rec.is_waiting_val >= 0.5 or not rec.is_downstream_ready)
+                    tot_in = int(rec.total_in)
+                    tot_out = int(rec.total_out)
+            else:
+                status = "IDLE"
+                color = COLOR_IDLE
+                in_hz = 0.0
+                out_hz = 0.0
+                turn_mean = 0.0
+                turn_p95 = 0.0
+                self_mean = 0.0
+                q_has = False
+                q_sz = 0
+                q_max = 1
+                q_pct = 0.0
+                drops = 0
+                is_wait = False
+                tot_in = 0
+                tot_out = 0
+
+            if status != "IDLE":
+                active_count += 1
+            if color == COLOR_CONGESTED:
+                congested_count += 1
+            elif color == COLOR_BUSY:
+                busy_count += 1
+            total_drops += drops
+
+            rows.append({
+                "node_id": node_id,
+                "uid": uid,
+                "label": label,
+                "class_name": cls_name,
+                "status": status,
+                "color": color,
+                "in_rate_hz": in_hz,
+                "out_rate_hz": out_hz,
+                "turnaround_mean_ms": turn_mean,
+                "turnaround_p95_ms": turn_p95,
+                "self_exec_mean_ms": self_mean,
+                "q_has_worker": q_has,
+                "q_size": q_sz,
+                "q_max": q_max,
+                "q_fill_pct": q_pct,
+                "dropped_count": drops,
+                "is_waiting": is_wait,
+                "total_in": tot_in,
+                "total_out": tot_out,
+            })
+
+        # Determine primary bottleneck: prioritize congested/waiting, then queue fill, then execution cost
+        bottleneck: Optional[Dict[str, Any]] = None
+        active_or_costly = [
+            r for r in rows
+            if r["status"] != "IDLE" or max(r["turnaround_mean_ms"], r["self_exec_mean_ms"]) > 0.0 or r["dropped_count"] > 0
+        ]
+        if active_or_costly:
+            bottleneck = max(
+                active_or_costly,
+                key=lambda r: (
+                    1 if r["color"] == COLOR_CONGESTED else 0,
+                    1 if r["is_waiting"] else 0,
+                    round(r["q_fill_pct"], 1) if r["q_has_worker"] else -1.0,
+                    max(r["turnaround_mean_ms"], r["self_exec_mean_ms"]),
+                    r["dropped_count"],
+                ),
+            )
+
+        if sort_by == "Self Exec (ms)":
+            rows.sort(key=lambda r: (-r["self_exec_mean_ms"], r["label"].lower()))
+        elif sort_by == "Input Rate (Hz)":
+            rows.sort(key=lambda r: (-r["in_rate_hz"], r["label"].lower()))
+        elif sort_by == "Output Rate (Hz)":
+            rows.sort(key=lambda r: (-r["out_rate_hz"], r["label"].lower()))
+        elif sort_by == "Queue Fill (%)":
+            rows.sort(key=lambda r: (-(r["q_fill_pct"] if r["q_has_worker"] else -1.0), r["label"].lower()))
+        elif sort_by == "Dropped":
+            rows.sort(key=lambda r: (-r["dropped_count"], r["label"].lower()))
+        elif sort_by == "Name":
+            rows.sort(key=lambda r: r["label"].lower())
+        else:
+            rows.sort(
+                key=lambda r: (
+                    -(1 if r["color"] == COLOR_CONGESTED else 0),
+                    -max(r["turnaround_mean_ms"], r["self_exec_mean_ms"]),
+                    r["label"].lower(),
+                )
+            )
+
+        return {
+            "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S"),
+            "total_nodes": len(rows),
+            "active_nodes": active_count,
+            "congested_nodes": congested_count,
+            "busy_nodes": busy_count,
+            "total_dropped": total_drops,
+            "bottleneck": bottleneck,
+            "nodes": rows,
+        }
+
+    def _update_perf_menu_badge(self, ui_fps: float = 0.0) -> None:
+        """Update the NodeEditor menu-bar status badge with live node activity and bottleneck."""
+        badge_tag = getattr(self, "_perf_menu_badge_tag", "")
+        if not badge_tag or not dpg.does_item_exist(badge_tag):
+            return
+        if not self.perf_mode_active:
+            dpg.set_value(badge_tag, "")
+            return
+
+        snap = self.build_pipeline_overview_snapshot()
+        total_n = snap["total_nodes"]
+        active_n = snap["active_nodes"]
+        cong_n = snap["congested_nodes"]
+        busy_n = snap["busy_nodes"]
+        bn = snap["bottleneck"]
+
+        fps_part = f" | {ui_fps:.0f} FPS" if ui_fps > 0.0 else ""
+        if bn is not None:
+            bn_ms = max(bn["turnaround_mean_ms"], bn["self_exec_mean_ms"])
+            drops_part = f" | Drops: {snap['total_dropped']}" if snap["total_dropped"] > 0 else ""
+            txt = f"  [Live: {active_n}/{total_n} active | Bottleneck: {bn['label']} ({_fmt_ms(bn_ms)}){drops_part}{fps_part}]"
+        else:
+            txt = f"  [Live: {active_n}/{total_n} active | Idle{fps_part}]"
+
+        if cong_n > 0:
+            col = COLOR_CONGESTED
+        elif busy_n > 0:
+            col = COLOR_BUSY
+        elif active_n > 0:
+            col = COLOR_FLOWING
+        else:
+            col = COLOR_IDLE
+
+        try:
+            dpg.set_value(badge_tag, txt)
+            dpg.configure_item(badge_tag, color=col)
+        except Exception:
+            pass
+
+    def export_pipeline_overview(self, output_path: str | Path, fmt: Optional[str] = None) -> Path:
+        """Export the global multi-node telemetry snapshot to CSV or JSON."""
+        snap = self.build_pipeline_overview_snapshot()
+        target = Path(output_path)
+        ext = (f".{fmt.lower().lstrip('.')}" if fmt else target.suffix.lower()) or ".csv"
+        if not target.suffix:
+            target = target.with_suffix(ext)
+        target.parent.mkdir(parents=True, exist_ok=True)
+
+        if ext == ".json":
+            serializable = dict(snap)
+            serializable["nodes"] = [
+                {
+                    "node_id": r["node_id"],
+                    "uid": r["uid"],
+                    "label": r["label"],
+                    "class_name": r["class_name"],
+                    "status": r["status"],
+                    "in_rate_hz": round(r["in_rate_hz"], 3),
+                    "out_rate_hz": round(r["out_rate_hz"], 3),
+                    "turnaround_mean_ms": round(r["turnaround_mean_ms"], 4),
+                    "turnaround_p95_ms": round(r["turnaround_p95_ms"], 4),
+                    "self_exec_mean_ms": round(r["self_exec_mean_ms"], 4),
+                    "q_size": r["q_size"],
+                    "q_max": r["q_max"],
+                    "q_fill_pct": round(r["q_fill_pct"], 1),
+                    "dropped_count": r["dropped_count"],
+                    "total_in": r["total_in"],
+                    "total_out": r["total_out"],
+                }
+                for r in snap["nodes"]
+            ]
+            if serializable.get("bottleneck"):
+                bn = serializable["bottleneck"]
+                serializable["bottleneck"] = {
+                    "label": bn["label"],
+                    "uid": bn["uid"],
+                    "status": bn["status"],
+                    "turnaround_mean_ms": round(bn["turnaround_mean_ms"], 4),
+                    "self_exec_mean_ms": round(bn["self_exec_mean_ms"], 4),
+                    "q_fill_pct": round(bn["q_fill_pct"], 1),
+                }
+            target.write_text(json.dumps(serializable, indent=2), encoding="utf-8")
+        else:
+            with open(target, "w", newline="", encoding="utf-8") as f:
+                writer = csv.writer(f)
+                writer.writerow([
+                    "node_label",
+                    "class_name",
+                    "uid",
+                    "status",
+                    "in_rate_hz",
+                    "out_rate_hz",
+                    "turnaround_mean_ms",
+                    "turnaround_p95_ms",
+                    "self_exec_mean_ms",
+                    "queue_size",
+                    "queue_max",
+                    "queue_fill_pct",
+                    "dropped_count",
+                    "total_in",
+                    "total_out",
+                ])
+                for r in snap["nodes"]:
+                    writer.writerow([
+                        r["label"],
+                        r["class_name"],
+                        r["uid"],
+                        r["status"],
+                        f"{r['in_rate_hz']:.3f}",
+                        f"{r['out_rate_hz']:.3f}",
+                        f"{r['turnaround_mean_ms']:.4f}",
+                        f"{r['turnaround_p95_ms']:.4f}",
+                        f"{r['self_exec_mean_ms']:.4f}",
+                        r["q_size"],
+                        r["q_max"],
+                        f"{r['q_fill_pct']:.1f}",
+                        r["dropped_count"],
+                        r["total_in"],
+                        r["total_out"],
+                    ])
+        return target
+
+    def _export_pipeline_overview_snapshot(self, fmt: str = "csv") -> None:
+        """Save the global Pipeline Overview snapshot into `logs/perf_reports/` via FileExplorer."""
+        out_dir = LOGS_DIR / "perf_reports"
+        out_dir.mkdir(parents=True, exist_ok=True)
+        ts_str = time.strftime("%Y%m%d_%H%M%S")
+        ext = "json" if str(fmt).lower() == "json" else "csv"
+        default_name = f"pipeline_overview_{ts_str}.{ext}"
+        ov_win = self._perf_overview_win_tag
+
+        def _on_chosen(chosen_path: str, selected_ext: str) -> None:
+            if not chosen_path:
+                return
+            try:
+                saved = self.export_pipeline_overview(chosen_path, fmt=ext)
+                msg_tag = f"{ov_win}_export_msg"
+                if dpg.does_item_exist(msg_tag):
+                    dpg.set_value(msg_tag, f"Saved: {saved.name}")
+                logger.info(f"Exported pipeline performance overview to {saved}")
+            except Exception as exc:
+                logger.error(f"Failed to export pipeline performance overview: {exc}")
+
+        file_explorer.save_file(
+            default_path=str(out_dir),
+            default_name=default_name,
+            extensions=[("CSV file", "*.csv"), ("JSON file", "*.json")] if ext == "csv" else [("JSON file", "*.json"), ("CSV file", "*.csv")],
+            callback=_on_chosen,
+        )
+
+    def open_pipeline_perf_overview_window(
+        self, sender: Any = None, app_data: Any = None, user_data: Any = None, *args: Any
+    ) -> None:
+        """Open or focus the global Pipeline Performance Overview window comparing all nodes live."""
+        win_tag = self._perf_overview_win_tag
+        if dpg.does_item_exist(win_tag):
+            dpg.show_item(win_tag)
+            dpg.focus_item(win_tag)
+            self._ensure_profiler_running()
+            self._refresh_perf_overview_window(0.0)
+            return
+
+        self._perf_overview_ui = {
+            "sort_by": self._OVERVIEW_SORT_OPTIONS[0],
+            "rows": [],
+        }
+
+        def _on_close(s: Any = None, a: Any = None, u: Any = None, *cb_args: Any) -> None:
+            self._perf_overview_ui.clear()
+            if dpg.does_item_exist(win_tag):
+                try:
+                    dpg.delete_item(win_tag)
+                except Exception:
+                    pass
+            self._check_and_stop_profiler_if_unused()
+
+        def _on_sort_changed(s: Any, app_val: str, u: Any = None) -> None:
+            self._perf_overview_ui["sort_by"] = str(app_val)
+            self._refresh_perf_overview_window(0.0)
+
+        with dpg.window(
+            label="Pipeline Performance Overview (All Nodes)",
+            tag=win_tag,
+            width=940,
+            height=520,
+            pos=(110, 80),
+            on_close=_on_close,
+        ):
+            dpg.add_text(
+                "Pipeline Status: initializing...",
+                tag=f"{win_tag}_status",
+                color=COLOR_ACCENT,
+            )
+            dpg.add_text(
+                "Primary Bottleneck: --",
+                tag=f"{win_tag}_bottleneck",
+                color=COLOR_IDLE,
+            )
+
+            with dpg.group(horizontal=True):
+                dpg.add_text("Sort by:", color=(180, 210, 240))
+                dpg.add_combo(
+                    items=self._OVERVIEW_SORT_OPTIONS,
+                    default_value=self._OVERVIEW_SORT_OPTIONS[0],
+                    width=185,
+                    tag=f"{win_tag}_sort_combo",
+                    callback=_on_sort_changed,
+                )
+                dpg.add_spacer(width=8)
+                dpg.add_button(
+                    label="Reset All Metrics",
+                    callback=self._on_reset_all_perf_metrics,
+                )
+                dpg.add_button(
+                    label="Export CSV...",
+                    callback=lambda *_: self._export_pipeline_overview_snapshot("csv"),
+                )
+                dpg.add_button(
+                    label="Export JSON...",
+                    callback=lambda *_: self._export_pipeline_overview_snapshot("json"),
+                )
+                dpg.add_text("", tag=f"{win_tag}_export_msg", color=COLOR_FLOWING)
+
+            dpg.add_separator()
+
+            with dpg.table(
+                header_row=True,
+                row_background=True,
+                borders_innerH=True,
+                borders_outerH=True,
+                borders_innerV=True,
+                borders_outerV=True,
+                scrollY=True,
+                height=-1,
+                policy=dpg.mvTable_SizingStretchProp,
+                tag=f"{win_tag}_table",
+            ):
+                dpg.add_table_column(label="Node", init_width_or_weight=1.45)
+                dpg.add_table_column(label="Status", init_width_or_weight=1.20)
+                dpg.add_table_column(label="In (Hz)", init_width_or_weight=0.65)
+                dpg.add_table_column(label="Out (Hz)", init_width_or_weight=0.65)
+                dpg.add_table_column(label="Exec Mean", init_width_or_weight=1.05)
+                dpg.add_table_column(label="Exec P95", init_width_or_weight=1.05)
+                dpg.add_table_column(label="Self cb", init_width_or_weight=1.05)
+                dpg.add_table_column(label="Queue", init_width_or_weight=0.80)
+                dpg.add_table_column(label="Dropped", init_width_or_weight=0.55)
+                dpg.add_table_column(label="Report", init_width_or_weight=0.60)
+
+        self._ensure_profiler_running()
+        self._refresh_perf_overview_window(0.0)
+
+    def _refresh_perf_overview_window(self, ui_fps: float = 0.0) -> None:
+        """Refresh the global Pipeline Performance Overview table in-place with minimal DPG overhead."""
+        win_tag = getattr(self, "_perf_overview_win_tag", "")
+        if not win_tag or not dpg.does_item_exist(win_tag) or not dpg.is_item_shown(win_tag):
+            return
+
+        sort_by = self._perf_overview_ui.get("sort_by", self._OVERVIEW_SORT_OPTIONS[0])
+        snap = self.build_pipeline_overview_snapshot(sort_by=sort_by)
+        nodes = snap["nodes"]
+
+        try:
+            fps_str = f"{ui_fps:.1f} FPS" if ui_fps > 0.0 else "-- FPS"
+            dpg.set_value(
+                f"{win_tag}_status",
+                f"Pipeline Status: {snap['active_nodes']} / {snap['total_nodes']} active  |  "
+                f"Saturated: {snap['congested_nodes']}  |  Total Drops: {snap['total_dropped']}  |  UI: {fps_str}",
+            )
+            bn = snap["bottleneck"]
+            bn_tag = f"{win_tag}_bottleneck"
+            if bn is not None:
+                bn_q = f" | Queue: {bn['q_size']}/{bn['q_max']} ({bn['q_fill_pct']:.0f}%)" if bn["q_has_worker"] else ""
+                dpg.set_value(
+                    bn_tag,
+                    f"Primary Bottleneck: {bn['label']} ({bn['status']}) — "
+                    f"Exec {_fmt_ms(bn['turnaround_mean_ms'])} | P95 {_fmt_ms(bn['turnaround_p95_ms'])}{bn_q}",
+                )
+                dpg.configure_item(bn_tag, color=bn["color"])
+            else:
+                dpg.set_value(bn_tag, "Primary Bottleneck: None (all nodes idle)")
+                dpg.configure_item(bn_tag, color=COLOR_IDLE)
+        except Exception:
+            pass
+
+        table_tag = f"{win_tag}_table"
+        if not dpg.does_item_exist(table_tag):
+            return
+
+        row_pool: List[Dict[str, str]] = self._perf_overview_ui.setdefault("rows", [])
+        if len(row_pool) != len(nodes):
+            try:
+                dpg.delete_item(table_tag, children_only=True, slot=1)
+            except Exception:
+                pass
+            row_pool.clear()
+
+            def _on_inspect_click(s: Any, a: Any, u: Any) -> None:
+                if u is not None:
+                    self.open_node_perf_report_window(int(u))
+
+            for idx in range(len(nodes)):
+                prefix = f"{win_tag}_ov_r{idx}"
+                row_meta = {
+                    "lbl": f"{prefix}_lbl",
+                    "st": f"{prefix}_st",
+                    "in": f"{prefix}_in",
+                    "out": f"{prefix}_out",
+                    "mean": f"{prefix}_mean",
+                    "p95": f"{prefix}_p95",
+                    "self": f"{prefix}_self",
+                    "q": f"{prefix}_q",
+                    "drop": f"{prefix}_drop",
+                    "btn": f"{prefix}_btn",
+                }
+                with dpg.table_row(parent=table_tag):
+                    dpg.add_text("", tag=row_meta["lbl"])
+                    dpg.add_text("", tag=row_meta["st"])
+                    dpg.add_text("", tag=row_meta["in"])
+                    dpg.add_text("", tag=row_meta["out"])
+                    dpg.add_text("", tag=row_meta["mean"])
+                    dpg.add_text("", tag=row_meta["p95"])
+                    dpg.add_text("", tag=row_meta["self"])
+                    dpg.add_text("", tag=row_meta["q"])
+                    dpg.add_text("", tag=row_meta["drop"])
+                    dpg.add_button(
+                        label="Inspect",
+                        tag=row_meta["btn"],
+                        callback=_on_inspect_click,
+                        user_data=nodes[idx]["node_id"],
+                    )
+                row_pool.append(row_meta)
+
+        for idx, row_data in enumerate(nodes):
+            rm = row_pool[idx]
+            try:
+                q_str = (
+                    f"{row_data['q_size']}/{row_data['q_max']} ({row_data['q_fill_pct']:.0f}%)"
+                    if row_data["q_has_worker"]
+                    else "--"
+                )
+                dpg.set_value(rm["lbl"], row_data["label"])
+                dpg.set_value(rm["st"], row_data["status"])
+                dpg.configure_item(rm["st"], color=row_data["color"])
+                dpg.set_value(rm["in"], f"{row_data['in_rate_hz']:.1f}")
+                dpg.set_value(rm["out"], f"{row_data['out_rate_hz']:.1f}")
+                dpg.set_value(rm["mean"], _fmt_ms(row_data["turnaround_mean_ms"]))
+                dpg.set_value(rm["p95"], _fmt_ms(row_data["turnaround_p95_ms"]))
+                dpg.set_value(rm["self"], _fmt_ms(row_data["self_exec_mean_ms"]))
+                dpg.set_value(rm["q"], q_str)
+                dpg.set_value(rm["drop"], str(row_data["dropped_count"]))
+                dpg.configure_item(rm["drop"], color=COLOR_CONGESTED if row_data["dropped_count"] > 0 else COLOR_IDLE)
+                dpg.configure_item(rm["btn"], user_data=row_data["node_id"])
+            except Exception:
+                pass

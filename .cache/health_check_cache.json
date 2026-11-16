@@ -14,7 +14,7 @@
         "typing"
       ],
       "missing_imports": [],
-      "env_fingerprint": "46fa17633f50d1d6",
+      "env_fingerprint": "e3bedf98d0b1099e",
       "has_exported_class": true,
       "validation_report": {
         "is_valid": true,
@@ -37,12 +37,7 @@
         ]
       },
       "validator_fingerprint": "7356c01ab141b3d6",
-      "ancestor_files": {},
-      "metadata": {
-        "class_name": "CMDSender_win",
-        "description": "Dict Sender",
-        "doc": "A modular window that allows the user to build a dictionary interactively\nand send it downstream on trigger."
-      }
+      "ancestor_files": {}
     },
     "modules/Basic/csv_reader_win.py": {
       "mtime_ns": 1793957391000000000,
@@ -59,7 +54,7 @@
         "uuid"
       ],
       "missing_imports": [],
-      "env_fingerprint": "46fa17633f50d1d6",
+      "env_fingerprint": "e3bedf98d0b1099e",
       "has_exported_class": true,
       "validation_report": {
         "is_valid": true,
@@ -82,12 +77,7 @@
         ]
       },
       "validator_fingerprint": "7356c01ab141b3d6",
-      "ancestor_files": {},
-      "metadata": {
-        "class_name": "CSVReader_win",
-        "description": "CSV Reader",
-        "doc": "CSV Reader module that loads CSV files and emits a SAMPLE dict for each column."
-      }
+      "ancestor_files": {}
     },
     "modules/Basic/Hello_world_win.py": {
       "mtime_ns": 1793957578000000000,
@@ -101,7 +91,7 @@
         "typing"
       ],
       "missing_imports": [],
-      "env_fingerprint": "46fa17633f50d1d6",
+      "env_fingerprint": "e3bedf98d0b1099e",
       "has_exported_class": true,
       "validation_report": {
         "is_valid": true,
@@ -124,12 +114,7 @@
         ]
       },
       "validator_fingerprint": "7356c01ab141b3d6",
-      "ancestor_files": {},
-      "metadata": {
-        "class_name": "HelloWorld_win",
-        "description": "Hello World",
-        "doc": "A simple DearPyGui window containing a button that acts as a trigger source."
-      }
+      "ancestor_files": {}
     },
     "modules/Basic/test_sample_win.py": {
       "mtime_ns": 1793958062000000000,
@@ -144,7 +129,7 @@
         "typing"
       ],
       "missing_imports": [],
-      "env_fingerprint": "46fa17633f50d1d6",
+      "env_fingerprint": "e3bedf98d0b1099e",
       "has_exported_class": true,
       "validation_report": {
         "is_valid": true,
@@ -167,12 +152,7 @@
         ]
       },
       "validator_fingerprint": "7356c01ab141b3d6",
-      "ancestor_files": {},
-      "metadata": {
-        "class_name": "TestSample_win",
-        "description": "Test Sample",
-        "doc": "Test sample generator supporting multiple waveforms (Sine, Cosine, Square,\nSawtooth, Triangle, Sigmoid, Gaussian Peak, Random) with tunable points,\namplitude, frequency, offset, and Gaussian noise."
-      }
+      "ancestor_files": {}
     },
     "modules/Basic/text_viewer_win.py": {
       "mtime_ns": 1793958118000000000,
@@ -187,7 +167,7 @@
         "typing"
       ],
       "missing_imports": [],
-      "env_fingerprint": "46fa17633f50d1d6",
+      "env_fingerprint": "e3bedf98d0b1099e",
       "has_exported_class": true,
       "validation_report": {
         "is_valid": true,
@@ -210,12 +190,7 @@
         ]
       },
       "validator_fingerprint": "7356c01ab141b3d6",
-      "ancestor_files": {},
-      "metadata": {
-        "class_name": "Text_viewer_win",
-        "description": "Text viewer",
-        "doc": "A DearPyGui window for inspecting incoming text, command dictionaries, or triggers\nin a scrollable read-only multiline viewer with copy, clear, and append modes."
-      }
+      "ancestor_files": {}
     },
     "modules/Benchmark/cmd_benchmark_win.py": {
       "mtime_ns": 1794483787000000000,
@@ -563,7 +538,7 @@
         "time"
       ],
       "missing_imports": [],
-      "env_fingerprint": "46fa17633f50d1d6",
+      "env_fingerprint": "e3bedf98d0b1099e",
       "has_exported_class": true,
       "validation_report": {
         "is_valid": true,
@@ -586,12 +561,7 @@
         ]
       },
       "validator_fingerprint": "7356c01ab141b3d6",
-      "ancestor_files": {},
-      "metadata": {
-        "class_name": "Parallel_plot_win",
-        "description": "Parallel Plot",
-        "doc": "Parallel Plot - Displays plots in a separate OS window.\nUses multiprocessing with PlotViewportProcess for independent plotting."
-      }
+      "ancestor_files": {}
     },
     "modules/Parallel_viewport/plot_viewer/plot_viewport_process.py": {
       "mtime_ns": 1777333148000000000,
@@ -606,7 +576,7 @@
         "typing"
       ],
       "missing_imports": [],
-      "env_fingerprint": "46fa17633f50d1d6",
+      "env_fingerprint": "e3bedf98d0b1099e",
       "has_exported_class": false
     },
     "modules/Parallel_viewport/text_viewer/parallel_text_viewer_win.py": {
@@ -620,7 +590,7 @@
         "time"
       ],
       "missing_imports": [],
-      "env_fingerprint": "46fa17633f50d1d6",
+      "env_fingerprint": "e3bedf98d0b1099e",
       "has_exported_class": true,
       "validation_report": {
         "is_valid": true,
@@ -643,12 +613,7 @@
         ]
       },
       "validator_fingerprint": "7356c01ab141b3d6",
-      "ancestor_files": {},
-      "metadata": {
-        "class_name": "Parallel_viewer_win",
-        "description": "Parallel Viewer",
-        "doc": "Parallel Viewer - Displays data in a separate OS window.\nUses multiprocessing to create an independent viewport."
-      }
+      "ancestor_files": {}
     },
     "modules/Parallel_viewport/text_viewer/text_viewer_process.py": {
       "mtime_ns": 1776601666000000000,
@@ -662,12 +627,12 @@
         "typing"
       ],
       "missing_imports": [],
-      "env_fingerprint": "46fa17633f50d1d6",
+      "env_fingerprint": "e3bedf98d0b1099e",
       "has_exported_class": false
     },
     "modules/Plot/lineplot_win.py": {
-      "mtime_ns": 1793982969000000000,
-      "size": 45867,
+      "mtime_ns": 1794682758108194700,
+      "size": 47034,
       "imports": [
         "__future__",
         "config",
@@ -677,10 +642,11 @@
         "numpy",
         "pandas",
         "scipy",
+        "time",
         "typing"
       ],
       "missing_imports": [],
-      "env_fingerprint": "46fa17633f50d1d6",
+      "env_fingerprint": "e3bedf98d0b1099e",
       "has_exported_class": true,
       "validation_report": {
         "is_valid": true,
@@ -696,23 +662,18 @@
           {
             "level": "INFO",
             "message": "Inherits directly from WindowBase",
-            "line": 128,
+            "line": 155,
             "suggestion": null,
             "category": "inheritance"
           }
         ]
       },
       "validator_fingerprint": "7356c01ab141b3d6",
-      "ancestor_files": {},
-      "metadata": {
-        "class_name": "Lineplot_win",
-        "description": "Lineplot",
-        "doc": "Interactive 2D multi-series line plot module.\n\nSupports continuous real-time streaming, dynamic multi-axis allocation (primary and secondary right axes),\ninteractive cursor hover inspection, Draggable vertical marker line, multiple smoothing algorithms,\nlogarithmic X-axis scaling, and TSV clipboard export."
-      }
+      "ancestor_files": {}
     },
     "modules/Plot/sample_container_win.py": {
-      "mtime_ns": 1793984408000000000,
-      "size": 37253,
+      "mtime_ns": 1794682741667979500,
+      "size": 37673,
       "imports": [
         "__future__",
         "config",
@@ -721,11 +682,12 @@
         "dearpygui",
         "loguru",
         "os",
+        "time",
         "typing",
         "uuid"
       ],
       "missing_imports": [],
-      "env_fingerprint": "46fa17633f50d1d6",
+      "env_fingerprint": "e3bedf98d0b1099e",
       "has_exported_class": true,
       "validation_report": {
         "is_valid": true,
@@ -741,23 +703,18 @@
           {
             "level": "INFO",
             "message": "Inherits directly from WindowBase",
-            "line": 19,
+            "line": 20,
             "suggestion": null,
             "category": "inheritance"
           }
         ]
       },
       "validator_fingerprint": "7356c01ab141b3d6",
-      "ancestor_files": {},
-      "metadata": {
-        "class_name": "Sample_container_win",
-        "description": "Sample Container",
-        "doc": "Centralized dataset and sample registry module.\n\nStores, manages, previews, and serializes multiple 1D/2D data series (`SAMPLE` payloads).\nSupports drag-and-drop list reordering, mini-plot hover inspection, conflict resolution\n(override vs append), flexible multi-column CSV/TSV import and export, and reactive\nevent broadcasting (select, unselect, rename)."
-      }
+      "ancestor_files": {}
     },
     "modules/Video/video_reader_win.py": {
-      "mtime_ns": 1793033578000000000,
-      "size": 19817,
+      "mtime_ns": 1794831804900303800,
+      "size": 20800,
       "imports": [
         "__future__",
         "config",
@@ -770,7 +727,7 @@
         "typing"
       ],
       "missing_imports": [],
-      "env_fingerprint": "46fa17633f50d1d6",
+      "env_fingerprint": "e3bedf98d0b1099e",
       "has_exported_class": true,
       "validation_report": {
         "is_valid": true,
@@ -793,12 +750,7 @@
         ]
       },
       "validator_fingerprint": "7356c01ab141b3d6",
-      "ancestor_files": {},
-      "metadata": {
-        "class_name": "VideoReader_win",
-        "description": "Video Reader",
-        "doc": "Video Reader window module.\n\nScans directories for video files (.mp4), provides interactive playback\ncontrols (Play, Pause, Stop, Seek Scrubber, FPS adjustment), and streams\nframes, triggers, and file paths downstream through node connections."
-      }
+      "ancestor_files": {}
     },
     "modules/Video/video_tools.py": {
       "mtime_ns": 1790689938000000000,
@@ -816,12 +768,12 @@
         "typing"
       ],
       "missing_imports": [],
-      "env_fingerprint": "46fa17633f50d1d6",
+      "env_fingerprint": "e3bedf98d0b1099e",
       "has_exported_class": false
     },
     "modules/Video/video_viewer_win.py": {
-      "mtime_ns": 1794498254000000000,
-      "size": 31267,
+      "mtime_ns": 1794682770045775000,
+      "size": 35716,
       "imports": [
         "__future__",
         "collections",
@@ -830,13 +782,14 @@
         "cv2",
         "dearpygui",
         "loguru",
+        "math",
         "numpy",
         "threading",
         "time",
         "typing"
       ],
       "missing_imports": [],
-      "env_fingerprint": "46fa17633f50d1d6",
+      "env_fingerprint": "e3bedf98d0b1099e",
       "has_exported_class": true,
       "validation_report": {
         "is_valid": true,
@@ -852,19 +805,14 @@
           {
             "level": "INFO",
             "message": "Inherits directly from WindowBase",
-            "line": 27,
+            "line": 30,
             "suggestion": null,
             "category": "inheritance"
           }
         ]
       },
       "validator_fingerprint": "7356c01ab141b3d6",
-      "ancestor_files": {},
-      "metadata": {
-        "class_name": "VideoViewerWin",
-        "description": "Video Viewer",
-        "doc": "Robust and high-performance video viewer window for DearPyGui.\n\nFeatures:\n- Dedicated worker thread rendering to prevent UI blocking (600+ FPS capability)\n- Automatic GPU texture allocation and aspect ratio scaling\n- Dual FPS telemetry (stream ingestion rate and actual GPU display rate) embedded directly in the class\n- Full support for Grayscale, BGR, BGRA, and RGBA pixel formats\n- Transparent overlay support for masks and segmentation layers\n- Dynamic monitor scaling via display_scaling"
-      }
+      "ancestor_files": {}
     },
     "modules/Benchmark/perf_pulse_source_win.py": {
       "mtime_ns": 1794667595762784800,
@@ -1004,7 +952,7 @@
         "typing"
       ],
       "missing_imports": [],
-      "env_fingerprint": "46fa17633f50d1d6",
+      "env_fingerprint": "e3bedf98d0b1099e",
       "has_exported_class": true,
       "validation_report": {
         "is_valid": true,
@@ -1049,7 +997,7 @@
         "typing"
       ],
       "missing_imports": [],
-      "env_fingerprint": "46fa17633f50d1d6",
+      "env_fingerprint": "e3bedf98d0b1099e",
       "has_exported_class": true,
       "validation_report": {
         "is_valid": true,
@@ -1091,7 +1039,7 @@
         "typing"
       ],
       "missing_imports": [],
-      "env_fingerprint": "46fa17633f50d1d6",
+      "env_fingerprint": "e3bedf98d0b1099e",
       "has_exported_class": true,
       "validation_report": {
         "is_valid": true,
@@ -1117,8 +1065,8 @@
       "ancestor_files": {}
     },
     "modules/benchmark/perf_pulse_source_win.py": {
-      "mtime_ns": 1794667595762784800,
-      "size": 23496,
+      "mtime_ns": 1794671624496184600,
+      "size": 23584,
       "imports": [
         "__future__",
         "config",
@@ -1134,7 +1082,7 @@
         "typing"
       ],
       "missing_imports": [],
-      "env_fingerprint": "46fa17633f50d1d6",
+      "env_fingerprint": "e3bedf98d0b1099e",
       "has_exported_class": true,
       "validation_report": {
         "is_valid": true,
@@ -1160,8 +1108,8 @@
       "ancestor_files": {}
     },
     "modules/benchmark/perf_relay_win.py": {
-      "mtime_ns": 1794665576244599500,
-      "size": 6217,
+      "mtime_ns": 1794671626107979900,
+      "size": 6257,
       "imports": [
         "__future__",
         "config",
@@ -1171,7 +1119,7 @@
         "typing"
       ],
       "missing_imports": [],
-      "env_fingerprint": "46fa17633f50d1d6",
+      "env_fingerprint": "e3bedf98d0b1099e",
       "has_exported_class": true,
       "validation_report": {
         "is_valid": true,
@@ -1212,7 +1160,7 @@
         "typing"
       ],
       "missing_imports": [],
-      "env_fingerprint": "46fa17633f50d1d6",
+      "env_fingerprint": "e3bedf98d0b1099e",
       "has_exported_class": true,
       "validation_report": {
         "is_valid": true,
@@ -1255,7 +1203,7 @@
         "typing"
       ],
       "missing_imports": [],
-      "env_fingerprint": "46fa17633f50d1d6",
+      "env_fingerprint": "e3bedf98d0b1099e",
       "has_exported_class": true,
       "validation_report": {
         "is_valid": true,
@@ -1298,7 +1246,7 @@
         "typing"
       ],
       "missing_imports": [],
-      "env_fingerprint": "46fa17633f50d1d6",
+      "env_fingerprint": "e3bedf98d0b1099e",
       "has_exported_class": true,
       "validation_report": {
         "is_valid": true,
@@ -1340,7 +1288,7 @@
         "typing"
       ],
       "missing_imports": [],
-      "env_fingerprint": "46fa17633f50d1d6",
+      "env_fingerprint": "e3bedf98d0b1099e",
       "has_exported_class": true,
       "validation_report": {
         "is_valid": true,
@@ -1383,7 +1331,7 @@
         "typing"
       ],
       "missing_imports": [],
-      "env_fingerprint": "46fa17633f50d1d6",
+      "env_fingerprint": "e3bedf98d0b1099e",
       "has_exported_class": true,
       "validation_report": {
         "is_valid": true,

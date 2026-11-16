@@ -621,13 +621,38 @@ def generate_stress_test_script(mode: str, output_prefix: Path, ui_update_hz: fl
 # ----------------------------------------------------------------------
 # Runner & Report Synthesizer
 # ----------------------------------------------------------------------
-def _run_app(args_list: List[str], label: str, timeout_s: float = 240.0) -> Tuple[int, float]:
-    cmd = [sys.executable, str(PROJECT_ROOT / "main.py"), *args_list]
+def _resolve_exe_path(raw_exe: Optional[str]) -> Optional[Path]:
+    """Resolve and validate an optional compiled executable path (or its dist directory)."""
+    if not raw_exe:
+        return None
+    candidate = Path(raw_exe).expanduser().resolve()
+    if candidate.is_dir():
+        exe_in_dir = candidate / "PipelineCreator.exe"
+        if exe_in_dir.is_file():
+            return exe_in_dir
+        raise FileNotFoundError(f"No PipelineCreator.exe found inside directory: {candidate}")
+    if not candidate.is_file():
+        raise FileNotFoundError(f"Executable not found: {candidate}")
+    return candidate
+
+
+def _run_app(
+    args_list: List[str],
+    label: str,
+    timeout_s: float = 240.0,
+    exe_path: Optional[Path] = None,
+) -> Tuple[int, float]:
+    if exe_path is not None:
+        cmd = [str(exe_path), *args_list]
+        run_cwd = str(exe_path.parent)
+    else:
+        cmd = [sys.executable, str(PROJECT_ROOT / "main.py"), *args_list]
+        run_cwd = str(PROJECT_ROOT)
     print(f"[Benchmark] Launching {label}: {' '.join(cmd)}", flush=True)
     env = os.environ.copy()
     env["PC_BENCHMARK_ORCHESTRATOR"] = "1"
     t0 = time.perf_counter()
-    proc = subprocess.run(cmd, cwd=str(PROJECT_ROOT), env=env, timeout=timeout_s)
+    proc = subprocess.run(cmd, cwd=run_cwd, env=env, timeout=timeout_s)
     dt = time.perf_counter() - t0
     print(f"[Benchmark] Finished {label} in {dt:.2f}s (exit={proc.returncode})", flush=True)
     return proc.returncode, dt
@@ -988,7 +1013,21 @@ def main() -> int:
         action="store_true",
         help="Regenerate benchmark/generated/ assets, summary.md, benchmark_report.*, HTML/notebook reports, and benchmark/figures/ from existing JSON/CSV results without executing benchmarks.",
     )
+    parser.add_argument(
+        "--exe",
+        type=str,
+        default=None,
+        help="Path to a compiled PipelineCreator.exe (or its main.dist folder) to benchmark instead of running main.py from source.",
+    )
     args = parser.parse_args()
+
+    try:
+        exe_path = _resolve_exe_path(args.exe)
+    except FileNotFoundError as exc:
+        parser.error(str(exc))
+
+    if exe_path is not None:
+        print(f"[Benchmark] Target executable: {exe_path}")
 
     BENCH_DIR.mkdir(parents=True, exist_ok=True)
     boot_times: Dict[str, float] = {}
@@ -1008,6 +1047,7 @@ def main() -> int:
         rc, dt = _run_app(
             ["--headless", "--benchmark-modules-only", "--max-seconds", "180", "--script", str(s_matrix)],
             "Headless Matrix",
+            exe_path=exe_path,
         )
         boot_times["headless_matrix"] = dt
         if rc != 0:
@@ -1018,6 +1058,7 @@ def main() -> int:
         rc, dt = _run_app(
             ["--headless", "--max-seconds", "180", "--script", str(s_cmp_hl)],
             "Paired Comparison (Headless Full Boot)",
+            exe_path=exe_path,
         )
         boot_times["paired_headless_full_boot"] = dt
         if rc != 0:
@@ -1028,6 +1069,7 @@ def main() -> int:
         rc, dt = _run_app(
             ["--max-seconds", "180", "--script", str(s_cmp_gui)],
             "Paired Comparison (Full DearPyGui GUI - Passive)",
+            exe_path=exe_path,
         )
         boot_times["paired_gui_full_boot"] = dt
         if rc != 0:
@@ -1038,6 +1080,7 @@ def main() -> int:
         rc, dt = _run_app(
             ["--max-seconds", "180", "--script", str(s_cmp_live)],
             "Paired Comparison (Full DearPyGui GUI - Live UI 30Hz)",
+            exe_path=exe_path,
         )
         boot_times["paired_gui_live_ui_full_boot"] = dt
         if rc != 0:
@@ -1049,6 +1092,7 @@ def main() -> int:
             ["--headless", "--benchmark-modules-only", "--max-seconds", "240", "--script", str(s_stress_hl)],
             "Progressive Stress Suite (Headless)",
             timeout_s=300.0,
+            exe_path=exe_path,
         )
         boot_times["stress_headless"] = dt
         if rc != 0:
@@ -1060,6 +1104,7 @@ def main() -> int:
                 ["--max-seconds", "240", "--script", str(s_stress_live)],
                 "Progressive Stress Suite (Full DearPyGui GUI - Live UI 30Hz)",
                 timeout_s=300.0,
+                exe_path=exe_path,
             )
             boot_times["stress_gui_live_ui"] = dt
             if rc != 0:

@@ -8,6 +8,7 @@ dual FPS measurement (Read and Display), transparency blending, and GPU texture 
 
 from __future__ import annotations
 
+import math
 import threading
 import time
 from collections import deque
@@ -22,6 +23,8 @@ from config.display_scaling import display_scaling
 from core.config_manager import config
 from core.input_output_types import IOTypes
 from core.window_base import WindowBase
+
+_UINT8_TO_FLOAT32_LUT: np.ndarray = np.linspace(0.0, 1.0, 256, dtype=np.float32)
 
 
 class VideoViewerWin(WindowBase):
@@ -126,21 +129,35 @@ class VideoViewerWin(WindowBase):
         self.update_event = threading.Event()
 
         # FPS Telemetry Logic (Internal to VideoViewerWin)
-        self._fps_smoothing_window: int = 10
+        # Sliding time-window rate (count - 1) / span eliminates harmonic 1/dt bias under jitter,
+        # smoothed by a continuous-time EMA and rate-limited UI label updates with deadband.
+        self._fps_smoothing_window: int = 30
+        self._fps_window_sec: float = 1.2
+        self._fps_ema_tau: float = 0.35
+        self._fps_ema_alpha: float = 0.18
+        self._fps_pause_reset_sec: float = 2.0
+        self._fps_ui_update_period_s: float = 0.30
+        self._fps_ui_deadband: float = 0.15
 
         self._read_last_time: Optional[float] = None
         self._read_raw_fps: float = 0.0
         self._read_smoothed_fps: float = 0.0
         self._read_samples: deque[float] = deque(maxlen=self._fps_smoothing_window)
+        self._read_timestamps: deque[float] = deque(maxlen=1024)
         self._read_call_count: int = 0
+        self._read_last_ui_update: float = 0.0
+        self._read_shown_fps: float = -1.0
 
         self._display_last_time: Optional[float] = None
         self._display_raw_fps: float = 0.0
         self._display_smoothed_fps: float = 0.0
         self._display_samples: deque[float] = deque(maxlen=self._fps_smoothing_window)
+        self._display_timestamps: deque[float] = deque(maxlen=1024)
         self._display_call_count: int = 0
+        self._display_last_ui_update: float = 0.0
+        self._display_shown_fps: float = -1.0
 
-        # Performance optimization: frame counter for FPS display
+        # Performance optimization: frame counter for FPS display (legacy attribute retained for compatibility)
         self._frame_count: int = 0
         self._fps_update_interval: int = 10
 
@@ -156,6 +173,88 @@ class VideoViewerWin(WindowBase):
         )
         self.worker_thread.start()
 
+    def _update_fps_estimator(
+        self,
+        now: float,
+        last_time: Optional[float],
+        timestamps: deque[float],
+        samples: deque[float],
+        raw_fps: float,
+        smoothed_fps: float,
+        call_count: int,
+    ) -> Tuple[float, float, float, int]:
+        """
+        Update a sliding-window + continuous-time EMA FPS estimator.
+
+        Computes the true frame rate over a sliding monotonic window (`N / ΔT`) rather than
+        averaging `1 / Δt` across frames, preventing Jensen's-inequality overestimation and jitter spikes.
+        """
+        if last_time is None:
+            timestamps.clear()
+            timestamps.append(now)
+            return now, raw_fps, smoothed_fps, call_count
+
+        delta = now - last_time
+        if delta <= 1e-7:
+            return now, raw_fps, smoothed_fps, call_count
+
+        # Reset estimator after long pauses so stale timestamps don't pull FPS down
+        if delta > self._fps_pause_reset_sec:
+            timestamps.clear()
+            timestamps.append(now)
+            samples.clear()
+            return now, 1.0 / delta, 0.0, 0
+
+        raw_fps = 1.0 / delta
+        timestamps.append(now)
+        call_count += 1
+
+        cutoff = now - self._fps_window_sec
+        while len(timestamps) > 2 and timestamps[0] < cutoff:
+            timestamps.popleft()
+
+        if len(timestamps) >= 2:
+            span = timestamps[-1] - timestamps[0]
+            win_fps = (len(timestamps) - 1) / span if span > 1e-7 else raw_fps
+        else:
+            win_fps = raw_fps
+
+        samples.append(win_fps)
+
+        if smoothed_fps <= 0.0 or len(timestamps) <= 2:
+            smoothed_fps = win_fps
+        else:
+            # Fast adaptation on sudden large rate changes, smooth EMA during steady streaming
+            rel_diff = abs(win_fps - smoothed_fps) / max(smoothed_fps, 1e-6)
+            if rel_diff > 0.35 and len(timestamps) >= 6:
+                alpha = 0.55
+            else:
+                tau = max(self._fps_ema_tau, 1e-3)
+                alpha = 1.0 - math.exp(-delta / tau)
+                alpha = min(max(alpha, 0.005), 0.85)
+            smoothed_fps = alpha * win_fps + (1.0 - alpha) * smoothed_fps
+
+        return now, raw_fps, smoothed_fps, call_count
+
+    def _should_update_fps_ui(
+        self,
+        now: Optional[float],
+        last_ui_update: float,
+        smoothed_fps: float,
+        shown_fps: float,
+    ) -> bool:
+        """Rate-limit UI FPS label updates (~3 Hz) and apply a visual hysteresis deadband."""
+        if now is None:
+            return False
+        if shown_fps < 0.0:
+            return smoothed_fps > 0.0
+        elapsed = now - last_ui_update
+        if elapsed < self._fps_ui_update_period_s:
+            return False
+        if abs(smoothed_fps - shown_fps) >= self._fps_ui_deadband:
+            return True
+        return elapsed >= 1.5 and f"{smoothed_fps:.1f}" != f"{shown_fps:.1f}"
+
     def calc_read_fps(self) -> Tuple[float, float]:
         """
         Record timestamp and compute instantaneous and smoothed Read FPS.
@@ -163,19 +262,21 @@ class VideoViewerWin(WindowBase):
         Returns:
             Tuple of (raw_fps, smoothed_fps).
         """
-        now = time.time()
-        if self._read_last_time is not None:
-            delta = now - self._read_last_time
-            if delta > 0:
-                self._read_raw_fps = 1.0 / delta
-                self._read_samples.append(self._read_raw_fps)
-                self._read_call_count += 1
-                if (
-                    self._read_call_count % self._fps_smoothing_window == 0
-                    and len(self._read_samples) == self._fps_smoothing_window
-                ):
-                    self._read_smoothed_fps = sum(self._read_samples) / self._fps_smoothing_window
-        self._read_last_time = now
+        now = time.perf_counter()
+        (
+            self._read_last_time,
+            self._read_raw_fps,
+            self._read_smoothed_fps,
+            self._read_call_count,
+        ) = self._update_fps_estimator(
+            now,
+            self._read_last_time,
+            self._read_timestamps,
+            self._read_samples,
+            self._read_raw_fps,
+            self._read_smoothed_fps,
+            self._read_call_count,
+        )
         return self._read_raw_fps, self._read_smoothed_fps
 
     def calc_display_fps(self) -> Tuple[float, float]:
@@ -185,19 +286,21 @@ class VideoViewerWin(WindowBase):
         Returns:
             Tuple of (raw_fps, smoothed_fps).
         """
-        now = time.time()
-        if self._display_last_time is not None:
-            delta = now - self._display_last_time
-            if delta > 0:
-                self._display_raw_fps = 1.0 / delta
-                self._display_samples.append(self._display_raw_fps)
-                self._display_call_count += 1
-                if (
-                    self._display_call_count % self._fps_smoothing_window == 0
-                    and len(self._display_samples) == self._fps_smoothing_window
-                ):
-                    self._display_smoothed_fps = sum(self._display_samples) / self._fps_smoothing_window
-        self._display_last_time = now
+        now = time.perf_counter()
+        (
+            self._display_last_time,
+            self._display_raw_fps,
+            self._display_smoothed_fps,
+            self._display_call_count,
+        ) = self._update_fps_estimator(
+            now,
+            self._display_last_time,
+            self._display_timestamps,
+            self._display_samples,
+            self._display_raw_fps,
+            self._display_smoothed_fps,
+            self._display_call_count,
+        )
         return self._display_raw_fps, self._display_smoothed_fps
 
     @property
@@ -293,11 +396,16 @@ class VideoViewerWin(WindowBase):
         else:
             conv = frame
 
-        flat = conv.ravel()
-        if len(self._texture_buffer) == len(flat):
-            np.multiply(flat, 1.0 / 255.0, out=self._texture_buffer, casting="unsafe")
+        if conv.dtype == np.uint8 and len(self._texture_buffer) == conv.size:
+            if not conv.flags["C_CONTIGUOUS"]:
+                conv = np.ascontiguousarray(conv)
+            cv2.LUT(conv, _UINT8_TO_FLOAT32_LUT, dst=self._texture_buffer.reshape(conv.shape))
         else:
-            self._texture_buffer = flat.astype(np.float32) * (1.0 / 255.0)
+            flat = conv.ravel()
+            if len(self._texture_buffer) == len(flat):
+                np.multiply(flat, np.float32(1.0 / 255.0), out=self._texture_buffer, casting="unsafe")
+            else:
+                self._texture_buffer = flat.astype(np.float32) * np.float32(1.0 / 255.0)
 
         return self._texture_buffer
 
@@ -453,10 +561,18 @@ class VideoViewerWin(WindowBase):
         _, smoothed_fps = self.calc_read_fps()
         if (
             self.fps_counter_enabled
-            and self._read_call_count % self._fps_smoothing_window == 0
+            and self._read_last_time is not None
+            and self._should_update_fps_ui(
+                self._read_last_time,
+                self._read_last_ui_update,
+                smoothed_fps,
+                self._read_shown_fps,
+            )
             and dpg.does_item_exist(self.fps_read_tag)
         ):
             dpg.set_value(self.fps_read_tag, f"{smoothed_fps:.1f}")
+            self._read_shown_fps = smoothed_fps
+            self._read_last_ui_update = self._read_last_time
 
         if frame is None:
             return
@@ -556,13 +672,23 @@ class VideoViewerWin(WindowBase):
                 if self._texture_initialized and dpg.does_item_exist(self.texture_tag):
                     dpg.set_value(self.texture_tag, texture_data)
 
-        # Update FPS display only every N frames (reduce overhead)
+        # Update FPS display at a throttled time cadence (~3.3 Hz) with deadband
         self._frame_count += 1
         raw_fps, smoothed_fps = self.calc_display_fps()
-        if self._frame_count >= self._fps_update_interval:
-            self._frame_count = 0
-            if self.fps_counter_enabled and dpg.does_item_exist(self.fps_display_tag):
-                dpg.set_value(self.fps_display_tag, f"{smoothed_fps:.1f}")
+        if (
+            self.fps_counter_enabled
+            and self._display_last_time is not None
+            and self._should_update_fps_ui(
+                self._display_last_time,
+                self._display_last_ui_update,
+                smoothed_fps,
+                self._display_shown_fps,
+            )
+            and dpg.does_item_exist(self.fps_display_tag)
+        ):
+            dpg.set_value(self.fps_display_tag, f"{smoothed_fps:.1f}")
+            self._display_shown_fps = smoothed_fps
+            self._display_last_ui_update = self._display_last_time
 
         # Fire Trigger output ONLY when a frame is rendered (and if connected)
         if self.connections.get("Trigger"):

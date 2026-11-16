@@ -1,4 +1,5 @@
 from __future__ import annotations
+import time
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import dearpygui.dearpygui as dpg
@@ -58,17 +59,43 @@ def _smooth_rolling_median(arr: np.ndarray, w: int) -> List[float]:
 
 
 def _smooth_rolling_mean(arr: np.ndarray, w: int) -> List[float]:
-    if w >= len(arr):
-        return [float(np.mean(arr))] * len(arr)
-    if w <= 1:
+    n = len(arr)
+    if n == 0 or w <= 1:
         return arr.tolist()
-    try:
-        import pandas as pd
-        return pd.Series(arr).rolling(window=w, min_periods=1, center=True).mean().to_numpy().tolist()
-    except ImportError:
-        half = w // 2
-        padded = np.pad(arr, (half, w - 1 - half), mode="edge")
-        return np.convolve(padded, np.ones(w) / w, mode="valid").tolist()
+    valid = np.isfinite(arr)
+    all_valid = bool(valid.all())
+    if w >= n:
+        if all_valid:
+            return [float(np.mean(arr))] * n
+        valid_vals = arr[valid]
+        mean_val = float(np.mean(valid_vals)) if valid_vals.size else float("nan")
+        return [mean_val] * n
+
+    half_left = w // 2
+    half_right = w - 1 - half_left
+    idx = np.arange(n)
+    starts = np.maximum(0, idx - half_left)
+    ends = np.minimum(n, idx + half_right + 1)
+
+    if all_valid:
+        csum = np.empty(n + 1, dtype=np.float64)
+        csum[0] = 0.0
+        np.cumsum(arr, dtype=np.float64, out=csum[1:])
+        return ((csum[ends] - csum[starts]) / (ends - starts)).tolist()
+
+    clean = np.where(valid, arr, 0.0)
+    csum = np.empty(n + 1, dtype=np.float64)
+    csum[0] = 0.0
+    np.cumsum(clean, dtype=np.float64, out=csum[1:])
+    ccnt = np.empty(n + 1, dtype=np.int64)
+    ccnt[0] = 0
+    np.cumsum(valid, dtype=np.int64, out=ccnt[1:])
+    sums = csum[ends] - csum[starts]
+    cnts = ccnt[ends] - ccnt[starts]
+    out = np.full(n, np.nan, dtype=np.float64)
+    nz = cnts > 0
+    out[nz] = sums[nz] / cnts[nz]
+    return out.tolist()
 
 
 def _smooth_ema(arr: np.ndarray, w: int) -> List[float]:
@@ -211,6 +238,7 @@ class Lineplot_win(WindowBase):
         self.series_colors: Dict[str, List[int]] = {}
         self._displayed_colors: Dict[str, Tuple[int, int, int]] = {}  # uid -> RGB currently applied to the curve
         self._annot_active = False
+        self._last_autofit_time: float = 0.0
 
         scale = display_scaling.scale
         with self.window():
@@ -518,6 +546,7 @@ class Lineplot_win(WindowBase):
         """Toggle automatic axis scaling."""
         self.autoscale = bool(app_data)
         if self.autoscale:
+            self._last_autofit_time = time.perf_counter()
             self.autofit_axis()
 
     def toggle_smooth(self, sender: Any = None, app_data: Any = None, user_data: Any = None, *args: Any) -> None:
@@ -548,6 +577,7 @@ class Lineplot_win(WindowBase):
             info["bound_axis"] = None
             self._draw_series(uid)
         if self.autoscale:
+            self._last_autofit_time = time.perf_counter()
             self.autofit_axis()
 
     def toggle_drag_line(self, sender: Any = None, app_data: Any = None, user_data: Any = None, *args: Any) -> None:
@@ -673,6 +703,7 @@ class Lineplot_win(WindowBase):
             self._draw_series(uid)
         self.cleanup_unused_axes()
         if self.autoscale:
+            self._last_autofit_time = time.perf_counter()
             self.autofit_axis()
         self._refresh_popup_menu()
 
@@ -917,7 +948,10 @@ class Lineplot_win(WindowBase):
         self._draw_series(uid)
 
         if self.autoscale:
-            self.autofit_axis()
+            now = time.perf_counter()
+            if is_new_serie or (now - self._last_autofit_time >= 0.025):
+                self._last_autofit_time = now
+                self.autofit_axis()
         if is_new_serie or self.selected_serie is None:
             self.select_serie(None, None, serie_id)
         if is_new_serie and dpg.does_item_exist(self.plot_popup_tag) and dpg.is_item_shown(self.plot_popup_tag):

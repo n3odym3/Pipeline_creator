@@ -34,9 +34,10 @@ class VideoReader_win(WindowBase):
         "Trigger": IOTypes.TRIGGER,
         "File Path": IOTypes.FILE_PATH,
     }
-    persistent_fields = ["label", "folder"]
+    persistent_fields = ["label", "folder", "playback_fps"]
 
     folder: str = ""
+    playback_fps: int = 30
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
@@ -71,8 +72,11 @@ class VideoReader_win(WindowBase):
         self.video_keys: List[str] = []
         self.videos: Dict[str, Dict[str, str]] = {}
 
-        self.playback_fps: int = 30
-        self.frame_interval: float = 1.0 / self.playback_fps
+        try:
+            self.playback_fps: int = max(0, int(getattr(self, "playback_fps", kwargs.get("playback_fps", 30))))
+        except (TypeError, ValueError):
+            self.playback_fps = 30
+        self.frame_interval: float = (1.0 / self.playback_fps) if self.playback_fps > 0 else 0.0
 
         # Construct Interface
         scale = display_scaling.scale
@@ -80,7 +84,7 @@ class VideoReader_win(WindowBase):
             with dpg.group(horizontal=True):
                 dpg.add_button(
                     label="Browse",
-                    width=scale(70),
+                    width=scale(125),
                     callback=self._on_browse_clicked,
                 )
                 dpg.add_text("No folder selected", tag=self.folder_label_tag)
@@ -108,8 +112,10 @@ class VideoReader_win(WindowBase):
                     label="FPS",
                     tag=self.fps_tag,
                     default_value=self.playback_fps,
-                    min_value=1,
+                    min_value=0,
+                    max_value=1000,
                     min_clamped=True,
+                    max_clamped=True,
                     width=-1,
                     callback=self.set_playback_fps,
                 )
@@ -273,6 +279,7 @@ class VideoReader_win(WindowBase):
     def play_loop(self) -> None:
         """Background playback thread loop streaming video frames at target FPS."""
         next_frame_time = time.perf_counter()
+        last_slider_update = 0.0
 
         while self.video_running and not self._is_closing:
             if not self.is_outputs_ready():
@@ -280,7 +287,8 @@ class VideoReader_win(WindowBase):
                 continue
 
             now = time.perf_counter()
-            if now < next_frame_time:
+            interval = self.frame_interval
+            if interval > 0.0 and now < next_frame_time:
                 time.sleep(min(0.005, next_frame_time - now))
                 continue
 
@@ -296,6 +304,7 @@ class VideoReader_win(WindowBase):
                         if dpg.does_item_exist(self.progress_tag):
                             dpg.set_value(self.progress_tag, current_frame)
                         self._ignore_slider_cb = False
+                        last_slider_update = time.perf_counter()
 
             if self.video_paused:
                 time.sleep(0.01)
@@ -309,15 +318,25 @@ class VideoReader_win(WindowBase):
                 self.frame_cb(frame=frame)
 
                 if self._seek_request is None:
-                    current_frame = video.get_current_frame()
-                    self._ignore_slider_cb = True
-                    if dpg.does_item_exist(self.progress_tag):
-                        dpg.set_value(self.progress_tag, current_frame)
-                    self._ignore_slider_cb = False
+                    now_slider = time.perf_counter()
+                    if now_slider - last_slider_update >= 0.030:
+                        last_slider_update = now_slider
+                        current_frame = video.get_current_frame()
+                        self._ignore_slider_cb = True
+                        if dpg.does_item_exist(self.progress_tag):
+                            dpg.set_value(self.progress_tag, current_frame)
+                        self._ignore_slider_cb = False
 
-            next_frame_time += self.frame_interval
-            if next_frame_time < time.perf_counter():
-                next_frame_time = time.perf_counter()
+            interval = self.frame_interval
+            if interval > 0.0:
+                if next_frame_time <= 0.0:
+                    next_frame_time = time.perf_counter()
+                next_frame_time += interval
+                now_after = time.perf_counter()
+                if next_frame_time < now_after:
+                    next_frame_time = now_after
+            else:
+                next_frame_time = 0.0
 
         self.trigger_cb(event="STOP")
         self.video_running = False
@@ -378,9 +397,9 @@ class VideoReader_win(WindowBase):
         user_data: Any = None,
         *args: Any,
     ) -> None:
-        """Update playback target frame rate."""
-        self.playback_fps = max(1, int(app_data))
-        self.frame_interval = 1.0 / self.playback_fps
+        """Update playback target frame rate (0 = uncapped)."""
+        self.playback_fps = max(0, int(app_data))
+        self.frame_interval = (1.0 / self.playback_fps) if self.playback_fps > 0 else 0.0
 
     def on_slider_change(
         self,

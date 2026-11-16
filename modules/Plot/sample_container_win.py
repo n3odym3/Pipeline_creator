@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 import os
+import time
 import uuid
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -69,6 +70,7 @@ class Sample_container_win(WindowBase):
         self.samples_order: List[str] = []
         self._name_to_uuid: Dict[str, str] = {}
         self._handle_to_uuid: Dict[str, str] = {}
+        self._last_preview_update: Dict[str, float] = {}
 
         # Export UI tags
         self.clear_samples_tag = f"clear_samples_{self.UUID}"
@@ -253,9 +255,17 @@ class Sample_container_win(WindowBase):
             sample_entry["y"] = y_data
 
             plot_tag = f"sample_plot_{existing_uuid}"
-            if dpg.does_item_exist(plot_tag) and y_data is not None:
-                plot_vals = y_data.tolist() if hasattr(y_data, "tolist") else list(y_data)
-                dpg.set_value(plot_tag, plot_vals)
+            if (
+                y_data is not None
+                and dpg.does_item_exist(self.winID)
+                and dpg.is_item_shown(self.winID)
+                and dpg.does_item_exist(plot_tag)
+            ):
+                now = time.perf_counter()
+                if now - self._last_preview_update.get(existing_uuid, 0.0) >= 0.10:
+                    self._last_preview_update[existing_uuid] = now
+                    plot_vals = y_data.tolist() if hasattr(y_data, "tolist") else list(y_data)
+                    dpg.set_value(plot_tag, plot_vals)
 
             matches = self._matches_filter(name)
             if sample_entry.get("visible") != matches:

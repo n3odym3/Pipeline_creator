@@ -12,7 +12,9 @@ from core.input_output_types import IOTypes
 
 
 def _fmt_delta_ms(val_ms: float) -> str:
-    """Format propagation delay with microsecond precision (3 decimals) for fast hops."""
+    """Format propagation delay with microsecond clarity for fast hops."""
+    if 0.0 < abs(val_ms) < 0.1:
+        return f"{val_ms:.3f} ms ({val_ms * 1000.0:.1f} us)"
     if abs(val_ms) < 10.0:
         return f"{val_ms:.3f} ms"
     if abs(val_ms) < 100.0:
@@ -42,11 +44,11 @@ class _PropagationEndpoint:
         self.outputs: Dict[str, Any] = {}
         self.connections: Dict[str, List[Any]] = {}
 
-    def input_cb(self, *args: Any, **kwargs: Any) -> None:
+    def input_cb(self, data: Any = None, *args: Any, **kwargs: Any) -> None:
         if self.role == "A":
-            self.owner.on_start_signal(*args, **kwargs)
+            self.owner.on_start_signal()
         else:
-            self.owner.on_stop_signal(*args, **kwargs)
+            self.owner.on_stop_signal()
 
     def is_ready(self) -> bool:
         """Never exert backpressure on the measured pipeline."""
@@ -116,7 +118,9 @@ class _PropagationTesterNode:
         self.last_e2e_dt_ms: float = 0.0
         self.last_service_dt_ms: float = 0.0
         self.mean_dt_ms: float = 0.0
+        self.p50_dt_ms: float = 0.0
         self.p95_dt_ms: float = 0.0
+        self.p99_dt_ms: float = 0.0
         self.min_dt_ms: float = 0.0
         self.max_dt_ms: float = 0.0
         self.std_dt_ms: float = 0.0
@@ -252,7 +256,7 @@ class _PropagationTesterNode:
                     rec.total_in = self.count_a
                     rec.in_timestamps.append(t_now)
 
-        if (t_now - self._last_ui_update_ts) >= 0.12:
+        if self.node_id is not None and (t_now - self._last_ui_update_ts) >= 0.12:
             self._last_ui_update_ts = t_now
             self._refresh_node_ui(t_now)
 
@@ -311,7 +315,7 @@ class _PropagationTesterNode:
                         rec.in_to_out_ms.append(dt_ms)
                         rec.self_exec_ms.append(dt_ms)
 
-        if (t_now - self._last_ui_update_ts) >= 0.08:
+        if self.node_id is not None and (t_now - self._last_ui_update_ts) >= 0.08:
             self._last_ui_update_ts = t_now
             self._refresh_node_ui(t_now)
 
@@ -332,9 +336,8 @@ class _PropagationTesterNode:
             return 0.0
         return (len(dq) - 1) / span
 
-    def _refresh_node_ui(self, now: Optional[float] = None) -> None:
-        if not dpg.is_dearpygui_running():
-            return
+    def compute_stats(self, now: Optional[float] = None) -> Dict[str, Any]:
+        """Compute rolling rates and distribution percentiles (`p50`, `p95`, `p99`) safely in pure Python."""
         if now is None:
             now = time.perf_counter()
 
@@ -348,13 +351,16 @@ class _PropagationTesterNode:
             last_e2e = self.last_e2e_dt_ms
             min_dt = self.min_dt_ms
             max_dt = self.max_dt_ms
+            dropped = self.dropped_count
             dt_list = list(self._dt_history)
 
         if dt_list:
             n = len(dt_list)
             mean_dt = sum(dt_list) / n
             sorted_dt = sorted(dt_list)
+            p50_dt = sorted_dt[min(n - 1, int(0.50 * (n - 1)))]
             p95_dt = sorted_dt[min(n - 1, int(0.95 * (n - 1)))]
+            p99_dt = sorted_dt[min(n - 1, int(0.99 * (n - 1)))]
             if n > 1:
                 var = sum((x - mean_dt) ** 2 for x in dt_list) / n
                 std_dt = math.sqrt(var)
@@ -362,12 +368,52 @@ class _PropagationTesterNode:
                 std_dt = 0.0
         else:
             mean_dt = 0.0
+            p50_dt = 0.0
             p95_dt = 0.0
+            p99_dt = 0.0
             std_dt = 0.0
 
         self.mean_dt_ms = mean_dt
+        self.p50_dt_ms = p50_dt
         self.p95_dt_ms = p95_dt
+        self.p99_dt_ms = p99_dt
         self.std_dt_ms = std_dt
+
+        return {
+            "cnt_a": cnt_a,
+            "cnt_b": cnt_b,
+            "dropped": dropped,
+            "last_dt": last_dt,
+            "last_srv": last_srv,
+            "last_e2e": last_e2e,
+            "min_dt": min_dt,
+            "max_dt": max_dt,
+            "mean_dt": mean_dt,
+            "p50_dt": p50_dt,
+            "p95_dt": p95_dt,
+            "p99_dt": p99_dt,
+            "std_dt": std_dt,
+            "rate_a_hz": self.rate_a_hz,
+            "rate_b_hz": self.rate_b_hz,
+        }
+
+    def _refresh_node_ui(self, now: Optional[float] = None) -> None:
+        stats = self.compute_stats(now)
+        if self.node_id is None or not dpg.is_dearpygui_running():
+            return
+
+        cnt_a = int(stats["cnt_a"])
+        cnt_b = int(stats["cnt_b"])
+        last_dt = float(stats["last_dt"])
+        last_srv = float(stats["last_srv"])
+        last_e2e = float(stats["last_e2e"])
+        min_dt = float(stats["min_dt"])
+        max_dt = float(stats["max_dt"])
+        mean_dt = float(stats["mean_dt"])
+        p50_dt = float(stats["p50_dt"])
+        p95_dt = float(stats["p95_dt"])
+        p99_dt = float(stats["p99_dt"])
+        std_dt = float(stats["std_dt"])
 
         pass_pct = min(100.0, (cnt_b / cnt_a) * 100.0) if cnt_a > 0 else 100.0
 
@@ -385,7 +431,9 @@ class _PropagationTesterNode:
                     f"-------------------------\n"
                     f"Last dt      : {_fmt_delta_ms(last_dt)}\n"
                     f"Mean dt      : {_fmt_delta_ms(mean_dt)}\n"
+                    f"P50 (Median) : {_fmt_delta_ms(p50_dt)}\n"
                     f"P95 dt       : {_fmt_delta_ms(p95_dt)}\n"
+                    f"P99 dt       : {_fmt_delta_ms(p99_dt)}\n"
                     f"Min / Max    : {_fmt_delta_ms(min_dt)} / {_fmt_delta_ms(max_dt)}\n"
                     f"Jitter (std) : +/-{_fmt_delta_ms(std_dt)}\n"
                     f"Service dt   : {_fmt_delta_ms(last_srv)} (no queue wait)\n"
@@ -418,7 +466,9 @@ class _PropagationTesterNode:
             self.last_e2e_dt_ms = 0.0
             self.last_service_dt_ms = 0.0
             self.mean_dt_ms = 0.0
+            self.p50_dt_ms = 0.0
             self.p95_dt_ms = 0.0
+            self.p99_dt_ms = 0.0
             self.min_dt_ms = 0.0
             self.max_dt_ms = 0.0
             self.std_dt_ms = 0.0
@@ -437,6 +487,9 @@ class _PropagationTesterNode:
             with self._lock:
                 self.pairing_mode = new_mode
                 self._dt_history.clear()
+                self.p50_dt_ms = 0.0
+                self.p95_dt_ms = 0.0
+                self.p99_dt_ms = 0.0
                 self.min_dt_ms = 0.0
                 self.max_dt_ms = 0.0
         self._refresh_node_ui()
@@ -453,9 +506,9 @@ class _PropagationTesterNode:
             except Exception:
                 pass
 
-    def input_cb(self, *args: Any, **kwargs: Any) -> None:
+    def input_cb(self, data: Any = None, *args: Any, **kwargs: Any) -> None:
         """Fallback if called directly: treat as Stop (B)."""
-        self.on_stop_signal(*args, **kwargs)
+        self.on_stop_signal()
 
     def is_ready(self) -> bool:
         return True
