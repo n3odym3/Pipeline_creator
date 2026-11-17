@@ -209,10 +209,20 @@ By default, running `tools/run_benchmark.py` executes the **complete end-to-end 
 4. Generates all figures (`PNG` + `PDF`) in `benchmark/figures/`, plus `benchmark/interactive_report.html` and `benchmark/benchmark_analysis.ipynb`.
 
 ```bash
+# From source
 python tools/run_benchmark.py
+
+# Directly from a compiled build (writes outputs to benchmark/ next to the .exe)
+PipelineCreator.exe --run-benchmark
+
+# From source, targeting a compiled executable
+python tools/run_benchmark.py --exe path/to/main.dist/PipelineCreator.exe
 ```
 
-#### Selective Benchmark Flags (`tools/run_benchmark.py`)
+!!! note "Compiled Executable Requirements"
+    When running `PipelineCreator.exe --run-benchmark` (or `PipelineCreator.exe -m tools.run_benchmark`), ensure the executable was built with `MAIN_PIPELINE = None` in `make_executable.py` so `modules/benchmark/` is included in `main.dist/modules/`. All selective flags below work identically with `--run-benchmark`.
+
+#### Selective Benchmark Flags (`tools/run_benchmark.py` / `--run-benchmark`)
 
 | Flag | Description |
 |---|---|
@@ -223,6 +233,7 @@ python tools/run_benchmark.py
 | `--skip-stress` | Skip the progressive stress-test breaking-point sweeps. |
 | `--stress-only` | Run only the progressive stress sweeps (Headless + Live-UI) and rebuild all combined figures and reports. |
 | `--rebuild-only` | Regenerate `benchmark/generated/` pipelines & scripts, `summary.md`, `benchmark_report.*`, `interactive_report.html`, `benchmark_analysis.ipynb`, and `benchmark/figures/` (PNG & PDF) from existing JSON/CSV results without re-running benchmarks. |
+| `--exe PATH` | Path to a compiled `PipelineCreator.exe` (or its `main.dist` folder) to benchmark instead of `main.py` from source. Automatically defaults to itself when invoked via `PipelineCreator.exe --run-benchmark`. |
 
 Running an individual benchmark script directly (e.g., `python main.py --headless --script benchmark/generated/scripts/headless_matrix_script.json`) also triggers figure and interactive report generation automatically at export time unless orchestrated by `tools/run_benchmark.py`.
 

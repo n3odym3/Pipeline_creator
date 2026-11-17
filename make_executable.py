@@ -20,7 +20,7 @@ MAIN_PIPELINE = None
 OUTPUT_DIR: str = "C:/Users/gerva/Desktop/PieplineCreator_compil"
 
 IGNORE_PATTERNS = ("__pycache__", "*.pyc", "*.pyo")
-INTERNAL_PACKAGES = {"core", "config", "modules"}
+INTERNAL_PACKAGES = {"core", "config", "modules", "tools"}
 
 
 def _get_module_metadata_statically_for_build(filepath: Union[str, Path]) -> Optional[Dict[str, str]]:
@@ -361,6 +361,7 @@ def create_executable() -> None:
         "--assume-yes-for-downloads",
         "--include-package=core",
         "--include-package=config",
+        "--include-package=tools",
         "--enable-plugin=tk-inter",
         "--recompile-extension-modules=cv2:never",
         "--nofollow-import-to=zmq",

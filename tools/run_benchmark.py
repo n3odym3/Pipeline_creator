@@ -29,13 +29,14 @@ import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
+_SOURCE_ROOT = Path(__file__).resolve().parent.parent
+if str(_SOURCE_ROOT) not in sys.path:
+    sys.path.insert(0, str(_SOURCE_ROOT))
 
 from core.framework_profiler import FrameworkProfiler
+from core.paths import BENCHMARK_DIR, PROJECT_ROOT, is_compiled
 
-BENCH_DIR = PROJECT_ROOT / "benchmark"
+BENCH_DIR = BENCHMARK_DIR
 GEN_PIPELINES_DIR = BENCH_DIR / "generated" / "pipelines"
 GEN_SCRIPTS_DIR = BENCH_DIR / "generated" / "scripts"
 
@@ -1025,6 +1026,11 @@ def main() -> int:
         exe_path = _resolve_exe_path(args.exe)
     except FileNotFoundError as exc:
         parser.error(str(exc))
+
+    if exe_path is None and is_compiled():
+        current_exe = Path(sys.executable).resolve()
+        sibling_exe = current_exe.parent / "PipelineCreator.exe"
+        exe_path = sibling_exe if sibling_exe.is_file() else current_exe
 
     if exe_path is not None:
         print(f"[Benchmark] Target executable: {exe_path}")

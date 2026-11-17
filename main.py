@@ -11,6 +11,13 @@ if __name__ == "__main__":
     if getattr(sys, "frozen", False) or "__compiled__" in globals() or hasattr(sys, "__nuitka_version__"):
         sys.frozen = True
 
+    # Handle direct benchmark launcher shortcut in compiled/source mode
+    if len(sys.argv) > 1 and sys.argv[1] == "--run-benchmark":
+        sys.argv = [sys.argv[0]] + sys.argv[2:]
+        from tools.run_benchmark import main as _benchmark_main
+
+        sys.exit(_benchmark_main())
+
     # Handle self-execution calls (like sys.executable -m mkdocs) in compiled/frozen mode
     if len(sys.argv) > 2 and sys.argv[1] == "-m":
         module_name = sys.argv[2]
@@ -105,9 +112,34 @@ if __name__ == "__main__":
                     sys.exit(pip_main())
                 else:
                     raise ImportError("Could not find pip entry point")
+            elif module_name == "tools.run_benchmark":
+                from tools.run_benchmark import main as benchmark_main
+
+                sys.exit(benchmark_main())
+            elif module_name == "tools.plot_benchmark_figures":
+                from tools.plot_benchmark_figures import main as plot_main
+
+                sys.exit(plot_main())
+            elif module_name == "tools.generate_user_reports":
+                from tools.generate_user_reports import main as reports_main
+
+                sys.exit(reports_main())
             else:
+                import importlib
                 import runpy
-                runpy.run_module(module_name, run_name="__main__", alter_sys=True)
+
+                try:
+                    runpy.run_module(module_name, run_name="__main__", alter_sys=True)
+                except AttributeError as exc:
+                    # Nuitka's compiled module loader does not implement get_code() required by runpy.
+                    if "get_code" not in str(exc):
+                        raise
+                    mod = importlib.import_module(module_name)
+                    entry = getattr(mod, "main", None)
+                    if callable(entry):
+                        rc = entry()
+                        sys.exit(rc if isinstance(rc, int) else 0)
+                    raise
                 sys.exit(0)
         except Exception as e:
             import traceback
