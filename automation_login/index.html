@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../assets/favicon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
     
     
       
@@ -31,10 +31,10 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -860,6 +860,56 @@
     <span class="md-ellipsis">
       
         apply_view
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#headless-execution-mode-headless" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Headless Execution Mode (--headless)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Headless Execution Mode (--headless)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-headless-mode-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How Headless Mode Works
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cli-examples-execution-flags" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CLI Examples &amp; Execution Flags
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lifecycle-clean-shutdown" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lifecycle &amp; Clean Shutdown
       
     </span>
   </a>
@@ -2047,9 +2097,9 @@
 <hr />
 <h2 id="login-dialog"><u>Login Dialog</u><a class="headerlink" href="#login-dialog" title="Permanent link">&para;</a></h2>
 <p>In <em>config.json</em>:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">&quot;Login&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="nt">&quot;enabled&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="nt">&quot;default_mode&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;user&quot;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">"Login"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="nt">"enabled"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="nt">"default_mode"</span><span class="p">:</span><span class="w"> </span><span class="s2">"user"</span>
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="p">}</span>
 </code></pre></div>
 <ul>
@@ -2062,7 +2112,7 @@
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">core.login_dialog</span><span class="w"> </span><span class="kn">import</span> <span class="n">show_login_dialog</span>
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
 <a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">show_login_dialog</span><span class="p">(</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="n">default_mode</span><span class="o">=</span><span class="s2">&quot;advanced&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="n">default_mode</span><span class="o">=</span><span class="s2">"advanced"</span><span class="p">,</span>
 <a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="n">on_confirm</span><span class="o">=</span><span class="n">main_win</span><span class="o">.</span><span class="n">apply_mode_visibility</span><span class="p">,</span>
 <a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="n">pump_frames</span><span class="o">=</span><span class="kc">False</span>   <span class="c1"># Must be False at runtime (True only at startup)</span>
 <a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="p">)</span>
@@ -2076,8 +2126,8 @@
 <ol>
 <li>Open <code>config.json</code>.</li>
 <li>Set <code>"default_pipeline"</code> under <code>"Paths"</code> to the relative path of your pipeline file:
-   <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">&quot;Paths&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span><span class="nt">&quot;default_pipeline&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;pipelines/my_default_pipeline.json&quot;</span>
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">"Paths"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span><span class="nt">"default_pipeline"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pipelines/my_default_pipeline.json"</span>
 <a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="p">}</span>
 </code></pre></div></li>
 </ol>
@@ -2087,8 +2137,8 @@
 <p>Automation scripts are <strong>JSON files</strong> that define a sequence of actions to run automatically at startup. They allow you to configure the working directory, load a specific layout, trigger module methods, and more — all without user interaction.</p>
 <h3 id="triggering-a-script"><u>Triggering a Script</u><a class="headerlink" href="#triggering-a-script" title="Permanent link">&para;</a></h3>
 <p><strong>Option 1 — via <code>config.json</code></strong> (runs automatically at startup):
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nt">&quot;Paths&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">    </span><span class="nt">&quot;default_automation_script&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;scripts/my_startup.json&quot;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nt">"Paths"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">    </span><span class="nt">"default_automation_script"</span><span class="p">:</span><span class="w"> </span><span class="s2">"scripts/my_startup.json"</span>
 <a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="p">}</span>
 </code></pre></div></p>
 <p><strong>Option 2 — via command line</strong>:
@@ -2100,13 +2150,13 @@
 <h2 id="script-structure"><u>Script Structure</u><a class="headerlink" href="#script-structure" title="Permanent link">&para;</a></h2>
 <p>An automation script is a JSON object with a <code>name</code> and a list of <code>steps</code>. Each step has an <code>action</code> key that selects which operation to perform.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="p">{</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;My Startup Script&quot;</span><span class="p">,</span>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="nt">&quot;steps&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;action&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;set_workspace&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;C:/data/my_project&quot;</span><span class="w"> </span><span class="p">},</span>
-<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;action&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;load_pipeline&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;pipelines/default_pipeline.json&quot;</span><span class="w"> </span><span class="p">},</span>
-<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;action&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;fullscreen&quot;</span><span class="p">,</span><span class="w">    </span><span class="nt">&quot;enabled&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">},</span>
-<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;action&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;wait&quot;</span><span class="p">,</span><span class="w">          </span><span class="nt">&quot;seconds&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1.5</span><span class="w"> </span><span class="p">},</span>
-<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;action&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;trigger&quot;</span><span class="p">,</span><span class="w">       </span><span class="nt">&quot;module_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;MyCameraModule&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;start_acquisition&quot;</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">    </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"My Startup Script"</span><span class="p">,</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="nt">"steps"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="nt">"action"</span><span class="p">:</span><span class="w"> </span><span class="s2">"set_workspace"</span><span class="p">,</span><span class="w"> </span><span class="nt">"path"</span><span class="p">:</span><span class="w"> </span><span class="s2">"C:/data/my_project"</span><span class="w"> </span><span class="p">},</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="nt">"action"</span><span class="p">:</span><span class="w"> </span><span class="s2">"load_pipeline"</span><span class="p">,</span><span class="w"> </span><span class="nt">"path"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pipelines/default_pipeline.json"</span><span class="w"> </span><span class="p">},</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="nt">"action"</span><span class="p">:</span><span class="w"> </span><span class="s2">"fullscreen"</span><span class="p">,</span><span class="w">    </span><span class="nt">"enabled"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">},</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="nt">"action"</span><span class="p">:</span><span class="w"> </span><span class="s2">"wait"</span><span class="p">,</span><span class="w">          </span><span class="nt">"seconds"</span><span class="p">:</span><span class="w"> </span><span class="mf">1.5</span><span class="w"> </span><span class="p">},</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="nt">"action"</span><span class="p">:</span><span class="w"> </span><span class="s2">"trigger"</span><span class="p">,</span><span class="w">       </span><span class="nt">"module_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"MyCameraModule"</span><span class="p">,</span><span class="w"> </span><span class="nt">"method"</span><span class="p">:</span><span class="w"> </span><span class="s2">"start_acquisition"</span><span class="w"> </span><span class="p">}</span>
 <a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">    </span><span class="p">]</span>
 <a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="p">}</span>
 </code></pre></div>
@@ -2114,7 +2164,7 @@
 <h2 id="action-reference"><u>Action Reference</u><a class="headerlink" href="#action-reference" title="Permanent link">&para;</a></h2>
 <h3 id="set_workspace">set_workspace<a class="headerlink" href="#set_workspace" title="Permanent link">&para;</a></h3>
 <p>Sets the working directory. All relative paths in subsequent steps are resolved against this directory. If <code>browse</code> is <code>true</code> or no <code>path</code> is provided, it opens the interactive folder picker. <em>(Aliases: <code>set_working_dir</code>, <code>set_working_directory</code>, <code>set_directory</code>.)</em></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="p">{</span><span class="w"> </span><span class="nt">&quot;action&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;set_workspace&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;C:/data/my_project&quot;</span><span class="w"> </span><span class="p">}</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="p">{</span><span class="w"> </span><span class="nt">"action"</span><span class="p">:</span><span class="w"> </span><span class="s2">"set_workspace"</span><span class="p">,</span><span class="w"> </span><span class="nt">"path"</span><span class="p">:</span><span class="w"> </span><span class="s2">"C:/data/my_project"</span><span class="w"> </span><span class="p">}</span>
 </code></pre></div>
 <table>
 <thead>
@@ -2140,12 +2190,12 @@
 <hr />
 <h3 id="browse_workspace">browse_workspace<a class="headerlink" href="#browse_workspace" title="Permanent link">&para;</a></h3>
 <p>Opens the interactive folder picker dialog so the operator can choose the working directory at startup. <em>(Aliases: <code>browse_working_dir</code>, <code>select_workspace</code>, <code>select_working_dir</code>, <code>browse_directory</code>.)</em></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="p">{</span><span class="w"> </span><span class="nt">&quot;action&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;browse_workspace&quot;</span><span class="w"> </span><span class="p">}</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="p">{</span><span class="w"> </span><span class="nt">"action"</span><span class="p">:</span><span class="w"> </span><span class="s2">"browse_workspace"</span><span class="w"> </span><span class="p">}</span>
 </code></pre></div>
 <hr />
 <h3 id="load_pipeline">load_pipeline<a class="headerlink" href="#load_pipeline" title="Permanent link">&para;</a></h3>
 <p>Loads a pipeline JSON file and reconstructs its node graph.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="p">{</span><span class="w"> </span><span class="nt">&quot;action&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;load_pipeline&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;pipelines/my_pipeline.json&quot;</span><span class="w"> </span><span class="p">}</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="p">{</span><span class="w"> </span><span class="nt">"action"</span><span class="p">:</span><span class="w"> </span><span class="s2">"load_pipeline"</span><span class="p">,</span><span class="w"> </span><span class="nt">"path"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pipelines/my_pipeline.json"</span><span class="w"> </span><span class="p">}</span>
 </code></pre></div>
 <table>
 <thead>
@@ -2166,7 +2216,7 @@
 <hr />
 <h3 id="fullscreen">fullscreen<a class="headerlink" href="#fullscreen" title="Permanent link">&para;</a></h3>
 <p>Maximizes the viewport window.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="p">{</span><span class="w"> </span><span class="nt">&quot;action&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;fullscreen&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;enabled&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">}</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="p">{</span><span class="w"> </span><span class="nt">"action"</span><span class="p">:</span><span class="w"> </span><span class="s2">"fullscreen"</span><span class="p">,</span><span class="w"> </span><span class="nt">"enabled"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">}</span>
 </code></pre></div>
 <table>
 <thead>
@@ -2187,7 +2237,7 @@
 <hr />
 <h3 id="wait">wait<a class="headerlink" href="#wait" title="Permanent link">&para;</a></h3>
 <p>Inserts a sleep delay between steps.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="p">{</span><span class="w"> </span><span class="nt">&quot;action&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;wait&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;seconds&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">2.0</span><span class="w"> </span><span class="p">}</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="p">{</span><span class="w"> </span><span class="nt">"action"</span><span class="p">:</span><span class="w"> </span><span class="s2">"wait"</span><span class="p">,</span><span class="w"> </span><span class="nt">"seconds"</span><span class="p">:</span><span class="w"> </span><span class="mf">2.0</span><span class="w"> </span><span class="p">}</span>
 </code></pre></div>
 <table>
 <thead>
@@ -2213,10 +2263,10 @@
 <h3 id="trigger">trigger<a class="headerlink" href="#trigger" title="Permanent link">&para;</a></h3>
 <p>Calls a method on a specific active module instance.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="p">{</span>
-<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">    </span><span class="nt">&quot;action&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;trigger&quot;</span><span class="p">,</span>
-<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">    </span><span class="nt">&quot;module_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;MyCameraModule&quot;</span><span class="p">,</span>
-<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">    </span><span class="nt">&quot;method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;start_acquisition&quot;</span><span class="p">,</span>
-<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">    </span><span class="nt">&quot;params&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;fps&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">    </span><span class="nt">"action"</span><span class="p">:</span><span class="w"> </span><span class="s2">"trigger"</span><span class="p">,</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">    </span><span class="nt">"module_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"MyCameraModule"</span><span class="p">,</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">    </span><span class="nt">"method"</span><span class="p">:</span><span class="w"> </span><span class="s2">"start_acquisition"</span><span class="p">,</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">    </span><span class="nt">"params"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"fps"</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span><span class="w"> </span><span class="p">}</span>
 <a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="p">}</span>
 </code></pre></div>
 <p>You can target a module either by <strong>type name</strong> or by <strong>UUID</strong>:</p>
@@ -2255,9 +2305,9 @@
 <h3 id="send_command">send_command<a class="headerlink" href="#send_command" title="Permanent link">&para;</a></h3>
 <p>Sends a <code>CMD_DICT</code> typed data packet to a module's <code>input_cb</code>.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="p">{</span>
-<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="w">    </span><span class="nt">&quot;action&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;send_command&quot;</span><span class="p">,</span>
-<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">    </span><span class="nt">&quot;module_uuid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;41680190-3cb8-4a57-b08f-287df5d1bf2b&quot;</span><span class="p">,</span>
-<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="w">    </span><span class="nt">&quot;command&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;cmd&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;set_gain&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">2.0</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="w">    </span><span class="nt">"action"</span><span class="p">:</span><span class="w"> </span><span class="s2">"send_command"</span><span class="p">,</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">    </span><span class="nt">"module_uuid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"41680190-3cb8-4a57-b08f-287df5d1bf2b"</span><span class="p">,</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="w">    </span><span class="nt">"command"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"cmd"</span><span class="p">:</span><span class="w"> </span><span class="s2">"set_gain"</span><span class="p">,</span><span class="w"> </span><span class="nt">"value"</span><span class="p">:</span><span class="w"> </span><span class="mf">2.0</span><span class="w"> </span><span class="p">}</span>
 <a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="p">}</span>
 </code></pre></div>
 <table>
@@ -2284,7 +2334,7 @@
 <hr />
 <h3 id="apply_view">apply_view<a class="headerlink" href="#apply_view" title="Permanent link">&para;</a></h3>
 <p>Applies a saved named view layout preset.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="p">{</span><span class="w"> </span><span class="nt">&quot;action&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;apply_view&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;view_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;user&quot;</span><span class="w"> </span><span class="p">}</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="p">{</span><span class="w"> </span><span class="nt">"action"</span><span class="p">:</span><span class="w"> </span><span class="s2">"apply_view"</span><span class="p">,</span><span class="w"> </span><span class="nt">"view_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"user"</span><span class="w"> </span><span class="p">}</span>
 </code></pre></div>
 <table>
 <thead>
@@ -2302,6 +2352,68 @@
 </tr>
 </tbody>
 </table>
+<hr />
+<h2 id="headless-execution-mode-headless"><u>Headless Execution Mode (<code>--headless</code>)</u><a class="headerlink" href="#headless-execution-mode-headless" title="Permanent link">&para;</a></h2>
+<p>Pipeline Creator can run pipelines and <code>AutomationManager</code> scripts completely <strong>headless</strong>—without opening a splash screen, OS viewport window, GPU/OpenGL swapchain, or interactive startup dialogs (<code>ModuleHealthManager</code>, crash recovery popup, <code>LoginDialog</code>, or <code>StartupDialog</code>).</p>
+<p>This is useful for CI testing, server/background processing, batch pipelines, and benchmarking pure data-plane throughput without UI rendering overhead.</p>
+<h3 id="how-headless-mode-works">How Headless Mode Works<a class="headerlink" href="#how-headless-mode-works" title="Permanent link">&para;</a></h3>
+<p>When launched with <code>--headless</code>:</p>
+<ol>
+<li><code>main.py</code> skips the <code>tkinter</code> splash screen and calls <code>strip_headless_cli_flags()</code> + <code>run_headless_app()</code> (<code>core/headless_runner.py</code>) immediately after <code>dpg.create_context()</code>.</li>
+<li><code>install_headless_dpg_shims()</code> wraps DearPyGui viewport getters (returning a <code>1920x1080</code> virtual fallback) and viewport mutation calls as safe no-ops, and disables the <code>LogViewer</code> UI item sink so existing <code>WindowBase</code> and <code>ProcessingBase</code> modules can instantiate and communicate over <code>connections</code> / <code>LinkBus</code> without refactoring. Modules may also check <code>app_state.headless</code> to skip creating DPG widgets altogether.</li>
+<li><code>AutomationManager</code> runs the JSON script provided via <code>--script</code> and processes main-thread steps inside a lightweight polling loop instead of <code>dpg.render_dearpygui_frame()</code>.</li>
+</ol>
+<h3 id="cli-examples-execution-flags">CLI Examples &amp; Execution Flags<a class="headerlink" href="#cli-examples-execution-flags" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="c1"># Standard headless pipeline execution (auto-exits when script finishes)</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>python<span class="w"> </span>main.py<span class="w"> </span>--headless<span class="w"> </span>--exit-on-complete<span class="w"> </span>--script<span class="w"> </span>scripts/my_startup.json
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="c1"># Fast benchmark-module discovery + safety watchdog timeout (60s)</span>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>python<span class="w"> </span>main.py<span class="w"> </span>--headless<span class="w"> </span>--benchmark-modules-only<span class="w"> </span>--exit-on-complete<span class="w"> </span>--max-seconds<span class="w"> </span><span class="m">60</span><span class="w"> </span>--script<span class="w"> </span>benchmark/generated/scripts/headless_matrix_script.json
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Applies To</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--headless</code></td>
+<td><code>main.py</code></td>
+<td>Launches via <code>core/headless_runner.py</code> with <code>app_state.headless = True</code> (no viewport, no GPU render loop).</td>
+</tr>
+<tr>
+<td><code>--script &lt;path&gt;</code></td>
+<td>GUI &amp; Headless</td>
+<td>Path to an <code>AutomationManager</code> JSON script to execute on startup (mandatory for headless runs; exits immediately if omitted). Also sets <code>vsync=False</code> in GUI mode.</td>
+</tr>
+<tr>
+<td><code>--exit-on-complete</code></td>
+<td>Headless</td>
+<td>Exits cleanly as soon as the automation script has finished (<code>automation_manager.has_finished</code>) and all queued main-thread tasks have drained.</td>
+</tr>
+<tr>
+<td><code>--benchmark-modules-only</code></td>
+<td>Headless</td>
+<td>Fast discovery mode that loads only <code>modules/benchmark/</code> instead of scanning every module directory, reducing headless startup time for benchmarks and CI.</td>
+</tr>
+<tr>
+<td><code>--max-seconds &lt;float&gt;</code></td>
+<td>GUI &amp; Headless</td>
+<td>Safety watchdog timeout (in seconds) after which the main loop terminates cleanly (<code>0</code> = disabled).</td>
+</tr>
+</tbody>
+</table>
+<h3 id="lifecycle-clean-shutdown">Lifecycle &amp; Clean Shutdown<a class="headerlink" href="#lifecycle-clean-shutdown" title="Permanent link">&para;</a></h3>
+<p>A headless session terminates cleanly via any of the following triggers, running <code>clear_registry()</code> (stopping all background <code>ProcessingBase</code> workers) and <code>dpg.destroy_context()</code>:</p>
+<ul>
+<li>Script completion when <code>--exit-on-complete</code> is set.</li>
+<li>A module or script setting <code>app_state.close_requested = True</code> (e.g., <code>PerfPulseSource_win.request_exit</code>).</li>
+<li>Exceeding the <code>--max-seconds</code> timeout.</li>
+<li>User interrupt (<code>Ctrl+C</code> / <code>KeyboardInterrupt</code>).</li>
+</ul>
 
 
 
@@ -2357,10 +2469,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "content.code.copy", "toc.integrate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "content.code.copy", "toc.integrate"], "search": "../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../assets/javascripts/bundle.a5f9d56c.min.js"></script>
       
     
   </body>

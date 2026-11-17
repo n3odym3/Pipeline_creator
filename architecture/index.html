@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../assets/favicon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
     
     
       
@@ -31,10 +31,10 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -1537,6 +1537,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#headless-boot-path-headless" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Headless Boot Path (--headless)
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2095,13 +2106,21 @@
 <li><strong>Deferred Module Discovery</strong>: <code>get_available_modules(force_reload=True)</code> runs <em>after</em> the DearPyGui context, viewport, and theme are ready, ensuring module metadata, validation, and optional preloading initialize cleanly.</li>
 <li><strong>Frame Pumping for Startup Dialogs</strong>: Blocking startup modals (<code>ModuleHealthManager</code>, crash recovery popup, <code>LoginDialog</code>, and <code>StartupDialog</code>) run before the main render loop using <code>pump_frames=True</code>, manually calling <code>automation_manager.process_pending_steps()</code> and <code>dpg.render_dearpygui_frame()</code> until dismissed.</li>
 </ol>
+<h3 id="headless-boot-path-headless">Headless Boot Path (<code>--headless</code>)<a class="headerlink" href="#headless-boot-path-headless" title="Permanent link">&para;</a></h3>
+<p>When <code>main.py</code> is started with <code>--headless</code>, it skips the <code>tkinter</code> splash screen and branches immediately after <code>dpg.create_context()</code> into <code>strip_headless_cli_flags()</code> and <code>run_headless_app()</code> in <code>core/headless_runner.py</code>:</p>
+<ul>
+<li>Sets <code>app_state.headless = True</code> and calls <code>install_headless_dpg_shims()</code> so DearPyGui viewport calls remain safe no-ops without an OS window.</li>
+<li>Discovers modules (<code>get_available_modules(force_reload=True)</code> or <code>load_benchmark_modules_only()</code> when <code>--benchmark-modules-only</code> is passed).</li>
+<li>Executes the <code>--script</code> workflow via <code>automation_manager</code> and exits cleanly when finished (<code>--exit-on-complete</code>), when <code>app_state.close_requested</code> becomes <code>True</code>, or after <code>--max-seconds</code>.</li>
+</ul>
+<p>See <a href="../automation_login/#headless-execution-mode-headless">Automation &amp; Login — Headless Execution Mode</a> for CLI flags and usage examples.</p>
 <hr />
 <h2 id="app-state-app_statepy"><u>App State (<code>app_state.py</code>)</u><a class="headerlink" href="#app-state-app_statepy" title="Permanent link">&para;</a></h2>
 <p>A global singleton that tracks the session context, accessible from any module. You can also define and add custom attributes to this singleton if your modules need to exchange global status or state flags between each other:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">core.app_state</span><span class="w"> </span><span class="kn">import</span> <span class="n">app_state</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="c1"># Read the current mode</span>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="k">if</span> <span class="n">app_state</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;dev&quot;</span><span class="p">:</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="k">if</span> <span class="n">app_state</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">"dev"</span><span class="p">:</span>
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">show_debug_panel</span><span class="p">()</span>
 <a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
 <a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="c1"># Check if login is complete</span>
@@ -2111,7 +2130,7 @@
 <table>
 <thead>
 <tr>
-<th>Attribute</th>
+<th>Attribute / Method</th>
 <th>Type</th>
 <th>Description</th>
 </tr>
@@ -2136,6 +2155,26 @@
 <td><code>close_requested</code></td>
 <td><code>bool</code></td>
 <td>Set to <code>True</code> to trigger graceful shutdown</td>
+</tr>
+<tr>
+<td><code>headless</code></td>
+<td><code>bool</code></td>
+<td><code>True</code> when running via <code>--headless</code> without a DearPyGui viewport</td>
+</tr>
+<tr>
+<td><code>gui_running</code></td>
+<td><code>bool</code></td>
+<td><code>True</code> while the GUI main render loop (<code>dpg.render_dearpygui_frame</code>) is active</td>
+</tr>
+<tr>
+<td><code>exit_on_script_complete</code></td>
+<td><code>bool</code></td>
+<td><code>True</code> when <code>--exit-on-complete</code> is active in headless mode</td>
+</tr>
+<tr>
+<td><code>is_non_interactive()</code></td>
+<td><code>() -&gt; bool</code></td>
+<td>Returns <code>True</code> in headless mode or while an automation <code>--script</code> is active/queued</td>
 </tr>
 </tbody>
 </table>
@@ -2239,7 +2278,7 @@
 </ul>
 <h3 id="dpg-callbacks-tab">DPG Callbacks Tab<a class="headerlink" href="#dpg-callbacks-tab" title="Permanent link">&para;</a></h3>
 <p>When Nuitka/compiled-mode callback signature issues are detected (callbacks missing <code>*args</code> / <code>*args, **kwargs</code>), this tab lists each affected method and provides one-click <strong>Auto-fix</strong> buttons (per module or for all modules).</p>
-<p><em>(Manual scans with no errors or warnings show an </em><em>All Healthy</em><em> tab, along with </em><em>Rescan (Cached)</em><em> and </em><em>Force Full Rescan (Clear Cache)</em><em> actions.)</em></p>
+<p><em>(Manual scans with no errors or warnings show an <strong>All Healthy</strong> tab, along with <strong>Rescan (Cached)</strong> and <strong>Force Full Rescan (Clear Cache)</strong> actions.)</em></p>
 <hr />
 <h2 id="node-editor-graph-system-node_editorpy"><u>Node Editor Graph System (<code>node_editor.py</code>)</u><a class="headerlink" href="#node-editor-graph-system-node_editorpy" title="Permanent link">&para;</a></h2>
 <p>Once modules are discovered and validated, they can be instantiated inside the Node Editor visual graph. The Node Editor provides a zoomable, pannable graphical canvas built on top of DearPyGui where users organize and interconnect module nodes. It coordinates:</p>
@@ -2319,10 +2358,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "content.code.copy", "toc.integrate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "content.code.copy", "toc.integrate"], "search": "../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../assets/javascripts/bundle.a5f9d56c.min.js"></script>
       
     
   </body>

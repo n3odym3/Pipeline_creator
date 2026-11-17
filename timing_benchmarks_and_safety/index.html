@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../assets/favicon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
     
     
       
@@ -31,10 +31,10 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -782,6 +782,156 @@
     <span class="md-ellipsis">
       
         Available Benchmark Modules
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#interactive-vs-automated-mode-for-perf-nodes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interactive vs Automated Mode for Perf Nodes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#automated-framework-benchmark-stress-test-suite" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Automated Framework Benchmark &amp; Stress-Test Suite
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Automated Framework Benchmark &amp; Stress-Test Suite">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#quick-start-cli-commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick Start &amp; CLI Commands
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Quick Start &amp; CLI Commands">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#selective-benchmark-flags-toolsrun_benchmarkpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Selective Benchmark Flags (tools/run_benchmark.py)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#optional-standalone-sub-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Optional Standalone Sub-Tools
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#core-instrumentation-frameworkprofiler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core Instrumentation (FrameworkProfiler)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-the-benchmark-matrix-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What the Benchmark Matrix Tests
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="What the Benchmark Matrix Tests">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-intra-process-routing-topology-scaling-headless" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Intra-Process Routing &amp; Topology Scaling (Headless)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-multiprocess-ipc-breakdown-shmpool-vs-pure-pickle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Multiprocess IPC Breakdown (ShmPool vs Pure Pickle)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-three-mode-execution-comparison-cmp_" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Three-Mode Execution Comparison (cmp_*)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-progressive-stress-suite-breaking-point-analysis-stress_" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Progressive Stress Suite &amp; Breaking-Point Analysis (stress_*)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#generated-reports-output-files-benchmark" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Generated Reports &amp; Output Files (benchmark/)
       
     </span>
   </a>
@@ -2291,8 +2441,207 @@
 <td><code>TRIGGER</code>, <code>TEXT</code>, <code>ANY</code></td>
 <td>Simulates physical hardware device delays, communication timeouts, and intermittent failures for robust error-handling validation.</td>
 </tr>
+<tr>
+<td><strong>Perf Pulse Source</strong> (<code>perf_pulse_source_win.py</code>)</td>
+<td>Micro-Benchmark Source</td>
+<td><code>ANY</code>, <code>TRIGGER</code>, <code>CMD_DICT</code></td>
+<td>Nanosecond-stamped packet and NumPy array emitter (<code>token</code>, <code>numpy_1kb</code> to <code>numpy_4mb</code>, <code>numpy_1080p_rgb</code>). Supports bursts, paced/uncapped streams, <code>Stop</code> interruption, and AutomationManager profiler control.</td>
+</tr>
+<tr>
+<td><strong>Perf Relay Node</strong> (<code>perf_relay_win.py</code>)</td>
+<td>Relay / Terminal Sink</td>
+<td><code>ANY</code>, <code>TRIGGER</code>, <code>SAMPLE</code>, <code>FRAME</code>, <code>CMD_DICT</code></td>
+<td>Zero-compute pass-through relay and terminal sink that measures single-hop (<code>link_hop_ns</code>) and end-to-end DAG (<code>e2e_dag_ns</code>) latency with configurable UI update cadence (<code>ui_update_hz</code>).</td>
+</tr>
+<tr>
+<td><strong>Perf Worker Node</strong> (<code>perf_worker_win.py</code>)</td>
+<td>IPC Worker Wrapper</td>
+<td><code>ANY</code>, <code>SAMPLE</code>, <code>FRAME</code>, <code>CMD_DICT</code></td>
+<td>Dedicated <code>ProcessingBase</code> wrapper (<code>PerfPassWorker</code> with <code>ShmPool</code> or <code>PerfPassNoShmWorker</code> with <code>use_shared_memory=False</code>) that breaks down main-thread encoding, queue transit, worker compute, and IPC return latency.</td>
+</tr>
 </tbody>
 </table>
+<h3 id="interactive-vs-automated-mode-for-perf-nodes">Interactive vs Automated Mode for Perf Nodes<a class="headerlink" href="#interactive-vs-automated-mode-for-perf-nodes" title="Permanent link">&para;</a></h3>
+<p>When wiring <code>PerfPulseSource_win</code>, <code>PerfRelayNode_win</code>, and <code>PerfWorkerNode_win</code> manually on the canvas:</p>
+<ul>
+<li><strong>Manual Testing (<code>framework_profiler.enabled == False</code>)</strong>: Clicking <strong>Burst</strong> or <strong>Stream</strong> automatically refreshes node readouts (<code>Emitted</code>, <code>Recv</code>, <code>Last hop</code>, <code>Done | Drop</code>) at <strong>15 Hz</strong> and forces a final exact counter sync when the run ends. Clicking <strong>Stop</strong> triggers an internal <code>threading.Event</code> to halt an ongoing burst or stream immediately.</li>
+<li><strong>Automated Profiling (<code>framework_profiler.enabled == True</code>)</strong>: By default (<code>ui_update_hz = 0.0</code>), Perf nodes skip widget text updates to isolate pure framework overhead; calling <code>set_cluster_ui_update_hz(30.0)</code> enables realistic 30 Hz live widget updates during benchmark sweeps.</li>
+</ul>
+<hr />
+<h2 id="automated-framework-benchmark-stress-test-suite"><u>Automated Framework Benchmark &amp; Stress-Test Suite</u><a class="headerlink" href="#automated-framework-benchmark-stress-test-suite" title="Permanent link">&para;</a></h2>
+<p>Beyond live interactive inspection, Pipeline Creator provides an automated, reproducible benchmark and progressive stress-testing suite in <code>tools/run_benchmark.py</code>. It measures nanosecond framework overhead, isolates multiprocessing serialization costs (<code>ShmPool</code> shared memory vs pure <code>pickle</code>), compares headless and GUI execution modes, and identifies practical hardware breaking points on your workstation.</p>
+<h3 id="quick-start-cli-commands">Quick Start &amp; CLI Commands<a class="headerlink" href="#quick-start-cli-commands" title="Permanent link">&para;</a></h3>
+<p>By default, running <code>tools/run_benchmark.py</code> executes the <strong>complete end-to-end pipeline</strong> automatically in a single command:</p>
+<ol>
+<li>Regenerates all pipeline layouts and AutomationManager scripts in <code>benchmark/generated/</code>.</li>
+<li>Runs the headless matrix, 3-mode comparison, and progressive stress sweeps.</li>
+<li>Synthesizes <code>benchmark/benchmark_report.{json,csv,md}</code> and <code>benchmark/summary.md</code>.</li>
+<li>Generates all figures (<code>PNG</code> + <code>PDF</code>) in <code>benchmark/figures/</code>, plus <code>benchmark/interactive_report.html</code> and <code>benchmark/benchmark_analysis.ipynb</code>.</li>
+</ol>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>python<span class="w"> </span>tools/run_benchmark.py
+</code></pre></div>
+<h4 id="selective-benchmark-flags-toolsrun_benchmarkpy">Selective Benchmark Flags (<code>tools/run_benchmark.py</code>)<a class="headerlink" href="#selective-benchmark-flags-toolsrun_benchmarkpy" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--skip-matrix</code></td>
+<td>Skip the headless scaling matrix (still builds all outputs at the end).</td>
+</tr>
+<tr>
+<td><code>--skip-headless-cmp</code></td>
+<td>Skip the headless pass of the 3-mode comparison scenarios.</td>
+</tr>
+<tr>
+<td><code>--skip-gui</code></td>
+<td>Skip the Passive GUI comparison pass (<code>live_ui_updates=False</code>).</td>
+</tr>
+<tr>
+<td><code>--skip-gui-live</code></td>
+<td>Skip the Realistic 30 Hz Live-UI GUI comparison pass.</td>
+</tr>
+<tr>
+<td><code>--skip-stress</code></td>
+<td>Skip the progressive stress-test breaking-point sweeps.</td>
+</tr>
+<tr>
+<td><code>--stress-only</code></td>
+<td>Run only the progressive stress sweeps (Headless + Live-UI) and rebuild all combined figures and reports.</td>
+</tr>
+<tr>
+<td><code>--rebuild-only</code></td>
+<td>Regenerate <code>benchmark/generated/</code> pipelines &amp; scripts, <code>summary.md</code>, <code>benchmark_report.*</code>, <code>interactive_report.html</code>, <code>benchmark_analysis.ipynb</code>, and <code>benchmark/figures/</code> (PNG &amp; PDF) from existing JSON/CSV results without re-running benchmarks.</td>
+</tr>
+</tbody>
+</table>
+<p>Running an individual benchmark script directly (e.g., <code>python main.py --headless --script benchmark/generated/scripts/headless_matrix_script.json</code>) also triggers figure and interactive report generation automatically at export time unless orchestrated by <code>tools/run_benchmark.py</code>.</p>
+<h4 id="optional-standalone-sub-tools">Optional Standalone Sub-Tools<a class="headerlink" href="#optional-standalone-sub-tools" title="Permanent link">&para;</a></h4>
+<p>If you only want to invoke the low-level figure or report builders on a custom CSV/JSON file outside <code>tools/run_benchmark.py --rebuild-only</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Regenerate matplotlib figures (PNG and/or PDF)</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>python<span class="w"> </span>tools/plot_benchmark_figures.py<span class="w"> </span>--csv<span class="w"> </span>benchmark/benchmark_report.csv<span class="w"> </span>--out-dir<span class="w"> </span>benchmark/figures<span class="w"> </span>--formats<span class="w"> </span>png,pdf
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># Regenerate the interactive Plotly HTML dashboard and Jupyter Notebook</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>python<span class="w"> </span>tools/generate_user_reports.py<span class="w"> </span>--json<span class="w"> </span>benchmark/benchmark_report.json<span class="w"> </span>--csv<span class="w"> </span>benchmark/benchmark_report.csv<span class="w"> </span>--out-html<span class="w"> </span>benchmark/interactive_report.html<span class="w"> </span>--out-ipynb<span class="w"> </span>benchmark/benchmark_analysis.ipynb
+</code></pre></div>
+<hr />
+<h3 id="core-instrumentation-frameworkprofiler">Core Instrumentation (<code>FrameworkProfiler</code>)<a class="headerlink" href="#core-instrumentation-frameworkprofiler" title="Permanent link">&para;</a></h3>
+<p>All automated scenarios are instrumented by the global <code>framework_profiler</code> singleton in <code>core/framework_profiler.py</code>:</p>
+<ul>
+<li><strong>Nanosecond Precision</strong>: Uses <code>time.perf_counter_ns()</code> across dispatch, link hops, DAG terminal arrival, and <code>ProcessingBase</code> child IPC transitions.</li>
+<li><strong>Exact Percentile Statistics</strong>: <code>summarize_samples_ns()</code> computes <code>count</code>, <code>min</code>, <code>mean</code>, <code>std</code>, <code>p50</code> (median), <code>p95</code>, <code>p99</code>, and <code>max</code> in microseconds (<code>us</code>) for every recorded metric.</li>
+<li><strong>Process-Tree Resource Telemetry</strong>: Polls parent and child process RSS memory (<code>rss_peak_mb</code>), normalized CPU utilization (<code>cpu_mean_pct</code>), thread count, and child process count via <code>psutil</code>.</li>
+<li><strong>Uncapped Frame-Rate Probing</strong>: Under <code>--script</code> automation, <code>main.py</code> disables VSync (<code>use_vsync = False</code>), requests 1 ms Windows timer resolution (<code>winmm.timeBeginPeriod(1)</code>), and records actual viewport render times (<code>notify_frame_rendered</code>, <code>pump_gui_frame_if_needed</code>, and <code>_run_uncapped_fps_probe</code>) to measure true UI headroom.</li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Power Mode &amp; Display Swapchain Caps</p>
+<p>Even with VSync disabled in DearPyGui, laptop battery power profiles (e.g., Windows Dynamic Refresh Rate or hybrid GPU battery savers) may clamp DXGI swapchain presentation to ~48 FPS. Run GUI benchmarks on AC power for unthrottled maximum FPS measurements.</p>
+</div>
+<hr />
+<h3 id="what-the-benchmark-matrix-tests">What the Benchmark Matrix Tests<a class="headerlink" href="#what-the-benchmark-matrix-tests" title="Permanent link">&para;</a></h3>
+<h4 id="1-intra-process-routing-topology-scaling-headless">1. Intra-Process Routing &amp; Topology Scaling (Headless)<a class="headerlink" href="#1-intra-process-routing-topology-scaling-headless" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>Calibration (<code>calibration_profiler_self_overhead</code>)</strong>: Quantifies the measurement noise floor of <code>time.perf_counter_ns()</code> and <code>record_hop</code>.</li>
+<li><strong>Zero-Copy Reference vs NumPy Transfers (<code>hop_1to1_*</code>)</strong>: Compares Python token objects against <code>1 KB</code> and <code>1 MB</code> NumPy arrays passed across module links (<code>link_hop_ns</code>, <code>e2e_dag_ns</code>).</li>
+<li><strong>Conditional &amp; Bus Routing (<code>routing_gate</code>, <code>routing_linkbus</code>)</strong>: Isolates per-packet overhead of <code>Gate</code> flow control and <code>LinkOut -&gt; LinkBus -&gt; LinkIn</code> publish/subscribe routing.</li>
+<li><strong>Topologies</strong>: Evaluates linear chains (<code>chain_d2</code> through <code>chain_d40</code>), 1-to-K broadcast fan-out (<code>fanout_k1</code> through <code>fanout_k64</code>), and multi-layer dense meshes (<code>mesh_2x4</code>, <code>mesh_4x4</code>, <code>mesh_4x8</code>).</li>
+</ul>
+<h4 id="2-multiprocess-ipc-breakdown-shmpool-vs-pure-pickle">2. Multiprocess IPC Breakdown (<code>ShmPool</code> vs Pure Pickle)<a class="headerlink" href="#2-multiprocess-ipc-breakdown-shmpool-vs-pure-pickle" title="Permanent link">&para;</a></h4>
+<p>Using <code>PerfWorkerNode_win</code> (<code>PerfPassWorker</code> vs <code>PerfPassNoShmWorker</code>), each round-trip is decomposed into 4 stages:
+- <code>proc_main_encode_ns</code>: Main-process serialization / shared-memory write before queue push.
+- <code>proc_ipc_in_ns</code>: OS pipe/queue transit into the child worker process.
+- <code>proc_worker_compute_ns</code>: Child <code>_process_data</code> execution time.
+- <code>proc_ipc_out_ns</code>: Return queue transit back to the parent polling thread.
+- <code>proc_total_roundtrip_ns</code> &amp; <code>proc_ipc_overhead_ns</code>: Full end-to-end turnaround and pure IPC overhead excluding compute.</p>
+<p>The suite directly contrasts <code>ShmPool</code> shared-memory transport against pure Python <code>pickle</code> (<code>use_shared_memory=False</code>) across <code>token</code>, <code>1 KB</code>, <code>64 KB</code>, <code>256 KB</code>, <code>1 MB</code>, and <code>4 MB</code> payloads, then scales parallel worker processes (<code>workers_parallel_p1</code> through <code>p16</code>) on realistic <strong>1080p RGB frames (<code>1920x1080x3 uint8</code>, 6.22 MB)</strong>.</p>
+<h4 id="3-three-mode-execution-comparison-cmp_">3. Three-Mode Execution Comparison (<code>cmp_*</code>)<a class="headerlink" href="#3-three-mode-execution-comparison-cmp_" title="Permanent link">&para;</a></h4>
+<p>Selected representative workloads (<code>cmp_hop_1to1_burst</code>, <code>cmp_hop_1to1_stream_uncapped</code>, <code>cmp_chain_d20_burst</code>, <code>cmp_fanout_k32_burst</code>, <code>cmp_mesh_4x8_burst</code>, <code>cmp_proc_shm_1mb</code>, <code>cmp_workers_p4_1080p</code>) are run side-by-side across three modes:</p>
+<table>
+<thead>
+<tr>
+<th>Mode</th>
+<th>Renderer / Viewport</th>
+<th>Widget Updates</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>headless</code></td>
+<td>Disabled (<code>core/headless_runner.py</code>)</td>
+<td>Skipped</td>
+<td>Pure Python + IPC data-plane ceiling with zero GPU contention.</td>
+</tr>
+<tr>
+<td><code>gui</code></td>
+<td>Full DearPyGui (<code>vsync=False</code>)</td>
+<td>Passive (<code>ui_update_hz = 0.0</code>)</td>
+<td>Isolates base DearPyGui viewport loop overhead.</td>
+</tr>
+<tr>
+<td><code>gui_live_ui</code></td>
+<td>Full DearPyGui (<code>vsync=False</code>)</td>
+<td>Active (<code>ui_update_hz = 30.0</code>, windows visible)</td>
+<td>Realistic interactive desktop conditions with live UI telemetry updates.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="4-progressive-stress-suite-breaking-point-analysis-stress_">4. Progressive Stress Suite &amp; Breaking-Point Analysis (<code>stress_*</code>)<a class="headerlink" href="#4-progressive-stress-suite-breaking-point-analysis-stress_" title="Permanent link">&para;</a></h4>
+<p>Designed as a hardware stress test when deploying Pipeline Creator on a target PC, the stress suite progressively increases workload complexity in both <strong><code>headless</code></strong> and <strong><code>gui_live_ui</code></strong> modes until real-time budgets or UI responsiveness saturate:</p>
+<ul>
+<li><strong>Serial Chain Depth</strong>: <code>D = 2, 10, 20, 40, 80, 120, 160</code> (<code>stress_chain_d*</code>)</li>
+<li><strong>Parallel Fan-Out</strong>: <code>K = 1, 4, 16, 32, 64, 128, 192</code> (<code>stress_fanout_k*</code>)</li>
+<li><strong>Dense Matrix Mesh</strong>: <code>2x4, 3x4, 4x4, 4x6, 4x8, 5x6, 5x8</code> (<code>stress_mesh_*</code>)</li>
+<li><strong>Parallel 1080p RGB Workers</strong>: <code>P = 1, 2, 4, 8, 12, 16</code> (and <code>P = 20</code> headless, <code>stress_workers_p*</code>)</li>
+</ul>
+<p>Results are automatically classified by <code>FrameworkProfiler.compute_comfort_and_limits()</code>:
+- <strong>Real-Time Pipeline Budgets</strong>: <code>Real-Time 60 Hz</code> (<code>&lt;= 16.67 ms</code>), <code>Real-Time 30 Hz</code> (<code>&lt;= 33.33 ms</code>), or <code>Over Real-Time Budget (&gt;33.3 ms)</code>.
+- <strong>UI Interactive Comfort</strong>: <code>Smooth</code> (<code>&gt;= 45 FPS</code>), <code>Comfortable</code> (<code>25–45 FPS</code>), <code>Sluggish</code> (<code>12–25 FPS</code>), and <code>Critical / Breaking Point</code> (<code>&lt; 12 FPS</code>).</p>
+<hr />
+<h3 id="generated-reports-output-files-benchmark">Generated Reports &amp; Output Files (<code>benchmark/</code>)<a class="headerlink" href="#generated-reports-output-files-benchmark" title="Permanent link">&para;</a></h3>
+<p>All benchmark output artifacts (reports, figures, notebooks, raw JSON/CSV telemetry) are written to <code>benchmark/</code> and excluded by <code>.gitignore</code>, while the generated benchmark pipelines and automation scripts under <code>benchmark/generated/</code> remain tracked in Git:</p>
+<table>
+<thead>
+<tr>
+<th>Output File</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>benchmark/interactive_report.html</code></td>
+<td>Self-contained interactive <strong>Plotly</strong> web dashboard featuring global KPI cards, a plain-language <strong>Beginner Guide</strong>, full embedded summary &amp; PC-limit tables, interactive zoomable charts with <code>Mean -&gt; p95</code> jitter bands, and a filterable/sortable full-scenario explorer (<code>Mode</code>, <code>Category</code>, <code>Comfort</code>, <code>Real-Time</code>, <code>Metric Scope</code>, text search, quick presets, and <code>us</code>/<code>ms</code>/<code>ns</code> unit selector).</td>
+</tr>
+<tr>
+<td><code>benchmark/summary.md</code></td>
+<td>Concise executive summary containing the <strong>Global Summary</strong>, <strong>Practical PC Limits &amp; UI Comfort</strong>, and <strong>GUI Impact</strong> tables plus a quick interpretation guide.</td>
+</tr>
+<tr>
+<td><code>benchmark/benchmark_analysis.ipynb</code></td>
+<td>Pre-configured <strong>Jupyter Notebook</strong> (<code>nbformat</code> v4) loading <code>benchmark_report.json</code> / <code>.csv</code> into <code>pandas</code> and <code>matplotlib</code> for custom exploratory analysis.</td>
+</tr>
+<tr>
+<td><code>benchmark/benchmark_report.md</code></td>
+<td>Complete technical Markdown report with environment specs, summary tables, and full per-metric percentiles for every scenario.</td>
+</tr>
+<tr>
+<td><code>benchmark/benchmark_report.json</code> / <code>.csv</code></td>
+<td>Machine-readable JSON telemetry and flat CSV metric export (<code>matrix_headless.*</code>, <code>compare_*.*</code>, and <code>stress_*.*</code> intermediate passes are also preserved).</td>
+</tr>
+<tr>
+<td><code>benchmark/figures/</code></td>
+<td>Generated PNG/PDF figures (<code>fig1_framework_primitives</code>, <code>fig2_topology_scaling</code>, <code>fig3_ipc_worker_breakdown</code>, <code>fig4_headless_vs_gui</code>, <code>fig5_stress_limits_and_fps</code>).</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition tip">
+<p class="admonition-title">Reading Shaded Bands in Benchmark Plots</p>
+<p>In <code>fig5_stress_limits_and_fps</code> and the Plotly charts inside <code>interactive_report.html</code>, the solid line traces the <strong>Mean</strong> latency across iterations, while the translucent <strong>shaded band (<code>Mean -&gt; p95</code>)</strong> highlights how high occasional tail spikes reach (95th percentile jitter). Similarly, shaded <code>p50 -&gt; p95</code> bands in topology/payload charts separate typical median speed from worst-case OS scheduling tails.</p>
+</div>
 
 
 
@@ -2348,10 +2697,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "content.code.copy", "toc.integrate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "content.code.copy", "toc.integrate"], "search": "../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../assets/javascripts/bundle.a5f9d56c.min.js"></script>
       
     
   </body>
