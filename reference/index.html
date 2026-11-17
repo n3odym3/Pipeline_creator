@@ -18133,7 +18133,7 @@ a human-readable description.</p>
     <div class="doc doc-contents first">
 
         <p>Login / Profile-selection dialog for Pipeline Creator.</p>
-<p>Shown at startup when config["Login"]["enabled"] is True.
+<p>Shown at startup when <code>config["Login"]["enabled"]</code> is True.
 Can be re-triggered at any time via show_login_dialog() — main_win binds it to CTRL+SHIFT+L.</p>
 <h3 id="core.login_dialog--boot-contract">Boot contract<a class="headerlink" href="#core.login_dialog--boot-contract" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code>1. display_scaling.adapt_to_display() is called first so the popup
@@ -29791,7 +29791,7 @@ the main loop).</p>
     <div class="doc doc-contents first">
 
         <p>Startup Loader Dialog for Pipeline Creator.</p>
-<p>Shown at startup when config["Paths"]["show_loader_on_startup"] is True
+<p>Shown at startup when <code>config["Paths"]["show_loader_on_startup"]</code> is True
 and no default pipeline or automation script was loaded.</p>
 <p>Encapsulated within StartupDialog class for clean component architecture.</p>
 
