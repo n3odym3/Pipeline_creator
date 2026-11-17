@@ -254,6 +254,12 @@ pip install -r requirements.txt
 pip install dearpygui loguru numpy pillow
 ```
 
+#### Facultative dependencies 
+
+```bash
+pip install comtypes matplotlib plotly mkdocs mkdocs-material mkdocstrings-python nuitka opencv-python psutil pywin32
+```
+
 ### Launching the Application
 
 ```bash

@@ -1,7 +1,7 @@
 """
 Startup Loader Dialog for Pipeline Creator.
 
-Shown at startup when config["Paths"]["show_loader_on_startup"] is True
+Shown at startup when `config["Paths"]["show_loader_on_startup"]` is True
 and no default pipeline or automation script was loaded.
 
 Encapsulated within StartupDialog class for clean component architecture.

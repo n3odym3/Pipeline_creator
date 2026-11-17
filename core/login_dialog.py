@@ -1,7 +1,7 @@
 """
 Login / Profile-selection dialog for Pipeline Creator.
 
-Shown at startup when config["Login"]["enabled"] is True.
+Shown at startup when `config["Login"]["enabled"]` is True.
 Can be re-triggered at any time via show_login_dialog() — main_win binds it to CTRL+SHIFT+L.
 
 Boot contract

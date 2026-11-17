@@ -107,7 +107,6 @@ if __name__ == "__main__":
                     raise ImportError("Could not find pip entry point")
             else:
                 import runpy
-
                 runpy.run_module(module_name, run_name="__main__", alter_sys=True)
                 sys.exit(0)
         except Exception as e:
