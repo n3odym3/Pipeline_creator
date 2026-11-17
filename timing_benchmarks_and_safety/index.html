@@ -829,10 +829,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#selective-benchmark-flags-toolsrun_benchmarkpy" class="md-nav__link">
+  <a href="#selective-benchmark-flags-toolsrun_benchmarkpy-run-benchmark" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Selective Benchmark Flags (tools/run_benchmark.py)
+        Selective Benchmark Flags (tools/run_benchmark.py / --run-benchmark)
       
     </span>
   </a>
@@ -2478,9 +2478,20 @@
 <li>Synthesizes <code>benchmark/benchmark_report.{json,csv,md}</code> and <code>benchmark/summary.md</code>.</li>
 <li>Generates all figures (<code>PNG</code> + <code>PDF</code>) in <code>benchmark/figures/</code>, plus <code>benchmark/interactive_report.html</code> and <code>benchmark/benchmark_analysis.ipynb</code>.</li>
 </ol>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>python<span class="w"> </span>tools/run_benchmark.py
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># From source</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>python<span class="w"> </span>tools/run_benchmark.py
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1"># Directly from a compiled build (writes outputs to benchmark/ next to the .exe)</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>PipelineCreator.exe<span class="w"> </span>--run-benchmark
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="c1"># From source, targeting a compiled executable</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>python<span class="w"> </span>tools/run_benchmark.py<span class="w"> </span>--exe<span class="w"> </span>path/to/main.dist/PipelineCreator.exe
 </code></pre></div>
-<h4 id="selective-benchmark-flags-toolsrun_benchmarkpy">Selective Benchmark Flags (<code>tools/run_benchmark.py</code>)<a class="headerlink" href="#selective-benchmark-flags-toolsrun_benchmarkpy" title="Permanent link">&para;</a></h4>
+<div class="admonition note">
+<p class="admonition-title">Compiled Executable Requirements</p>
+<p>When running <code>PipelineCreator.exe --run-benchmark</code> (or <code>PipelineCreator.exe -m tools.run_benchmark</code>), ensure the executable was built with <code>MAIN_PIPELINE = None</code> in <code>make_executable.py</code> so <code>modules/benchmark/</code> is included in <code>main.dist/modules/</code>. All selective flags below work identically with <code>--run-benchmark</code>.</p>
+</div>
+<h4 id="selective-benchmark-flags-toolsrun_benchmarkpy-run-benchmark">Selective Benchmark Flags (<code>tools/run_benchmark.py</code> / <code>--run-benchmark</code>)<a class="headerlink" href="#selective-benchmark-flags-toolsrun_benchmarkpy-run-benchmark" title="Permanent link">&para;</a></h4>
 <table>
 <thead>
 <tr>
@@ -2516,6 +2527,10 @@
 <tr>
 <td><code>--rebuild-only</code></td>
 <td>Regenerate <code>benchmark/generated/</code> pipelines &amp; scripts, <code>summary.md</code>, <code>benchmark_report.*</code>, <code>interactive_report.html</code>, <code>benchmark_analysis.ipynb</code>, and <code>benchmark/figures/</code> (PNG &amp; PDF) from existing JSON/CSV results without re-running benchmarks.</td>
+</tr>
+<tr>
+<td><code>--exe PATH</code></td>
+<td>Path to a compiled <code>PipelineCreator.exe</code> (or its <code>main.dist</code> folder) to benchmark instead of <code>main.py</code> from source. Automatically defaults to itself when invoked via <code>PipelineCreator.exe --run-benchmark</code>.</td>
 </tr>
 </tbody>
 </table>
